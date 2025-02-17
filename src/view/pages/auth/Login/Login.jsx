@@ -2,22 +2,18 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
+import { useDispatch } from "react-redux";
+import { setUser } from "../../../redux/slice/authslice";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  TextField,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  Typography,
-  Link,
-  Box,
-} from "@mui/material";
+import { TextField, Button, Box, Typography } from "@mui/material";
 import { useLogin } from "../../../Hooks/useLogin";
+
 import logo from "../../../../assets/Images/logo.png";
 
 function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const loginMutation = useLogin();
 
   const validationSchema = Yup.object({
@@ -31,9 +27,28 @@ function Login() {
 
   const handleSubmit = async (values) => {
     loginMutation.mutate(values, {
-      onSuccess: () => {
-        toast.success("Login Successful!", { position: "top-right" });
-        setTimeout(() => navigate("/dash"), 1500);
+      onSuccess: (data) => {
+        const { encryptedToken, user_role } = data;
+
+        // console.log("Login Success Data:", data);
+        // console.log("User Role:", user_role);
+
+        dispatch(setUser({ token: encryptedToken, userRole: user_role }));
+
+        localStorage.setItem("token", encryptedToken);
+        localStorage.setItem("userRole", user_role);
+
+        if (
+          user_role &&
+          (user_role === "admin" || user_role === "super-admin")
+        ) {
+          toast.success("Login Successful!", { position: "top-right" });
+          setTimeout(() => navigate("/"), 1500);
+        } else {
+          toast.error("Access denied! Only admins can log in.", {
+            position: "top-right",
+          });
+        }
       },
       onError: () => {
         toast.error("Invalid credentials! Please try again.", {
@@ -60,16 +75,19 @@ function Login() {
         maxWidth="400px"
         sx={{ borderRadius: 2 }}
       >
-        <Box mb={3} textAlign="center">
+        <Box display="flex" justifyContent="center" mb={3}>
+          {/* Logo Image */}
           <img
             src={logo}
-            alt="Nest Mart Logo"
-            style={{ width: "150px", height: "auto" }}
+            alt="Logo"
+            style={{ maxWidth: "150px", maxHeight: "150px" }}
           />
         </Box>
+
         <Typography variant="h5" align="center" gutterBottom>
           Admin Login
         </Typography>
+
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
@@ -101,21 +119,6 @@ function Login() {
                   error={touched.password && Boolean(errors.password)}
                   helperText={touched.password && errors.password}
                 />
-              </Box>
-
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={2}
-              >
-                <FormControlLabel
-                  control={<Field as={Checkbox} name="remember" />}
-                  label="Remember Me"
-                />
-                <Link href="#" variant="body2">
-                  Forgot password?
-                </Link>
               </Box>
 
               <Button

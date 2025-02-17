@@ -5,12 +5,11 @@ import {
   TextField,
   Button,
   Paper,
-  Grid,
-  Input,
-  IconButton,
   Avatar,
+  IconButton,
 } from "@mui/material";
 import { PhotoCamera } from "@mui/icons-material";
+import JoditEditor from "jodit-react";
 
 const About = () => {
   const [aboutText, setAboutText] = useState("");
@@ -43,18 +42,24 @@ const About = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 5, pt: "50px" }}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
         अटल
       </Typography>
 
       <Paper sx={{ p: 3, border: "1px solid #ddd" }}>
-        <Grid container spacing={2}>
+        <Box display="flex" flexWrap="wrap" spacing={2}>
           {/* Profile Image Upload */}
-          <Grid item xs={12} md={4} sx={{ textAlign: "center" }}>
+          <Box
+            sx={{
+              flexBasis: { xs: "100%", md: "33%" },
+              textAlign: "center",
+              mb: 2,
+            }}
+          >
             <Avatar
               src={selectedImage}
-              alt="अटल"
+              alt="Dr. Ambedkar"
               sx={{ width: 120, height: 120, mb: 1, mx: "auto" }}
             />
             <IconButton color="primary" component="label">
@@ -66,10 +71,10 @@ const About = () => {
               />
               <PhotoCamera />
             </IconButton>
-          </Grid>
+          </Box>
 
           {/* Form Fields */}
-          <Grid item xs={12} md={8}>
+          <Box sx={{ flexBasis: { xs: "100%", md: "66%" }, mb: 2 }}>
             {/* Name */}
             <TextField
               fullWidth
@@ -99,7 +104,7 @@ const About = () => {
               minRows={3}
               label="Key Achievements"
               variant="outlined"
-              placeholder=" अटल"
+              placeholder="key achievements..."
               value={achievements}
               onChange={(e) => handleChange(e, setAchievements)}
               sx={{ mb: 2 }}
@@ -117,25 +122,23 @@ const About = () => {
               onChange={(e) => handleChange(e, setContributions)}
               sx={{ mb: 2 }}
             />
-          </Grid>
+          </Box>
 
-          {/* About Text */}
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              multiline
-              minRows={5}
-              label="About अटल"
-              variant="outlined"
-              placeholder="Write about अटल"
+          {/* About Text (Jodit Editor) */}
+          <Box sx={{ width: "100%" }}>
+            <JoditEditor
               value={aboutText}
-              onChange={(e) => handleChange(e, setAboutText)}
-              sx={{ mb: 2 }}
+              onChange={setAboutText}
+              config={{
+                readonly: false, // true for readonly mode
+                placeholder: "Write about अटल 's life...",
+              }}
+              style={{ width: "100%", minHeight: "200px" }}
             />
-          </Grid>
+          </Box>
 
           {/* Save Button */}
-          <Grid item xs={12}>
+          <Box sx={{ width: "100%" }}>
             <Button
               variant="contained"
               color="primary"
@@ -144,8 +147,8 @@ const About = () => {
             >
               Save
             </Button>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Paper>
     </Box>
   );

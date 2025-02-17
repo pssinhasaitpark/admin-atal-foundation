@@ -23,6 +23,7 @@ import {
   ExpandLess,
   ExpandMore,
   Menu as MenuIcon,
+  Close as CloseIcon, // Import CloseIcon
 } from "@mui/icons-material";
 import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
@@ -41,12 +42,7 @@ const Sidebar = () => {
 
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/" },
-
-    {
-      text: "Home",
-      icon: <HomeIcon />,
-      path: "/home",
-    },
+    { text: "Home", icon: <HomeIcon />, path: "/home" },
     {
       text: "About Us",
       icon: <Info />,
@@ -141,20 +137,25 @@ const Sidebar = () => {
 
   return (
     <>
+      {/* Hamburger icon for mobile */}
       {isMobile && (
         <IconButton
           onClick={toggleDrawer}
           sx={{
             position: "absolute",
             top: "10px",
-            left: "10px",
+            // left: "10px",
             zIndex: 1300,
+
+            right: drawerOpen ? "10px" : "inherit",
+            left: drawerOpen ? "inherit" : "10px",
           }}
         >
-          <MenuIcon />
+          {drawerOpen ? <CloseIcon /> : <MenuIcon />}
         </IconButton>
       )}
 
+      {/* Drawer */}
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}
         anchor="left"
