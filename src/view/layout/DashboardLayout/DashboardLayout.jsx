@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import AboutPage from "../../pages/About/About";
 import Home from "../../pages/Home/Home";
 import OurSoul from "../../pages/OurSoul/OurSoul";
+import Vision from "../../pages/Vision/Vision";
 
 const DashboardLayout = () => {
   return (
@@ -15,7 +16,7 @@ const DashboardLayout = () => {
           <Route path="/aboutus/our-soul" element={<OurSoul />} />
           <Route path="/aboutus/our-presence" element={<OurSoul />} />
           <Route path="/aboutus/people-behind" element={<OurSoul />} />
-          <Route path="/vision" element={<OurSoul />} />
+          <Route path="/vision" element={<Vision />} />
           <Route path="/mission" element={<OurSoul />} />
           {/* Add any other sub-routes under DashboardLayout */}
           <Route path="/programmes" element={<OurSoul />} />
