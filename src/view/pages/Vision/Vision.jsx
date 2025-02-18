@@ -12,33 +12,45 @@ import {
 import { Edit } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
-import { saveVisionToBackend } from "../../redux/slice/visionSlice";
+import {
+  saveVisionToBackend,
+  fetchVisionData,
+} from "../../redux/slice/visionSlice";
 import debounce from "lodash.debounce";
 
 const Vision = () => {
   const dispatch = useDispatch();
   const visionData = useSelector((state) => state.vision);
 
-  const [title, setTitle] = useState(
-    localStorage.getItem("title") || visionData.title
-  );
-  const [name, setName] = useState(
-    localStorage.getItem("name") || visionData.name
-  );
-  const [visionText, setVisionText] = useState(
-    localStorage.getItem("visionText") || visionData.visionContent
-  );
+  const [title, setTitle] = useState(visionData.title);
+  const [visionText, setVisionText] = useState(visionData.visionContent);
   const [selectedImages, setSelectedImages] = useState([]);
-  const [imageUrl, setImageUrl] = useState(""); // State for the image URL
+  const [imageUrl, setImageUrl] = useState("");
   const [isEditable, setIsEditable] = useState(true);
 
   const editor = useRef(null);
+  const [editorInstance, setEditorInstance] = useState(null);
 
   useEffect(() => {
-    if (title) localStorage.setItem("title", title);
-    if (name) localStorage.setItem("name", name);
-    if (visionText) localStorage.setItem("visionText", visionText);
-  }, [title, name, visionText]);
+    dispatch(fetchVisionData());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (visionData.title) setTitle(visionData.title);
+    if (visionData.visionContent) setVisionText(visionData.visionContent);
+    if (visionData.image && visionData.image.length > 0) {
+      setImageUrl(visionData.image[0]);
+    }
+  }, [visionData]);
+
+  const handleEditorReady = (editor) => {
+    setEditorInstance(editor);
+
+    if (visionData.image && visionData.image.length > 0) {
+      const imageTag = `<img src="${visionData.image[0]}" alt="Vision Image" style="max-width: 100%; border-radius: 8px;" />`;
+      editor.insertHTML(imageTag);
+    }
+  };
 
   const handleChange = (event, setter) => {
     setter(event.target.value);
@@ -56,7 +68,6 @@ const Vision = () => {
   const handleSave = async (e) => {
     e.preventDefault();
 
-    // Check if token exists
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("Authorization token is missing");
@@ -68,30 +79,24 @@ const Vision = () => {
     visionDataToSend.append("text", visionText);
 
     if (selectedImages.length > 0) {
-      visionDataToSend.append("image", selectedImages[0]); // Append the first image
+      visionDataToSend.append("images", selectedImages[0]);
     }
 
     try {
-      // Make the API call to save the data
       const response = await dispatch(saveVisionToBackend(visionDataToSend));
 
-      // Set the image URL from the response if available
       if (response.payload.image) {
-        setImageUrl(response.payload.image); // Set the image URL here
+        setImageUrl(response.payload.image);
       }
 
-      setIsEditable(false);
+      setIsEditable(false); // Disable editing after save
     } catch (error) {
       console.error("Error saving data: ", error);
     }
   };
 
-  const handleUpdateVisionText = () => {
-    setIsEditable(true); // Allow text editing
-  };
-
   return (
-    <Box sx={{ p: 5, pt: "50px", maxWidth: "1200px", margin: "0 auto" }}>
+    <Box sx={{ p: 5, pt: "50px", margin: "0 auto" }}>
       <Typography
         variant="h4"
         sx={{ mb: 3, fontWeight: "bold", textAlign: "center" }}
@@ -101,7 +106,6 @@ const Vision = () => {
 
       <Paper sx={{ p: 4, border: "1px solid #ddd", borderRadius: "8px" }}>
         <Stack spacing={4}>
-          {/* Image Upload */}
           <Box sx={{ textAlign: "center" }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Upload Image (Single file allowed)
@@ -127,7 +131,6 @@ const Vision = () => {
               <Edit />
             </IconButton>
 
-            {/* Image Preview */}
             {selectedImages.length > 0 && (
               <Box sx={{ textAlign: "center" }}>
                 <img
@@ -142,7 +145,6 @@ const Vision = () => {
               </Box>
             )}
 
-            {/* Displaying image from response */}
             {imageUrl && (
               <Box sx={{ textAlign: "center", mt: 2 }}>
                 <Typography variant="h6">Uploaded Image:</Typography>
@@ -162,7 +164,6 @@ const Vision = () => {
 
           <Divider />
 
-          {/* Form Fields */}
           <form onSubmit={handleSave}>
             <TextField
               fullWidth
@@ -177,6 +178,7 @@ const Vision = () => {
             <Typography variant="h6" sx={{ mb: 2 }}>
               Vision Statement
             </Typography>
+
             <JoditEditor
               ref={editor}
               value={visionText}
@@ -186,33 +188,53 @@ const Vision = () => {
                 height: 400,
                 cleanOnPaste: false,
                 cleanOnChange: false,
+                toolbar: {
+                  items: [
+                    "bold",
+                    "italic",
+                    "underline",
+                    "strikethrough",
+                    "eraser",
+                    "|",
+                    "font",
+                    "fontsize",
+                    "paragraph",
+                    "|",
+                    "align",
+                    "outdent",
+                    "indent",
+                    "|",
+                    "link",
+                    "image",
+                    "video",
+                    "table",
+                    "line",
+                    "code",
+                    "fullsize",
+                    "undo",
+                    "redo",
+                  ],
+                },
+                uploader: {
+                  insertImageAsBase64URI: true,
+                  url: "/upload",
+                  format: "json",
+                },
               }}
-              style={{
-                width: "100%",
-                minHeight: "200px",
-                marginBottom: "20px",
-              }}
+              style={{ width: "100%", minHeight: "200px" }}
               onChange={handleEditorChange}
+              onReady={handleEditorReady}
             />
 
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
                 disabled={!isEditable}
-                sx={{ width: "48%" }}
+                sx={{ width: "30%" }}
               >
                 Save
-              </Button>
-
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handleUpdateVisionText}
-                sx={{ width: "48%" }}
-              >
-                Update Vision Text
               </Button>
             </Box>
           </form>
