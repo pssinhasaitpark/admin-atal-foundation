@@ -4,7 +4,7 @@ import AboutPage from "../../pages/About/About";
 import Home from "../../pages/Home/Home";
 import OurSoul from "../../pages/OurSoul/OurSoul";
 import Vision from "../../pages/Vision/Vision";
-
+import Gallery from "../../pages/Gallery/Gallery";
 const DashboardLayout = () => {
   return (
     <>
@@ -40,7 +40,7 @@ const DashboardLayout = () => {
           <Route path="/involved/registration" element={<OurSoul />} />
           <Route path="/involved/members" element={<OurSoul />} />
           <Route path="/involved/supporters-speak" element={<OurSoul />} />
-          <Route path="/gallery" element={<OurSoul />} />
+          <Route path="/gallery" element={<Gallery />} />
           <Route path="/message" element={<OurSoul />} />
           <Route path="/settings/setingsample1" element={<OurSoul />} />
           <Route path="/settings/setingsample1" element={<OurSoul />} />

@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../axios/axios";
 
-// Initial state setup
 const initialState = {
   title: "Vision",
   visionContent: "",
@@ -9,25 +8,38 @@ const initialState = {
   error: null,
 };
 
-// Async thunk to save vision data to the backend
 export const saveVisionToBackend = createAsyncThunk(
   "vision/saveVisionToBackend",
   async (visionData, { rejectWithValue }) => {
     try {
-      // Get token from localStorage
       const token = localStorage.getItem("token");
 
-      // Make the API call and include the token in Authorization header
       const response = await api.post("/vision/create", visionData, {
         headers: {
-          "Content-Type": "multipart/form-data", // Important for handling files
-          Authorization: `${token}`, // Add token to headers
+          "Content-Type": "multipart/form-data",
+          Authorization: `${token}`,
         },
       });
 
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data || error.message || "Something went wrong"
+      );
+    }
+  }
+);
+
+export const fetchVisionData = createAsyncThunk(
+  "vision/fetchVisionData",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get("/vision");
+      return response.data.visions[0];
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || error.message || "Failed to fetch data"
+      );
     }
   }
 );
@@ -46,13 +58,26 @@ const visionSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchVisionData.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchVisionData.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.title = action.payload.heading;
+        state.visionContent = action.payload.text;
+        state.image = action.payload.image;
+      })
+      .addCase(fetchVisionData.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      })
       .addCase(saveVisionToBackend.pending, (state) => {
         state.status = "loading";
       })
       .addCase(saveVisionToBackend.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.title = action.payload.title;
-        state.visionContent = action.payload.visionContent;
+        state.title = action.payload.heading;
+        state.visionContent = action.payload.text;
       })
       .addCase(saveVisionToBackend.rejected, (state, action) => {
         state.status = "failed";

@@ -10,7 +10,7 @@ import { Box } from "@mui/material";
 import DashboardLayout from "./view/layout/DashboardLayout/DashboardLayout";
 import PrivateRoute from "./view/routes/PrivateRoute";
 import Vision from "./view/pages/Vision/Vision";
-
+import Gallery from "./view/pages/Gallery/Gallery";
 function AppLayout({ children }) {
   const location = useLocation();
   const hideSidebarAndHeader = ["/login", "/signup"].includes(
@@ -78,7 +78,7 @@ function App() {
           <Route path="/involved/registration" element={<OurSoul />} />
           <Route path="/involved/members" element={<OurSoul />} />
           <Route path="/involved/supporters-speak" element={<OurSoul />} />
-          <Route path="/gallery" element={<OurSoul />} />
+          <Route path="/gallery" element={<Gallery />} />
           <Route path="/message" element={<OurSoul />} />
           <Route path="/settings/setingsample1" element={<OurSoul />} />
         </Route>
