@@ -8,7 +8,6 @@ import {
   MenuItem,
   useMediaQuery,
 } from "@mui/material";
-
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 
@@ -24,6 +23,11 @@ const Header = ({ onMenuClick }) => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleProfileClick = () => {
+    navigate("/profile");
+    handleMenuClose();
   };
 
   const handleLogout = () => {
@@ -90,7 +94,7 @@ const Header = ({ onMenuClick }) => {
             onClose={handleMenuClose}
             sx={{ mt: "45px" }}
           >
-            <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+            <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>My Account</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
