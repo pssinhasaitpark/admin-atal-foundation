@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   Box,
   Typography,
@@ -21,21 +27,20 @@ import debounce from "lodash.debounce";
 const Events = () => {
   const dispatch = useDispatch();
   const eventsData = useSelector((state) => state.events) || {};
-
   const editor = useRef(null);
 
-  const [title, setTitle] = useState("Events");
-  const [location, setLocation] = useState("");
-  const [description, setDescription] = useState("");
-  const [selectedImages, setSelectedImages] = useState([]);
+  const [title, setTitle] = useState(eventsData.title || "Events");
+  const [location, setLocation] = useState(eventsData.location || "");
+  const [description, setDescription] = useState(eventsData.description || "");
+  const [selectedImages, setSelectedImages] = useState(eventsData.images || []);
   const [isEditable, setIsEditable] = useState(false);
 
-  // Fetch data on mount
+  const memoizedImages = useMemo(() => selectedImages, [selectedImages]);
+
   useEffect(() => {
     dispatch(fetchEventsData());
   }, [dispatch]);
 
-  // Update state when data is fetched
   useEffect(() => {
     if (eventsData) {
       setTitle(eventsData.title || "Events");
@@ -45,145 +50,132 @@ const Events = () => {
     }
   }, [eventsData]);
 
-  // Debounced description update
   const debouncedEditorChange = useCallback(
     debounce((newContent) => {
       setDescription(newContent);
-    }, 3000),
+    }, 1000),
     []
   );
 
-  // Handle Image Upload
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
-    setSelectedImages([...selectedImages, ...files]);
+    setSelectedImages((prevImages) => [...prevImages, ...files]);
   };
 
-  // Remove Image
   const handleImageRemove = (index) => {
-    const updatedImages = selectedImages.filter((_, i) => i !== index);
-    setSelectedImages(updatedImages);
+    setSelectedImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
-  // Handle Save/Edit
   const handleEditSave = async (e) => {
     e.preventDefault();
+
     if (isEditable) {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("location", location);
       formData.append("description", description);
 
-      selectedImages.forEach((image) => {
+      memoizedImages.forEach((image) => {
         if (image instanceof File) {
           formData.append("images", image);
         }
       });
 
       try {
-        await dispatch(saveEventsToBackend(formData)).unwrap(); // Ensure data is saved
-        await dispatch(fetchEventsData()); // Fetch latest data after saving
+        await dispatch(saveEventsToBackend(formData)).unwrap();
+        await dispatch(fetchEventsData());
       } catch (error) {
         console.error("Error saving data: ", error);
       }
     }
+
     setIsEditable(!isEditable);
   };
 
   return (
-    <Box sx={{ p: 5 }}>
+    <Box sx={{ mx: "auto" }}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
         {title}
       </Typography>
-      <Paper sx={{ p: 3, border: "1px solid #ddd" }}>
+      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
         <Stack spacing={2}>
           <form onSubmit={handleEditSave}>
-            <TextField
-              fullWidth
-              label="Title"
-              variant="outlined"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={!isEditable}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="Location"
-              variant="outlined"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              disabled={!isEditable}
-              sx={{ mb: 2 }}
-            />
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Description
-            </Typography>
-
-            <JoditEditor
-              ref={editor}
-              value={description}
-              config={{
-                readonly: !isEditable,
-                placeholder: "Write about the event...",
-                height: 400,
-                cleanOnPaste: false,
-                cleanOnChange: false,
-                toolbar: {
-                  items: [
-                    "bold",
-                    "italic",
-                    "underline",
-                    "strikethrough",
-                    "eraser",
-                    "|",
-                    "font",
-                    "fontsize",
-                    "paragraph",
-                    "|",
-                    "align",
-                    "outdent",
-                    "indent",
-                    "|",
-                    "link",
-                    "image",
-                    "video",
-                    "table",
-                    "line",
-                    "code",
-                    "fullsize",
-                    "undo",
-                    "redo",
-                  ],
-                },
-                uploader: {
-                  insertImageAsBase64URI: true,
-                },
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                gap: 2,
               }}
-              style={{ width: "100%", minHeight: "200px" }}
-              onChange={debouncedEditorChange} // Update immediately
-              onBlur={(newContent) => setDescription(newContent)} // Ensure update on blur
-            />
+            >
+              <TextField
+                fullWidth
+                label="Title"
+                variant="outlined"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                disabled={!isEditable}
+              />
 
-            {/* Image Upload Section */}
+              <TextField
+                fullWidth
+                label="Location"
+                variant="outlined"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                disabled={!isEditable}
+              />
+            </Box>
+
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                Description
+              </Typography>
+              <JoditEditor
+                ref={editor}
+                value={description}
+                config={{
+                  readonly: !isEditable,
+                  placeholder: "Write about the event...",
+                  height: 300,
+                  cleanOnPaste: false,
+                  cleanOnChange: false,
+                }}
+                onChange={debouncedEditorChange}
+                onBlur={(newContent) => setDescription(newContent)}
+              />
+            </Box>
+
             <Box
               sx={{ mt: 3, p: 2, border: "1px solid #ddd", borderRadius: 2 }}
             >
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Upload Event Images
               </Typography>
-              <IconButton color="primary" component="label">
-                <input
-                  hidden
-                  accept="image/*"
-                  multiple
-                  type="file"
-                  onChange={handleImageUpload}
-                />
-                <Edit />
-              </IconButton>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
-                {selectedImages.map((image, index) => (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <IconButton color="primary" component="label">
+                  <input
+                    hidden
+                    accept="image/*"
+                    multiple
+                    type="file"
+                    onChange={handleImageUpload}
+                  />
+                  <Edit />
+                </IconButton>
+                <Typography variant="body2">Click to upload images</Typography>
+              </Stack>
+
+              {/* Display uploaded images */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 2,
+                  mt: 2,
+                  justifyContent: { xs: "center", md: "flex-start" },
+                }}
+              >
+                {memoizedImages.map((image, index) => (
                   <Box key={index} sx={{ position: "relative" }}>
                     <Avatar
                       src={
@@ -198,8 +190,8 @@ const Events = () => {
                       onClick={() => handleImageRemove(index)}
                       sx={{
                         position: "absolute",
-                        top: 2,
-                        right: 2,
+                        top: 5,
+                        right: 5,
                         backgroundColor: "rgba(255, 255, 255, 0.7)",
                       }}
                     >
@@ -210,12 +202,11 @@ const Events = () => {
               </Box>
             </Box>
 
-            {/* Edit/Save Button */}
             <Button
               type="submit"
               variant="contained"
               color="primary"
-              sx={{ mt: 2 }}
+              sx={{ mt: 2, width: "10%" }}
             >
               {isEditable ? "Save" : "Edit"}
             </Button>

@@ -5,7 +5,6 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Typography,
   Box,
   Divider,
   IconButton,
@@ -26,18 +25,14 @@ import {
   Close as CloseIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useMediaQuery, useTheme } from "@mui/material";
+import logo from "../../../assets/Images/logo.png";
 
-const Sidebar = () => {
+const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
   const [activeParent, setActiveParent] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const menuItems = [
-    { text: "Dashboard", icon: <Dashboard />, path: "/" },
+    { text: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
     { text: "Home", icon: <Home />, path: "/home" },
     { text: "Events", icon: <Event />, path: "/events" },
     { text: "Gallery", icon: <PhotoLibrary />, path: "/gallery" },
@@ -58,11 +53,8 @@ const Sidebar = () => {
     setActiveParent(index);
     if (item.path) {
       navigate(item.path);
+      if (isMobile) toggleDrawer(); // Close drawer in mobile view
     }
-  };
-
-  const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen);
   };
 
   return (
@@ -73,9 +65,8 @@ const Sidebar = () => {
           sx={{
             position: "absolute",
             top: "10px",
+            left: "10px",
             zIndex: 1300,
-            right: drawerOpen ? "10px" : "inherit",
-            left: drawerOpen ? "inherit" : "10px",
           }}
         >
           {drawerOpen ? <CloseIcon /> : <MenuIcon />}
@@ -88,20 +79,31 @@ const Sidebar = () => {
         open={isMobile ? drawerOpen : true}
         onClose={toggleDrawer}
         sx={{
-          width: 240,
+          width: { xs: "75%", sm: 240 },
           flexShrink: 0,
           "& .MuiDrawer-paper": {
-            width: 240,
+            width: { xs: "75%", sm: 240 },
             boxSizing: "border-box",
           },
         }}
       >
-        <Box sx={{ textAlign: "center", py: 3 }}>
-          <Typography variant="body2" color="textSecondary">
-            ATAL FOUNDATION अटल फाऊण्डेशन
-          </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: 68,
+          }}
+        >
+          <img
+            src={logo}
+            alt="ATAL FOUNDATION Logo"
+            style={{ maxWidth: "100%", maxHeight: "40px" }}
+          />
         </Box>
+
         <Divider />
+
         <List>
           {menuItems.map((item, index) => (
             <ListItem
@@ -116,7 +118,7 @@ const Sidebar = () => {
             >
               <ListItemIcon
                 sx={{
-                  color: activeParent === index ? "#3bb77e" : "inherit",
+                  color: activeParent === index ? "#FF7900" : "inherit",
                 }}
               >
                 {item.icon}

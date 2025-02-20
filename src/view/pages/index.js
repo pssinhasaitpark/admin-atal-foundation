@@ -8,7 +8,11 @@ import Registration from "./Registration/Registration";
 import Messages from "./Messages/Messages";
 import ContactUs from "./ContactUs//ContactUs";
 import Profile from "./Profile/Profile";
+import Dashboard from "./Dashboard/Dashboard";
+import Home from "./Home/Home";
 export {
+  Home,
+  Dashboard,
   Events,
   Gallery,
   PeopleBehind,
