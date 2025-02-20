@@ -1,16 +1,43 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchProfileData } from "../../redux/slice/profileSlice";
 import {
   Card,
   CardContent,
   Typography,
   Avatar,
   Box,
-  Button,
   Divider,
+  CircularProgress,
+  Paper,
 } from "@mui/material";
-import { Email, Person, Edit } from "@mui/icons-material";
-
+import { Email, Person, Phone } from "@mui/icons-material";
+import logo from "../../../assets/Images/logo.png";
 const Profile = () => {
+  const dispatch = useDispatch();
+  const { first_name, last_name, user_name, email, mobile, loading, error } =
+    useSelector((state) => state.profile);
+
+  useEffect(() => {
+    dispatch(fetchProfileData());
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ textAlign: "center", mt: 5 }}>
+        <Typography color="error">Error: {error}</Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -24,63 +51,76 @@ const Profile = () => {
     >
       <Card
         sx={{
-          maxWidth: 400,
+          maxWidth: 450,
           width: "100%",
           p: 3,
           textAlign: "center",
           boxShadow: 3,
+          backgroundColor: "#ffffff",
         }}
       >
         {/* Avatar */}
         <Avatar
-          sx={{ width: 90, height: 90, margin: "auto", mb: 2 }}
-          src="https://via.placeholder.com/150"
+          sx={{ width: 100, height: 100, margin: "auto", mb: 2 }}
+          src={logo}
           alt="User Avatar"
         />
 
         <CardContent>
-          {/* Name */}
+          {/* User Information */}
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            {first_name} {last_name}
+          </Typography>
           <Typography
-            variant="h5"
-            fontWeight="bold"
+            variant="subtitle1"
+            color="text.secondary"
             display="flex"
             alignItems="center"
             justifyContent="center"
             gap={1}
           >
             <Person fontSize="small" />
-            Admin
-          </Typography>
-
-          {/* Email */}
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            gap={1}
-            mt={1}
-          >
-            <Email fontSize="small" />
-            admin@parkhya.net
+            {user_name || "User"}
           </Typography>
 
           <Divider sx={{ my: 2 }} />
 
-          {/* Edit Profile Button */}
-          <Button
-            variant="contained"
-            startIcon={<Edit />}
-            sx={{
-              mt: 1,
-              textTransform: "none",
-              backgroundColor: "#1976d2",
-              "&:hover": { backgroundColor: "#1565c0" },
-            }}
-          >
-            Edit Profile
-          </Button>
+          {/* Profile Details */}
+          <Box container spacing={2}>
+            <Box item xs={12}>
+              <Paper
+                sx={{
+                  padding: 2,
+                  backgroundColor: "#f0f0f0",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Email fontSize="small" />
+                <Typography variant="body1">
+                  {email || "No email available"}
+                </Typography>
+              </Paper>
+            </Box>
+
+            <Box item xs={12}>
+              <Paper
+                sx={{
+                  padding: 2,
+                  backgroundColor: "#f0f0f0",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Phone fontSize="small" />
+                <Typography variant="body1">
+                  {mobile || "No contact available"}
+                </Typography>
+              </Paper>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
     </Box>

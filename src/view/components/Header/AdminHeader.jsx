@@ -52,6 +52,7 @@ const Header = ({ onMenuClick }) => {
           justifyContent: "space-between",
           flexWrap: "wrap",
           px: { xs: 1, sm: 2 },
+          pt: 0.5,
         }}
       >
         {/* Title */}
@@ -61,6 +62,7 @@ const Header = ({ onMenuClick }) => {
             fontSize: { xs: "14px", sm: "18px" },
             textAlign: "center",
             flexGrow: 1,
+            color: "#FF7900",
           }}
         >
           ATAL FOUNDATION अटल फाऊण्डेशन
@@ -79,7 +81,7 @@ const Header = ({ onMenuClick }) => {
 
           {/* Avatar Menu */}
           <Avatar
-            alt="User"
+            alt="Amin"
             src="https://via.placeholder.com/150"
             sx={{
               width: 32,
@@ -95,7 +97,7 @@ const Header = ({ onMenuClick }) => {
             sx={{ mt: "45px" }}
           >
             <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
-            <MenuItem onClick={handleMenuClose}>My Account</MenuItem>
+            {/* <MenuItem onClick={handleMenuClose}>My Account</MenuItem> */}
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
         </Box>
