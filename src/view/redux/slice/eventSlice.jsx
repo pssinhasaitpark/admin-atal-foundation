@@ -8,14 +8,16 @@ const initialState = {
   images: [],
   status: "idle",
   error: null,
+  _id: null,
 };
 
+// Fetch Events from backend
 export const fetchEventsData = createAsyncThunk(
   "events/fetchEventsData",
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/event");
-      console.log("Fetched event Data:", response.data.events);
+      // console.log("Fetched event Data:", response.data.events);
       return response.data.events[0] || {};
     } catch (error) {
       console.error("Error fetching events data:", error);
@@ -24,15 +26,45 @@ export const fetchEventsData = createAsyncThunk(
   }
 );
 
+// Save or Update Events data to backend
 export const saveEventsToBackend = createAsyncThunk(
   "events/saveEventsToBackend",
-  async (eventsData, { rejectWithValue }) => {
+  async ({ id, eventsData }, { rejectWithValue }) => {
     try {
-      const response = await api.post("/event/create", eventsData, {
+      const formData = new FormData();
+      formData.append("title", eventsData.title);
+      formData.append("location", eventsData.location);
+
+      // Ensure description is properly trimmed
+      formData.append(
+        "description",
+        eventsData.description?.trim() || "No description provided"
+      );
+
+      // Append only image files (not URLs)
+      eventsData.images.forEach((image) => {
+        if (image instanceof File) {
+          formData.append("images", image);
+        }
+      });
+
+      // Ensure `removeImages` is only appended if it has values
+      if (eventsData.removeImages?.length > 0) {
+        formData.append(
+          "removeImages",
+          JSON.stringify(eventsData.removeImages)
+        );
+      }
+
+      const endpoint = id ? `/event/create?id=${id}` : "/event/create";
+      console.log("Sending Data:", Object.fromEntries(formData));
+
+      const response = await api.post(endpoint, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+
       console.log("Saved events Data:", response.data.data);
       return response.data.data || {};
     } catch (error) {
@@ -47,35 +79,9 @@ const eventSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchEventsData.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(fetchEventsData.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.title = action.payload?.title || "Events";
-        state.location = action.payload?.location || "";
-        state.description = action.payload?.description || "";
-        state.images = action.payload?.images || [];
-      })
-      .addCase(fetchEventsData.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      })
-      .addCase(saveEventsToBackend.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(saveEventsToBackend.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.title = action.payload?.title || "events";
-        state.location = action.payload?.location || "";
-        state.description = action.payload?.description || "";
-        state.images = action.payload?.images || [];
-      })
-      .addCase(saveEventsToBackend.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      });
+    builder.addCase(fetchEventsData.fulfilled, (state, action) => {
+      Object.assign(state, action.payload);
+    });
   },
 });
 
