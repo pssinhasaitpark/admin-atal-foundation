@@ -1,47 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import JoditEditor from "jodit-react";
+import { Box, Typography, Button } from "@mui/material";
 
 const Home = () => {
+  const editor = useRef(null);
   const [editorContent, setEditorContent] = useState("");
 
   // Handler to send editor content
   const handleSubmit = () => {
-    // In this example, we log the content to the console.
-    // In a real-world scenario, you might want to send this to an API.
     console.log("Submitted Content (HTML):", editorContent);
-
-    // Example of sending to a server using fetch (this is just an example):
-    // fetch('/api/submit', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({ content: editorContent }),
-    // })
-    //   .then(response => response.json())
-    //   .then(data => console.log("Response:", data))
-    //   .catch(error => console.error("Error:", error));
   };
 
   return (
-    <>
-      <h1>Home</h1>
+    <Box >
+      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
+        Home
+      </Typography>
 
       <JoditEditor
+        ref={editor}
         value={editorContent}
-        onChange={setEditorContent}
+        onChange={(content) => setEditorContent(content)}
         config={{
           readonly: false, // Set to true for readonly mode
           placeholder: "Start writing here...",
         }}
-        style={{ width: "100%", minHeight: "300px" }}
       />
 
-      {/* Submit Button */}
-      <button onClick={handleSubmit} style={{ marginTop: "20px" }}>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleSubmit}
+        sx={{ mt: 3 }}
+      >
         Submit
-      </button>
-    </>
+      </Button>
+    </Box>
   );
 };
 

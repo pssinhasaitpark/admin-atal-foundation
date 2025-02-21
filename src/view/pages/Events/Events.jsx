@@ -129,13 +129,57 @@ const Events = () => {
           <Typography variant="h6" sx={{ mt: 2 }}>
             Event Description
           </Typography>
-          <JoditEditor
+          {/* <JoditEditor
             ref={editor}
             value={description}
             config={{ readonly: !isEditable }}
             onChange={(newContent) => setDescription(newContent?.trim() || "")}
+          /> */}
+          <JoditEditor
+            ref={editor}
+            value={description}
+            config={{
+              readonly: !isEditable,
+              placeholder: "Write about Atal's life...",
+              height: 400,
+              cleanOnPaste: false, // Retain styles when pasting
+              cleanOnChange: false, // Retain the HTML structure while editing
+              toolbar: {
+                items: [
+                  "bold",
+                  "italic",
+                  "underline",
+                  "strikethrough",
+                  "eraser",
+                  "|",
+                  "font",
+                  "fontsize",
+                  "paragraph",
+                  "|",
+                  "align",
+                  "outdent",
+                  "indent",
+                  "|",
+                  "link",
+                  "image",
+                  "video",
+                  "table",
+                  "line",
+                  "code",
+                  "fullsize",
+                  "undo",
+                  "redo",
+                ],
+              },
+              uploader: {
+                insertImageAsBase64URI: true,
+                url: "/upload", // Define your upload endpoint
+                format: "json",
+              },
+            }}
+            style={{ width: "100%", minHeight: "200px" }}
+            onChange={(newContent) => setDescription(newContent?.trim() || "")}
           />
-
           <Typography variant="h6" sx={{ mt: 2 }}>
             Upload Event Images
           </Typography>
