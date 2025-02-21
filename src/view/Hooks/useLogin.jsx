@@ -1,11 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+const BASEURL =process.env.REACT_APP_BASE_URL;
+// console.log("Base",BASEURL);
 
 // Login request function
 const login = async (userData) => {
   try {
     const response = await axios.post(
-      "http://192.168.0.14:5050/api/login",
+      `${BASEURL}/login`,
       userData
     );
     return response.data.data;
@@ -23,7 +25,7 @@ export const useLogin = () => {
       console.error("Login failed!", error);
     },
     onSuccess: (data) => {
-      console.log("Login success:", data);
+      // console.log("Login success:", data);
     },
   });
 };

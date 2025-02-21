@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -15,7 +9,7 @@ import {
   IconButton,
   Avatar,
 } from "@mui/material";
-import { Edit, Delete as DeleteIcon } from "@mui/icons-material";
+import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -23,19 +17,17 @@ import {
   saveEventsToBackend,
 } from "../../redux/slice/eventSlice";
 import debounce from "lodash.debounce";
-
 const Events = () => {
   const dispatch = useDispatch();
   const eventsData = useSelector((state) => state.events) || {};
   const editor = useRef(null);
 
-  const [title, setTitle] = useState(eventsData.title || "Events");
-  const [location, setLocation] = useState(eventsData.location || "");
-  const [description, setDescription] = useState(eventsData.description || "");
-  const [selectedImages, setSelectedImages] = useState(eventsData.images || []);
+  const [title, setTitle] = useState("Events");
+  const [location, setLocation] = useState("");
+  const [description, setDescription] = useState("");
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
-
-  const memoizedImages = useMemo(() => selectedImages, [selectedImages]);
 
   useEffect(() => {
     dispatch(fetchEventsData());
@@ -50,6 +42,7 @@ const Events = () => {
     }
   }, [eventsData]);
 
+  // Fixed: Added memoized dependency array for debounce
   const debouncedEditorChange = useCallback(
     debounce((newContent) => {
       setDescription(newContent);
@@ -59,10 +52,16 @@ const Events = () => {
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
-    setSelectedImages((prevImages) => [...prevImages, ...files]);
+    setSelectedImages([...selectedImages, ...files]);
   };
 
   const handleImageRemove = (index) => {
+    const imageToRemove = selectedImages[index];
+
+    if (typeof imageToRemove === "string") {
+      setRemoveImages((prev) => [...prev, imageToRemove]);
+    }
+
     setSelectedImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
@@ -70,148 +69,117 @@ const Events = () => {
     e.preventDefault();
 
     if (isEditable) {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("location", location);
-      formData.append("description", description);
-
-      memoizedImages.forEach((image) => {
-        if (image instanceof File) {
-          formData.append("images", image);
-        }
-      });
+      const eventsDataToSend = {
+        title,
+        location,
+        description: description?.trim() || "No description provided",
+        images: selectedImages,
+        removeImages: removeImages.length > 0 ? removeImages : [],
+      };
 
       try {
-        await dispatch(saveEventsToBackend(formData)).unwrap();
-        await dispatch(fetchEventsData());
+        await dispatch(
+          saveEventsToBackend({
+            id: eventsData._id,
+            eventsData: eventsDataToSend,
+          })
+        );
+        setRemoveImages([]);
       } catch (error) {
-        console.error("Error saving data: ", error);
+        console.error("Error saving/updating data: ", error);
       }
     }
 
     setIsEditable(!isEditable);
   };
 
+  const renderImageSource = (image) => {
+    if (image instanceof File) {
+      return URL.createObjectURL(image);
+    } else if (typeof image === "string") {
+      return image;
+    }
+    return "";
+  };
+
   return (
-    <Box sx={{ mx: "auto" }}>
-      <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
+    <Box>
+      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         {title}
       </Typography>
-      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
-        <Stack spacing={2}>
-          <form onSubmit={handleEditSave}>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: { xs: "column", md: "row" },
-                gap: 2,
-              }}
-            >
-              <TextField
-                fullWidth
-                label="Title"
-                variant="outlined"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                disabled={!isEditable}
-              />
+      <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
+        <form onSubmit={handleEditSave}>
+          <TextField
+            fullWidth
+            label="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={!isEditable}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            disabled={!isEditable}
+            sx={{ mb: 2 }}
+          />
 
-              <TextField
-                fullWidth
-                label="Location"
-                variant="outlined"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                disabled={!isEditable}
-              />
-            </Box>
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Event Description
+          </Typography>
+          <JoditEditor
+            ref={editor}
+            value={description}
+            config={{ readonly: !isEditable }}
+            onChange={(newContent) => setDescription(newContent?.trim() || "")}
+          />
 
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="h6" sx={{ mb: 1 }}>
-                Description
-              </Typography>
-              <JoditEditor
-                ref={editor}
-                value={description}
-                config={{
-                  readonly: !isEditable,
-                  placeholder: "Write about the event...",
-                  height: 300,
-                  cleanOnPaste: false,
-                  cleanOnChange: false,
-                }}
-                onChange={debouncedEditorChange}
-                onBlur={(newContent) => setDescription(newContent)}
-              />
-            </Box>
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Upload Event Images
+          </Typography>
 
-            <Box
-              sx={{ mt: 3, p: 2, border: "1px solid #ddd", borderRadius: 2 }}
-            >
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Upload Event Images
-              </Typography>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <IconButton color="primary" component="label">
-                  <input
-                    hidden
-                    accept="image/*"
-                    multiple
-                    type="file"
-                    onChange={handleImageUpload}
-                  />
-                  <Edit />
-                </IconButton>
-                <Typography variant="body2">Click to upload images</Typography>
-              </Stack>
+          {isEditable && (
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ marginBottom: "1rem" }}
+            />
+          )}
 
-              {/* Display uploaded images */}
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 2,
-                  mt: 2,
-                  justifyContent: { xs: "center", md: "flex-start" },
-                }}
-              >
-                {memoizedImages.map((image, index) => (
-                  <Box key={index} sx={{ position: "relative" }}>
-                    <Avatar
-                      src={
-                        image instanceof File
-                          ? URL.createObjectURL(image)
-                          : image
-                      }
-                      alt={`Event ${index + 1}`}
-                      sx={{ width: 100, height: 100, borderRadius: 2 }}
-                    />
-                    <IconButton
-                      onClick={() => handleImageRemove(index)}
-                      sx={{
-                        position: "absolute",
-                        top: 5,
-                        right: 5,
-                        backgroundColor: "rgba(255, 255, 255, 0.7)",
-                      }}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
-                ))}
+          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
+            {selectedImages.map((image, index) => (
+              <Box key={index} sx={{ position: "relative" }}>
+                <Avatar
+                  src={renderImageSource(image)}
+                  sx={{ width: 100, height: 100 }}
+                />
+                {isEditable && (
+                  <IconButton
+                    onClick={() => handleImageRemove(index)}
+                    sx={{
+                      position: "absolute",
+                      top: -10,
+                      right: -10,
+                      backgroundColor: "white",
+                    }}
+                  >
+                    <DeleteIcon color="error" />
+                  </IconButton>
+                )}
               </Box>
-            </Box>
+            ))}
+          </Stack>
 
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              sx={{ mt: 2, width: "10%" }}
-            >
+          <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+            <Button type="submit" variant="contained">
               {isEditable ? "Save" : "Edit"}
             </Button>
-          </form>
-        </Stack>
+          </Stack>
+        </form>
       </Paper>
     </Box>
   );
