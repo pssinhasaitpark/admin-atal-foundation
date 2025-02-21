@@ -21,9 +21,9 @@ const store = configureStore({
     contact: contactReducer,
     message: messageReducer,
     peopleBehind: peopleBehindReducer, 
-    members: membersReducer, // Add Members reducer
-    supportSpeak: supportSpeakReducer, // Add Support Speak reducer
-    userOpinion: userOpinionReducer, // Add User Opinion reducer
+    members: membersReducer,
+    supportSpeak: supportSpeakReducer, 
+    userOpinion: userOpinionReducer, 
     registration: registrationReducer,
   },
 });

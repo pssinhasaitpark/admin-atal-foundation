@@ -46,7 +46,7 @@ const Events = () => {
   const debouncedEditorChange = useCallback(
     debounce((newContent) => {
       setDescription(newContent);
-    }, 1000),
+    }, 3000),
     []
   );
 
@@ -85,6 +85,7 @@ const Events = () => {
           })
         );
         setRemoveImages([]);
+        window.location.reload();
       } catch (error) {
         console.error("Error saving/updating data: ", error);
       }
@@ -178,7 +179,8 @@ const Events = () => {
               },
             }}
             style={{ width: "100%", minHeight: "200px" }}
-            onChange={(newContent) => setDescription(newContent?.trim() || "")}
+            onChange={debouncedEditorChange}
+            onBlur={(newContent) => setDescription(newContent?.trim() || "")}
           />
           <Typography variant="h6" sx={{ mt: 2 }}>
             Upload Event Images
