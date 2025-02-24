@@ -1,6 +1,6 @@
 import Events from "./Events/Events";
 import Gallery from "./Gallery/Gallery";
-import PeopleBehind from "./PeopleBehind/PeopleBehind";
+import AboutUs from "./AboutUs/AboutUs";
 import Members from "./Members/Members";
 import SupportSpeak from "./SupportSpeak/SupportSpeak";
 import UserOpinion from "./UserOpinion/UserOpinion";
@@ -10,12 +10,22 @@ import ContactUs from "./ContactUs//ContactUs";
 import Profile from "./Profile/Profile";
 import Dashboard from "./Dashboard/Dashboard";
 import Home from "./Home/Home";
+import Education from "./OurProgrammes/Education"
+import CivicDriven from "./OurProgrammes/CivicDriven"
+import Empowerment from "./OurProgrammes/Empowerment"
+import Entrepreneurship from "./OurProgrammes/Entrepreneurship"
+import Healthcare from "./OurProgrammes/Healthcare"
+import Livelihood from "./OurProgrammes/Livelihood"
+import Privileged from "./OurProgrammes/Privileged"
+import SpecialInterventions from "./OurProgrammes/SpecialInterventions"
+import SupportProgramme from "./OurProgrammes/SupportProgramme"
+
 export {
   Home,
   Dashboard,
   Events,
   Gallery,
-  PeopleBehind,
+  AboutUs,
   Members,
   SupportSpeak,
   UserOpinion,
@@ -23,4 +33,13 @@ export {
   Messages,
   ContactUs,
   Profile,
+  Education,
+  CivicDriven,
+  Empowerment,
+  Entrepreneurship,
+  Healthcare,
+  Livelihood,
+  Privileged,
+  SpecialInterventions,
+  SupportProgramme
 };

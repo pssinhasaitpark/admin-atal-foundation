@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -9,219 +9,148 @@ import {
   IconButton,
   Avatar,
 } from "@mui/material";
-import { Edit, Delete as DeleteIcon } from "@mui/icons-material";
+import {  Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
-import { saveGalleryToBackend } from "../../redux/slice/galleryslice";
-import debounce from "lodash.debounce";
+import { fetchGallery, saveGalleryToBackend, deleteGalleryItem } from "../../redux/slice/galleryslice";
+import { toast } from "react-toastify";
 
 const Gallery = () => {
   const dispatch = useDispatch();
-  const galleryData = useSelector((state) => state.gallery) || {};
+  const { galleries, loading } = useSelector((state) => state.gallery);
 
-  const [title, setTitle] = useState(
-    localStorage.getItem("galleryTitle") || galleryData.title || "Gallery"
-  );
-  const [description, setDescription] = useState(
-    localStorage.getItem("galleryDescription") || galleryData.description || ""
-  );
-  const [selectedImages, setSelectedImages] = useState(
-    JSON.parse(localStorage.getItem("selectedGalleryImages")) || []
-  );
+  const [galleryImageTitle, setGalleryImageTitle] = useState("");
+  const [galleryImageDescription, setGalleryImageDescription] = useState("");
+  const [galleryVideoTitle, setGalleryVideoTitle] = useState("");
+  const [galleryVideoDescription, setGalleryVideoDescription] = useState("");
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryVideos, setGalleryVideos] = useState([]);
+
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [selectedVideos, setSelectedVideos] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
 
-  const editor = useRef(null);
+  const imageEditor = useRef(null);
+  const videoEditor = useRef(null);
 
-  const handleChange = (event, setter, storageKey) => {
-    setter(event.target.value);
-    localStorage.setItem(storageKey, event.target.value);
-  };
+  useEffect(() => {
+    dispatch(fetchGallery());
+  }, [dispatch]);
 
-  const handleImageUpload = (event) => {
-    const files = Array.from(event.target.files);
-    const updatedImages = [...selectedImages, ...files];
-    setSelectedImages(updatedImages);
-    localStorage.setItem(
-      "selectedGalleryImages",
-      JSON.stringify(updatedImages)
-    );
-  };
+  // When gallery data is fetched, update the state
+  useEffect(() => {
+    if (galleries?.length > 0) {
+      const gallery = galleries[0]; // Assuming only one gallery exists
+      setGalleryImageTitle(gallery.gallery_image.title || "");
+      setGalleryImageDescription(gallery.gallery_image.description || "");
+      setGalleryImages(gallery.gallery_image.images || []);
 
-  const handleImageRemove = (index) => {
-    const updatedImages = selectedImages.filter((_, i) => i !== index);
-    setSelectedImages(updatedImages);
-    localStorage.setItem(
-      "selectedGalleryImages",
-      JSON.stringify(updatedImages)
-    );
-  };
-
-  const handleEditorChange = debounce((newContent) => {
-    setDescription(newContent);
-    localStorage.setItem("galleryDescription", newContent);
-  }, 5000);
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    const galleryDataToSend = new FormData();
-    galleryDataToSend.append("title", title);
-    galleryDataToSend.append("description", description);
-    selectedImages.forEach((image) => {
-      galleryDataToSend.append("images", image);
-    });
-
-    try {
-      await dispatch(saveGalleryToBackend(galleryDataToSend));
-      setIsEditable(false);
-    } catch (error) {
-      console.error("Error saving data: ", error);
+      setGalleryVideoTitle(gallery.gallery_video.title || "");
+      setGalleryVideoDescription(gallery.gallery_video.description || "");
+      setGalleryVideos(gallery.gallery_video.videos || []);
     }
+  }, [galleries]);
+
+  const handleFileUpload = (event, setter) => {
+    const files = Array.from(event.target.files);
+    setter((prev) => [...prev, ...files]);
   };
 
-  const handleUpdate = () => {
-    setIsEditable(true);
+  const handleDelete = async (id, type) => {
+    await dispatch(deleteGalleryItem({ id, type }));
+    toast.success(`${type} deleted successfully!`);
+  };
+
+  const handleSave = async () => {
+    const imageFormData = new FormData();
+    imageFormData.append("title", galleryImageTitle);
+    imageFormData.append("description", galleryImageDescription);
+    selectedImages.forEach((image) => imageFormData.append("images", image));
+
+    const videoFormData = new FormData();
+    videoFormData.append("title", galleryVideoTitle);
+    videoFormData.append("description", galleryVideoDescription);
+    selectedVideos.forEach((video) => videoFormData.append("videos", video));
+
+    await dispatch(saveGalleryToBackend({ imageFormData, videoFormData }));
+    setIsEditable(false);
+    toast.success("Gallery updated successfully!");
   };
 
   return (
-    <Box >
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
-        {title}
-      </Typography>
+    <Box p={3}>
+      <Typography variant="h4" gutterBottom>Gallery Management</Typography>
 
-      <Paper sx={{ p: 3, border: "1px solid #ddd" }}>
-        <Stack spacing={2}>
-          <form onSubmit={handleSave}>
-            <TextField
-              fullWidth
-              label="Title"
-              variant="outlined"
-              value={title}
-              onChange={(e) => handleChange(e, setTitle, "galleryTitle")}
-              disabled={!isEditable}
-              sx={{ mb: 2 }}
-            />
+      {/* Image Section */}
+      <Paper sx={{ p: 3, border: "1px solid #ddd", mt: 3 }}>
+        <Typography variant="h5" sx={{ mb: 2 }}>Gallery Images</Typography>
 
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Description
-            </Typography>
+        <TextField
+          fullWidth
+          label="Image Title"
+          variant="outlined"
+          value={galleryImageTitle}
+          onChange={(e) => setGalleryImageTitle(e.target.value)}
+          disabled={!isEditable}
+          sx={{ mb: 2 }}
+        />
 
-            <JoditEditor
-              ref={editor}
-              value={description}
-              config={{
-                readonly: !isEditable,
-                placeholder: "Write about the gallery...",
-                height: 400,
-                cleanOnPaste: false, // Retain styles when pasting
-                cleanOnChange: false, // Retain the HTML structure while editing
-                toolbar: {
-                  items: [
-                    "bold",
-                    "italic",
-                    "underline",
-                    "strikethrough",
-                    "eraser",
-                    "|",
-                    "font",
-                    "fontsize",
-                    "paragraph",
-                    "|",
-                    "align",
-                    "outdent",
-                    "indent",
-                    "|",
-                    "link",
-                    "image",
-                    "video",
-                    "table",
-                    "line",
-                    "code",
-                    "fullsize",
-                    "undo",
-                    "redo",
-                  ],
-                },
-                uploader: {
-                  insertImageAsBase64URI: true,
-                  url: "/upload", // Define your upload endpoint
-                  format: "json",
-                },
-              }}
-              style={{ width: "100%", minHeight: "200px" }}
-              onChange={handleEditorChange} // Update state on content change
-            />
+        <Typography variant="h6" sx={{ mb: 1 }}>Image Description</Typography>
+        <JoditEditor ref={imageEditor} value={galleryImageDescription} onChange={setGalleryImageDescription} />
 
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={!isEditable}
-                sx={{ width: "48%" }}
-              >
-                Save
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handleUpdate}
-                sx={{ width: "48%" }}
-              >
-                Update Gallery Text
-              </Button>
-            </Box>
-          </form>
-        </Stack>
-      </Paper>
-
-      <Box sx={{ mt: 3, p: 2, border: "1px solid #ddd", borderRadius: 2 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Upload Gallery Images
-        </Typography>
-        <IconButton color="primary" component="label">
-          <input
-            hidden
-            accept="image/*"
-            multiple
-            type="file"
-            onChange={handleImageUpload}
-          />
-          <Edit />
-        </IconButton>
-
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
-            gap: 2,
-            mt: 2,
-          }}
-        >
-          {selectedImages.map((image, index) => (
-            <Box key={index} sx={{ textAlign: "center", position: "relative" }}>
-              {image instanceof File && (
-                <Avatar
-                  src={URL.createObjectURL(image)}
-                  alt={`Gallery ${index + 1}`}
-                  sx={{ width: 100, height: 100, borderRadius: 2 }}
-                />
-              )}
-              <IconButton
-                onClick={() => handleImageRemove(index)}
-                sx={{
-                  position: "absolute",
-                  top: 2,
-                  right: 2,
-                  backgroundColor: "rgba(255, 255, 255, 0.7)",
-                  "&:hover": { backgroundColor: "rgba(255, 255, 255, 1)" },
-                }}
-              >
-                <DeleteIcon fontSize="small" />
+        <Typography variant="h6" sx={{ mt: 3 }}>Upload Images</Typography>
+        <input type="file" multiple accept="image/*" onChange={(e) => handleFileUpload(e, setSelectedImages)} />
+        <Stack direction="row" spacing={2} mt={2}>
+          {galleryImages.map((img, index) => (
+            <Box key={index} sx={{ position: "relative" }}>
+              <Avatar src={img} sx={{ width: 100, height: 100 }} />
+              <IconButton onClick={() => handleDelete(img, "image")} sx={{ position: "absolute", top: 0, right: 0 }}>
+                <DeleteIcon color="error" />
               </IconButton>
             </Box>
           ))}
-        </Box>
-      </Box>
+        </Stack>
+      </Paper>
+
+      {/* Video Section */}
+      <Paper sx={{ p: 3, border: "1px solid #ddd", mt: 3 }}>
+        <Typography variant="h5" sx={{ mb: 2 }}>Gallery Videos</Typography>
+
+        <TextField
+          fullWidth
+          label="Video Title"
+          variant="outlined"
+          value={galleryVideoTitle}
+          onChange={(e) => setGalleryVideoTitle(e.target.value)}
+          disabled={!isEditable}
+          sx={{ mb: 2 }}
+        />
+
+        <Typography variant="h6" sx={{ mb: 1 }}>Video Description</Typography>
+        <JoditEditor ref={videoEditor} value={galleryVideoDescription} onChange={setGalleryVideoDescription} />
+
+        <Typography variant="h6" sx={{ mt: 3 }}>Upload Videos</Typography>
+        <input type="file" multiple accept="video/*" onChange={(e) => handleFileUpload(e, setSelectedVideos)} />
+        <Stack direction="row" spacing={2} mt={2}>
+          {galleryVideos.map((vid, index) => (
+            <Box key={index} sx={{ position: "relative" }}>
+              <video src={vid} width={150} height={100} controls />
+              <IconButton onClick={() => handleDelete(vid, "video")} sx={{ position: "absolute", top: 0, right: 0 }}>
+                <DeleteIcon color="error" />
+              </IconButton>
+            </Box>
+          ))}
+        </Stack>
+      </Paper>
+
+      {/* Save and Edit Buttons */}
+      <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+        {!isEditable ? (
+          <Button variant="outlined" onClick={() => setIsEditable(true)}>Edit</Button>
+        ) : (
+          <Button variant="contained" onClick={handleSave}>Save</Button>
+        )}
+      </Stack>
     </Box>
   );
 };

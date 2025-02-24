@@ -1,71 +1,70 @@
-// src/redux/slice/gallerySlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import api from "../axios/axios"; // Assuming API instance is configured
 
-// Thunk action for saving the gallery data to the backend
-export const saveGalleryToBackend = createAsyncThunk(
-  "gallery/saveGalleryToBackend",
-  async (galleryData, { rejectWithValue }) => {
-    try {
-      // Here, send the FormData to the backend API endpoint
-      const response = await fetch("/api/gallery", {
-        method: "POST",
-        body: galleryData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save gallery");
-      }
-
-      const data = await response.json();
-      return data; // Return the saved gallery data
-    } catch (error) {
-      return rejectWithValue(error.message); // Handle error
-    }
+// Fetch Gallery Data
+export const fetchGallery = createAsyncThunk("gallery/fetchGallery", async (_, { rejectWithValue }) => {
+  try {
+    const response = await api.get(`/gallery`);
+    console.log("response:",response)
+    return response.data; 
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || "Failed to fetch gallery");
   }
-);
+});
 
-const initialState = {
-  title: "",
-  description: "",
-  images: [],
-  status: "idle", // Could be "loading", "succeeded", or "failed"
-  error: null,
-};
+// Save Gallery Data (Images & Videos)
+export const saveGalleryToBackend = createAsyncThunk("gallery/saveGallery", async (galleryData, { rejectWithValue }) => {
+  try {
+    const response = await api.post(`/gallery/create`, galleryData);
+    return response.data; 
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || "Failed to save gallery");
+  }
+});
+
+// Delete Image or Video
+export const deleteGalleryItem = createAsyncThunk("gallery/deleteGalleryItem", async ({ id, type }, { rejectWithValue }) => {
+  try {
+    await api.delete(`/gallery/${type}/${id}`);
+    return { id, type };
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || "Failed to delete item");
+  }
+});
 
 const gallerySlice = createSlice({
   name: "gallery",
-  initialState,
-  reducers: {
-    setGalleryData: (state, action) => {
-      state.title = action.payload.title;
-      state.description = action.payload.description;
-      state.images = action.payload.images;
-    },
-    clearGalleryData: (state) => {
-      state.title = "";
-      state.description = "";
-      state.images = [];
-    },
+  initialState: {
+    gallery_image: { title: "", description: "", images: [] },
+    gallery_video: { title: "", description: "", videos: [] },
+    loading: false,
+    error: null,
   },
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(saveGalleryToBackend.pending, (state) => {
-        state.status = "loading";
+      .addCase(fetchGallery.pending, (state) => { state.loading = true; })
+      .addCase(fetchGallery.fulfilled, (state, action) => {
+        state.loading = false;
+        state.gallery_image = action.payload.gallery_image || { title: "", description: "", images: [] };
+        state.gallery_video = action.payload.gallery_video || { title: "", description: "", videos: [] };
+      })
+      .addCase(fetchGallery.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       })
       .addCase(saveGalleryToBackend.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        // Assuming the backend returns the saved gallery data
-        state.title = action.payload.title;
-        state.description = action.payload.description;
-        state.images = action.payload.images;
+        state.gallery_image = action.payload.gallery_image;
+        state.gallery_video = action.payload.gallery_video;
       })
-      .addCase(saveGalleryToBackend.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
+      .addCase(deleteGalleryItem.fulfilled, (state, action) => {
+        if (action.payload.type === "image") {
+          state.gallery_image.images = state.gallery_image.images.filter((img) => img._id !== action.payload.id);
+        } else {
+          state.gallery_video.videos = state.gallery_video.videos.filter((vid) => vid._id !== action.payload.id);
+        }
       });
   },
 });
-
-export const { setGalleryData, clearGalleryData } = gallerySlice.actions;
 
 export default gallerySlice.reducer;
