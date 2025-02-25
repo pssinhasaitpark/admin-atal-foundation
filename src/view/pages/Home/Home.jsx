@@ -12,7 +12,7 @@ const Home = () => {
   };
 
   return (
-    <Box >
+    <Box>
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         Home
       </Typography>

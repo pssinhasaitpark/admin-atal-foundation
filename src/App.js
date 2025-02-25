@@ -11,23 +11,25 @@ import {
   Gallery,
   AboutUs,
   Members,
-  SupportSpeak,
-  UserOpinion,
-  Registration,
+  // SupportSpeak,
+  // UserOpinion,
+  // Registration,
   Messages,
   ContactUs,
   Profile,
-  Education,
-  CivicDriven,
-  Empowerment,
-  Entrepreneurship,
-  Healthcare,
-  Livelihood,
-  Privileged,
-  SpecialInterventions,
-  SupportProgramme
+  // Education,
+  // CivicDriven,
+  // Empowerment,
+  // Entrepreneurship,
+  // Healthcare,
+  // Livelihood,
+  // Privileged,
+  // SpecialInterventions,
+  // SupportProgramme,
+  Subscribers,
+  SocialMedia,
+  OurProgrammes,
 } from "./view/pages/index.js";
-
 
 function App() {
   return (
@@ -49,23 +51,25 @@ function App() {
         <Route path="/gallery" element={<Gallery />} />
         <Route path="/aboutus" element={<AboutUs />} />
         <Route path="/members" element={<Members />} />
-        <Route path="/supportspeak" element={<SupportSpeak />} />
-        <Route path="/useropinion" element={<UserOpinion />} />
-        <Route path="/registration" element={<Registration />} />
         <Route path="/message" element={<Messages />} />
         <Route path="/contactus" element={<ContactUs />} />
         <Route path="/profile" element={<Profile />} />
-        
+        <Route path="/subscribers" element={<Subscribers />} />
+        <Route path="/socialMedia" element={<SocialMedia />} />
+        {/* <Route path="/supportspeak" element={<SupportSpeak />} /> */}
+        {/* <Route path="/useropinion" element={<UserOpinion />} /> */}
+        {/* <Route path="/registration" element={<Registration />} /> */}
+
         {/* Our Programmes Routes */}
-        <Route path="/programmes/education" element={<Education/>}/>
-        <Route path="/programmes/healthcare" element={<CivicDriven/>} />
+        <Route path="/ourProgrammes" element={<OurProgrammes />} />
+        {/* <Route path="/programmes/healthcare" element={<CivicDriven/>} />
         <Route path="/programmes/livelihood" element={<Empowerment/>} />
         <Route path="/programmes/girl-child-women-empowerment" element={<Entrepreneurship/>} />
         <Route path="/programmes/privileged-children" element={<Healthcare/>} />
         <Route path="/programmes/civic-driven-change" element={<Livelihood/>} />
         <Route path="/programmes/social-entrepreneurship" element={<Privileged/>} />
         <Route path="/programmes/special-support-programme" element={<SpecialInterventions/>} />
-        <Route path="/programmes/special-interventions" element={<SupportProgramme/>} />
+        <Route path="/programmes/special-interventions" element={<SupportProgramme/>} /> */}
       </Route>
 
       <Route path="*" element={<Navigate to="/login" />} />
