@@ -15,26 +15,29 @@ import {
   Home,
   Event,
   PhotoLibrary,
-  People,
+  // People,
   Groups,
-  RecordVoiceOver,
-  Comment,
-  AppRegistration,
+  // RecordVoiceOver,
+  // Comment,
+  // AppRegistration,
   Chat,
   ContactPhone,
   Menu as MenuIcon,
   Close as CloseIcon,
   ExpandLess,
   ExpandMore,
-  School,
-  LocalHospital,
-  Work,
-  Wc,
-  ChildCare,
-  Public,
+  // School,
+  // LocalHospital,
+  // Work,
+  // Wc,
+  // ChildCare,
+  // Public,
   Business,
-  Favorite,
- 
+  // Favorite,
+  PersonAdd,
+  // SupervisorAccount,
+  Subscriptions,
+  ConnectWithoutContact,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import logo from "../../../assets/Images/logo.png";
@@ -49,28 +52,23 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
     { text: "Home", icon: <Home />, path: "/home" },
     { text: "Events", icon: <Event />, path: "/events" },
     { text: "Gallery", icon: <PhotoLibrary />, path: "/gallery" },
-    { text: "About Us", icon: <People />, path: "/aboutus" },
-    { text: "Members", icon: <Groups />, path: "/members" },
-    { text: "Supporter Speak", icon: <RecordVoiceOver />, path: "/supportspeak" },
-    { text: "User Opinion", icon: <Comment />, path: "/useropinion" },
-    { text: "Registration", icon: <AppRegistration />, path: "/registration" },
+    { text: "About Us", icon: <PersonAdd />, path: "/aboutus" }, // Changed icon
+    { text: "Members", icon: <Groups />, path: "/members" }, // Changed icon
+    // { text: "Supporter Speak", icon: <RecordVoiceOver />, path: "/supportspeak" },
+    // { text: "User Opinion", icon: <Comment />, path: "/useropinion" },
+    // { text: "Registration", icon: <AppRegistration />, path: "/registration" },
+    { text: "Subscribers", icon: <Subscriptions />, path: "/subscribers" },
+    {
+      text: "Social Media",
+      icon: <ConnectWithoutContact />,
+      path: "/socialMedia",
+    },
+    { text: "Contact Inquiries", icon: <ContactPhone />, path: "/contactus" },
     { text: "Message", icon: <Chat />, path: "/message" },
-    { text: "Contact Us", icon: <ContactPhone />, path: "/contactus" },
     {
       text: "Our Programmes",
-      icon: <Business />, // Generic icon
-      dropdown: true,
-      children: [
-        { text: "Education", icon: <School />, path: "/programmes/education" },
-        { text: "Healthcare", icon: <LocalHospital />, path: "/programmes/healthcare" },
-        { text: "Livelihood", icon: <Work />, path: "/programmes/livelihood" },
-        { text: "Girl Child & Women Empowerment", icon: <Wc />, path: "/programmes/girl-child-women-empowerment" },
-        { text: "Privileged Children", icon: <ChildCare />, path: "/programmes/privileged-children" },
-        { text: "Civic-Driven Change", icon: <Public />, path: "/programmes/civic-driven-change" },
-        { text: "Social Entrepreneurship", icon: <Business />, path: "/programmes/social-entrepreneurship" },
-        { text: "Special Support Programme", icon: <Favorite />, path: "/programmes/special-support-programme" },
-        { text: "Special Interventions", icon: <Favorite />, path: "/programmes/special-interventions" },
-      ],
+      icon: <Business />,
+      path: "/ourProgrammes",
     },
   ];
 
@@ -109,8 +107,19 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
           },
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: 68 }}>
-          <img src={logo} alt="ATAL FOUNDATION Logo" style={{ maxWidth: "100%", maxHeight: "40px" }} />
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: 68,
+          }}
+        >
+          <img
+            src={logo}
+            alt="ATAL FOUNDATION Logo"
+            style={{ maxWidth: "100%", maxHeight: "40px" }}
+          />
         </Box>
         <Divider />
 
@@ -121,22 +130,31 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
                 button
                 onClick={() => handleParentClick(index, item)}
                 sx={{
-                  backgroundColor: activeParent === index ? "#eafaf1" : "transparent",
+                  backgroundColor:
+                    activeParent === index ? "#eafaf1" : "transparent",
                   "&:hover": { backgroundColor: "#eafaf1" },
                 }}
               >
-                <ListItemIcon sx={{ color: activeParent === index ? "#FF7900" : "inherit" }}>
+                <ListItemIcon
+                  sx={{ color: activeParent === index ? "#FF7900" : "inherit" }}
+                >
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText primary={item.text} />
-                {item.dropdown && (programmesOpen ? <ExpandLess /> : <ExpandMore />)}
+                {item.dropdown &&
+                  (programmesOpen ? <ExpandLess /> : <ExpandMore />)}
               </ListItem>
 
               {item.dropdown && (
                 <Collapse in={programmesOpen} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding>
                     {item.children.map((child, idx) => (
-                      <ListItem button sx={{ pl: 4 }} key={idx} onClick={() => navigate(child.path)}>
+                      <ListItem
+                        button
+                        sx={{ pl: 4 }}
+                        key={idx}
+                        onClick={() => navigate(child.path)}
+                      >
                         <ListItemIcon>{child.icon}</ListItemIcon>
                         <ListItemText primary={child.text} />
                       </ListItem>

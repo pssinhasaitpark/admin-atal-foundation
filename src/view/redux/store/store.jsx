@@ -6,11 +6,13 @@ import eventReducer from "../slice/eventSlice";
 import profileReducer from "../slice/profileSlice";
 import contactReducer from "../slice/contactusSlice";
 import messageReducer from "../slice/messageSlice";
-import aboutReducer from "../slice/aboutSlice"
-import membersReducer from "../slice/membersSlice"
-import supportSpeakReducer from "../slice/supportSpeakSlice"
-import userOpinionReducer from "../slice/userOpinionSlice"
-import registrationReducer from "../slice/registrationSlice"
+import aboutReducer from "../slice/aboutSlice";
+import membersReducer from "../slice/membersSlice";
+import supportSpeakReducer from "../slice/supportSpeakSlice";
+import userOpinionReducer from "../slice/userOpinionSlice";
+import registrationReducer from "../slice/registrationSlice";
+import subscribersReducer from "../slice/subscribersSlice";
+import programmesReducer from "../slice/ourProgrammesSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -22,9 +24,11 @@ const store = configureStore({
     message: messageReducer,
     about: aboutReducer,
     members: membersReducer,
-    supportSpeak: supportSpeakReducer, 
-    userOpinion: userOpinionReducer, 
+    supportSpeak: supportSpeakReducer,
+    userOpinion: userOpinionReducer,
     registration: registrationReducer,
+    subscribers: subscribersReducer,
+    programmes: programmesReducer,
   },
 });
 
