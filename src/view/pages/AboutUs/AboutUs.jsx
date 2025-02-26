@@ -31,7 +31,7 @@ const AboutUs = () => {
   const selectedAbout = aboutData.length ? aboutData[0] : null;
   const [bannerImage, setBannerImage] = useState(null);
   const [sections, setSections] = useState([]);
-  const [newSections, setNewSections] = useState([]);
+  const [data, setdata] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
 
   useEffect(() => {
@@ -45,30 +45,19 @@ const AboutUs = () => {
     }
   }, [selectedAbout]);
 
-  /** Handle Banner Image Upload */
   const handleBannerUpload = (event) => {
     const file = event.target.files[0];
     if (file) setBannerImage(file);
   };
 
-  /** Remove Banner Image */
   const handleBannerRemove = () => {
     setBannerImage(null);
   };
 
-  /** Edit Section */
   const handleEditClick = (index) => {
     setEditingIndex(index);
   };
 
-  /** Delete Section */
-  // const handleDeleteClick = async (index) => {
-  //   const sectionId = sections[index]._id;
-  //   if (sectionId) {
-  //     await dispatch(deleteSection(sectionId));
-  //     setSections(sections.filter((_, i) => i !== index));
-  //   }
-  // };
   const handleDeleteClick = async (index) => {
     const sectionId = sections[index]._id;
     if (selectedAbout?._id && sectionId) {
@@ -77,67 +66,124 @@ const AboutUs = () => {
     }
   };
 
-  /** Handle Input Change */
   const handleInputChange = (index, key, value, isNew = false) => {
-    const updatedList = isNew ? [...newSections] : [...sections];
+    const updatedList = isNew ? [...data] : [...sections];
     updatedList[index] = { ...updatedList[index], [key]: value };
-    isNew ? setNewSections(updatedList) : setSections(updatedList);
+    isNew ? setdata(updatedList) : setSections(updatedList);
   };
 
-  /** Handle Image Upload */
-  const handleImageUpload = (index, event, isNew = false) => {
+  const handleImageUpload = (index, event) => {
     const files = Array.from(event.target.files);
-    const updatedList = isNew ? [...newSections] : [...sections];
 
-    if (!updatedList[index].images) updatedList[index].images = [];
-    updatedList[index].images = [...updatedList[index].images, ...files];
-
-    isNew ? setNewSections(updatedList) : setSections(updatedList);
+    setSections((prevSections) => {
+      return prevSections.map((section, i) => {
+        if (i === index) {
+          return {
+            ...section, // Create a new object (avoids direct mutation)
+            images: [...(section.images || []), ...files], // Append images safely
+          };
+        }
+        return section;
+      });
+    });
   };
 
-  /** Handle Image Removal */
   const handleImageRemove = (sectionIndex, imageIndex, isNew = false) => {
-    const updatedList = isNew ? [...newSections] : [...sections];
+    const updatedList = isNew ? [...data] : [...sections];
     updatedList[sectionIndex].images.splice(imageIndex, 1);
-    isNew ? setNewSections(updatedList) : setSections(updatedList);
+    isNew ? setdata(updatedList) : setSections(updatedList);
   };
 
-  /** Save About Data */
   const handleSaveAll = async () => {
     const formData = new FormData();
+
     if (selectedAbout?._id) formData.append("id", selectedAbout._id);
     if (bannerImage instanceof File) formData.append("banner", bannerImage);
 
-    formData.append("sections", JSON.stringify(sections));
-    formData.append("newSections", JSON.stringify(newSections));
+    // Append existing sections
+    sections.forEach((section, index) => {
+      formData.append(`sections[${index}][title]`, section.title);
+      formData.append(`sections[${index}][description]`, section.description);
 
-    await dispatch(saveAboutDataToBackend(formData));
+      if (section.images && section.images.length > 0) {
+        section.images.forEach((image) => {
+          if (image instanceof File) {
+            formData.append(`sections[${index}][images]`, image);
+          }
+        });
+      }
+    });
 
-    setNewSections([]);
-    setEditingIndex(null);
+    // Append new sections
+    data.forEach((section, index) => {
+      formData.append(`newSections[${index}][title]`, section.title);
+      formData.append(
+        `newSections[${index}][description]`,
+        section.description
+      );
+
+      if (section.images && section.images.length > 0) {
+        section.images.forEach((image) => {
+          if (image instanceof File) {
+            formData.append(`newSections[${index}][images]`, image);
+          }
+        });
+      }
+    });
+
+    try {
+      await dispatch(saveAboutDataToBackend(formData));
+
+      // Clear new sections & reset editing index
+      setdata([]);
+      setEditingIndex(null);
+
+      // Refresh the data instead of reloading the page
+      dispatch(fetchAboutData());
+    } catch (error) {
+      console.error("Error saving data:", error);
+    }
   };
 
-  /** Update Section */
   const handleUpdateSection = async (index) => {
     const section = sections[index];
-    if (selectedAbout?._id && section._id) {
+
+    if (!selectedAbout?._id || !section?._id) {
+      console.error("Error: Missing aboutId or sectionId");
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("title", section.title);
+    formData.append("description", section.description);
+
+    if (section.images && section.images.length > 0) {
+      section.images.forEach((image) => {
+        if (image instanceof File) {
+          formData.append("images", image);
+        }
+      });
+    }
+
+    try {
       await dispatch(
         updateSection({
           aboutId: selectedAbout._id,
           sectionId: section._id,
-          data: section,
+          data: formData,
         })
       );
+
+      setEditingIndex(null);
+      dispatch(fetchAboutData()); // Refresh data after update
+    } catch (error) {
+      console.error("Error updating section:", error);
     }
-    setEditingIndex(null);
   };
 
-  /** Add New Section */
   const handleAddNew = () => {
-    setNewSections([
-      ...newSections,
-      { title: "", description: "", images: [] },
-    ]);
+    setdata([...data, { title: "", description: "", images: [] }]);
   };
 
   return (
@@ -146,7 +192,6 @@ const AboutUs = () => {
         About Us
       </Typography>
       <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 2 }}>
-        {/* Banner Upload Section */}
         <Typography variant="h6" sx={{ mb: 2 }}>
           Banner Image
         </Typography>
@@ -175,7 +220,6 @@ const AboutUs = () => {
           )}
         </Box>
 
-        {/* Existing Sections */}
         <Typography variant="h6" sx={{ mb: 2 }}>
           Existing Sections
         </Typography>
@@ -236,11 +280,10 @@ const AboutUs = () => {
           </Box>
         ))}
 
-        {/* New Sections */}
         <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
           Add New Section
         </Typography>
-        {newSections.map((entry, index) => (
+        {data.map((entry, index) => (
           <Box
             key={index}
             sx={{ mb: 3, p: 2, border: "1px solid #ccc", borderRadius: 2 }}
