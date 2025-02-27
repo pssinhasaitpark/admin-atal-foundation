@@ -37,7 +37,7 @@ const About = () => {
       contributions,
       image: selectedImage,
     };
-    console.log("Saved Data:", aboutData);
+    // console.log("Saved Data:", aboutData);
     // Here you can send aboutData to an API to save in the database
   };
 

@@ -36,21 +36,6 @@ export const saveAboutDataToBackend = createAsyncThunk(
   }
 );
 
-// Update a Section
-// export const updateSection = createAsyncThunk(
-//   "about/updateSection",
-//   async ({ aboutId, sectionId, data }, { rejectWithValue }) => {
-//     try {
-//       const response = await api.patch(
-//         `/about/${aboutId}/sections/${sectionId}`,
-//         data
-//       );
-//       return { aboutId, sectionId, updatedSection: response.data };
-//     } catch (error) {
-//       return rejectWithValue(error.response?.data || error.message);
-//     }
-//   }
-// );
 export const updateSection = createAsyncThunk(
   "about/updateSection",
   async ({ aboutId, sectionId, data }, { rejectWithValue }) => {

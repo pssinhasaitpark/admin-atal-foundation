@@ -11,7 +11,7 @@ export const fetchMessages = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/message");
-      console.log("Fetched message data", response.data);
+      // console.log("Fetched message data", response.data);
       return response.data.messages;
     } catch (error) {
       console.log("Error fetching messages data", error);

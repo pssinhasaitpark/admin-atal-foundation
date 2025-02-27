@@ -7,11 +7,13 @@ import {
   Menu,
   MenuItem,
   useMediaQuery,
+  Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
+import { KeyboardArrowDown } from "@mui/icons-material";
 
-const Header = ({ onMenuClick }) => {
+const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
   const theme = useTheme();
@@ -55,41 +57,33 @@ const Header = ({ onMenuClick }) => {
           pt: 0.5,
         }}
       >
-        {/* Title */}
-        <Box
-          sx={{
-            fontWeight: "bold",
-            fontSize: { xs: "14px", sm: "18px" },
-            textAlign: "center",
-            flexGrow: 1,
-            color: "#FF7900",
-          }}
-        >
-          ATAL FOUNDATION अटल फाऊण्डेशन
-        </Box>
-
-        {/* Right Side */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: { xs: 1, sm: 2 },
-            justifyContent: "flex-end",
-          }}
-        >
-          {!isMobile && <></>}
-
-          {/* Avatar Menu */}
-          <Avatar
-            alt="Amin"
-            src="https://via.placeholder.com/150"
+        <div style={{ flexGrow: 1, textAlign: "center", paddingLeft: "260px" }}>
+          <Typography
+            variant="h6"
             sx={{
-              width: 32,
-              height: 32,
-              cursor: "pointer",
+              fontWeight: "bold",
+              fontSize: { xs: "14px", sm: "18px" },
+              color: "#FF7900",
             }}
+          >
+            ATAL FOUNDATION अटल फाऊण्डेशन
+          </Typography>
+        </div>
+
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Avatar
+            alt="Admin"
+            src="https://via.placeholder.com/150"
+            sx={{ width: 35, height: 35, cursor: "pointer" }}
             onClick={handleMenuClick}
           />
+
+          <KeyboardArrowDown
+            fontSize="small"
+            sx={{ cursor: "pointer" }}
+            onClick={handleMenuClick}
+          />
+
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
@@ -97,7 +91,6 @@ const Header = ({ onMenuClick }) => {
             sx={{ mt: "45px" }}
           >
             <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
-            {/* <MenuItem onClick={handleMenuClose}>My Account</MenuItem> */}
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
         </Box>

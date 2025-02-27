@@ -6,7 +6,7 @@ export const fetchSocialMedia = createAsyncThunk(
   "socialMedia/fetch",
   async () => {
     const response = await api.get("/social-media");
-    console.log("Fetched Social Media Data:", response.data);
+    // console.log("Fetched Social Media Data:", response.data);
     return response.data; // Assuming it contains the full object including _id
   }
 );
@@ -15,8 +15,8 @@ export const fetchSocialMedia = createAsyncThunk(
 export const updateSocialMedia = createAsyncThunk(
   "socialMedia/update",
   async ({ id, updatedLinks }) => {
-    console.log("Updating Social Media:", { id, updatedLinks });
-    const response = await api.put(`/social-media/${id}`, updatedLinks);
+    // console.log("Updating Social Media:", { id, updatedLinks });
+    const response = await api.patch(`/social-media/${id}`, updatedLinks);
     return response.data; // Assuming backend returns the updated data
   }
 );

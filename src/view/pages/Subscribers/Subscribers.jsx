@@ -16,7 +16,11 @@ import {
 
 function Subscribers() {
   const dispatch = useDispatch();
-  const { data: subscribers, loading, error } = useSelector((state) => state.subscribers);
+  const {
+    data: subscribers,
+    loading,
+    error,
+  } = useSelector((state) => state.subscribers);
 
   useEffect(() => {
     dispatch(fetchSubscribers());
@@ -24,7 +28,12 @@ function Subscribers() {
 
   if (loading)
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
         <CircularProgress />
       </Box>
     );
@@ -52,27 +61,38 @@ function Subscribers() {
         borderRadius: 2,
         boxShadow: 3,
         maxWidth: "95%", // ✅ Shrinks width
-        margin: "auto", // ✅ Centers it
+        // margin: "auto", // ✅ Centers it
         overflowX: "auto",
       }}
     >
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold"}}>
-        Total Subscribers: {subscribers.length}
+      <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+        Subscribers
       </Typography>
       <Table sx={{ width: "100%" }}>
         <TableHead>
           <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-            <TableCell align="center" sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>#</TableCell>
-            <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Email</TableCell>
-            <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Created At</TableCell>
+            <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+              S.No.
+            </TableCell>
+            <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+              Email
+            </TableCell>
+            <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+              Date
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {subscribers.map((subscriber, index) => (
-            <TableRow key={subscriber._id} sx={{ "&:nth-of-type(odd)": { backgroundColor: "#fafafa" } }}>
-              <TableCell align="center">{index + 1}</TableCell>
+            <TableRow
+              key={subscriber._id}
+              sx={{ "&:nth-of-type(odd)": { backgroundColor: "#fafafa" } }}
+            >
+              <TableCell>{index + 1}</TableCell>
               <TableCell>{subscriber.email}</TableCell>
-              <TableCell>{new Date(subscriber.createdAt).toLocaleString()}</TableCell>
+              <TableCell>
+                {new Date(subscriber.createdAt).toLocaleDateString()}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -8,7 +8,7 @@ const Home = () => {
 
   // Handler to send editor content
   const handleSubmit = () => {
-    console.log("Submitted Content (HTML):", editorContent);
+    // console.log("Submitted Content (HTML):", editorContent);
   };
 
   return (

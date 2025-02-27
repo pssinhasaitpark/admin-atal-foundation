@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Drawer,
   List,
@@ -12,58 +13,35 @@ import {
 } from "@mui/material";
 import {
   Dashboard,
-  Home,
   Event,
   PhotoLibrary,
-  // People,
-  Groups,
-  // RecordVoiceOver,
-  // Comment,
-  // AppRegistration,
+  PersonAdd,
   Chat,
   ContactPhone,
   Menu as MenuIcon,
   Close as CloseIcon,
   ExpandLess,
   ExpandMore,
-  // School,
-  // LocalHospital,
-  // Work,
-  // Wc,
-  // ChildCare,
-  // Public,
   Business,
-  // Favorite,
-  PersonAdd,
-  // SupervisorAccount,
   Subscriptions,
   ConnectWithoutContact,
 } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
 import logo from "../../../assets/Images/logo.png";
 
 const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activeParent, setActiveParent] = useState(null);
   const [programmesOpen, setProgrammesOpen] = useState(false);
-  const navigate = useNavigate();
 
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
-    // { text: "Home", icon: <Home />, path: "/home" },
     { text: "Events", icon: <Event />, path: "/events" },
     { text: "Gallery", icon: <PhotoLibrary />, path: "/gallery" },
-    { text: "About Us", icon: <PersonAdd />, path: "/aboutus" }, // Changed icon
-    // { text: "Members", icon: <Groups />, path: "/members" }, // Changed icon
-    // { text: "Supporter Speak", icon: <RecordVoiceOver />, path: "/supportspeak" },
-    // { text: "User Opinion", icon: <Comment />, path: "/useropinion" },
-    // { text: "Registration", icon: <AppRegistration />, path: "/registration" },
-    {
-      text: "Our Programmes",
-      icon: <Business />,
-      path: "/ourProgrammes",
-    },
+    { text: "About Us", icon: <PersonAdd />, path: "/aboutus" },
+    { text: "Our Programmes", icon: <Business />, path: "/ourProgrammes" },
     { text: "Subscribers", icon: <Subscriptions />, path: "/subscribers" },
-    { text: "Contact Inquiries", icon: <ContactPhone />, path: "/contactus" },
+    { text: "Contact Enquires", icon: <ContactPhone />, path: "/contactus" },
     { text: "Message", icon: <Chat />, path: "/message" },
     {
       text: "Social Media",
@@ -71,6 +49,20 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
       path: "/socialMedia",
     },
   ];
+
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const activeIndex = menuItems.findIndex((item) =>
+      currentPath.startsWith(item.path)
+    );
+
+    if (currentPath === "/") {
+      setActiveParent(0);
+      navigate("/dashboard");
+    } else {
+      setActiveParent(activeIndex !== -1 ? activeIndex : null);
+    }
+  }, [location.pathname, navigate]);
 
   const handleParentClick = (index, item) => {
     if (item.dropdown) {
@@ -115,12 +107,15 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
             height: 68,
           }}
         >
-          <img
-            src={logo}
-            alt="ATAL FOUNDATION Logo"
-            style={{ maxWidth: "100%", maxHeight: "40px" }}
-          />
+          <Link to="/" style={{ textDecoration: "none" }}>
+            <img
+              src={logo}
+              alt="ATAL FOUNDATION Logo"
+              style={{ maxWidth: "100%", maxHeight: "65px", cursor: "pointer" }}
+            />
+          </Link>
         </Box>
+
         <Divider />
 
         <List>

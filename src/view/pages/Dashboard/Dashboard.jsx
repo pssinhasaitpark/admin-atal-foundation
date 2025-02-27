@@ -1,88 +1,114 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchSubscribersCount,
+  fetchInquiriesCount,
+  fetchMessagesCount,
+  fetchEventsCount,
+} from "../../redux/slice/dashboardSlice";
 import {
   Box,
   Typography,
   Card,
-  CardContent,
   List,
   ListItem,
   ListItemText,
-  Divider,
   Paper,
+  Grid,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
-import { History, Work, School, Star } from "@mui/icons-material";
+import { History, Email, Event, People } from "@mui/icons-material";
+import banner from "../../../assets/Images/BannerImg.png";
 
 const Dashboard = () => {
-  return (
-    <Box sx={{ p: 4, bgcolor: "#f4f6f8", minHeight: "100vh" }}>
-      {/* Header */}
-      <Typography
-        variant="h4"
-        fontWeight="bold"
-        gutterBottom
-        sx={{ color: "#333" }}
-      >
-        Admin Dashboard - Atal Bihari Vajpayee
-      </Typography>
+  const dispatch = useDispatch();
+  const {
+    totalSubscribers,
+    totalInquiries,
+    totalMessages,
+    totalEvents,
+    loading,
+    error,
+  } = useSelector((state) => state.dashboard);
 
-      {/* Overview Cards - Replacing Grid with Box Flex */}
+  useEffect(() => {
+    dispatch(fetchSubscribersCount());
+    dispatch(fetchInquiriesCount());
+    dispatch(fetchMessagesCount());
+    dispatch(fetchEventsCount());
+  }, [dispatch]);
+
+  return (
+    <Box sx={{ bgcolor: "#f4f6f8", minHeight: "100vh", pb: 4 }}>
+      {/* Banner Image */}
       <Box
         sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 3,
-          justifyContent: "space-between",
+          width: "100%",
+          height: 350,
+          backgroundImage: `url(${banner})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
-      >
-        {[
-          {
-            title: "Prime Minister",
-            value: "3 Terms",
-            icon: <Work sx={{ fontSize: 40, color: "#ff9800" }} />,
-          },
-          {
-            title: "Political Career",
-            value: "50+ Years",
-            icon: <History sx={{ fontSize: 40, color: "#4caf50" }} />,
-          },
-          {
-            title: "Books & Poems",
-            value: "10+",
-            icon: <School sx={{ fontSize: 40, color: "#2196f3" }} />,
-          },
-          {
-            title: "Awards",
-            value: "Bharat Ratna, Padma Vibhushan",
-            icon: <Star sx={{ fontSize: 40, color: "#e91e63" }} />,
-          },
-        ].map((item, index) => (
-          <Card
-            key={index}
-            sx={{
-              flex: "1 1 calc(25% - 24px)",
-              minWidth: "220px",
-              boxShadow: 5,
-              borderRadius: 3,
-              textAlign: "center",
-              bgcolor: "white",
-            }}
-          >
-            <CardContent>
-              {item.icon}
-              <Typography variant="h6" sx={{ mt: 1 }}>
-                {item.title}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {item.value}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))}
+      />
+
+      {/* Header Section */}
+      <Box sx={{ display: "flex", alignItems: "center", p: 4 }}>
+        <Typography variant="h4" fontWeight="bold" sx={{ color: "#333" }}>
+          Admin Dashboard - Atal Bihari Vajpayee
+        </Typography>
+      </Box>
+
+      {/* Error Message */}
+      {error && (
+        <Alert severity="error" sx={{ mx: 4, mb: 2 }}>
+          Error: {error}
+        </Alert>
+      )}
+
+      {/* Dynamic Stats Section */}
+      <Box sx={{ px: 4, mb: 4 }}>
+        <Grid container spacing={3}>
+          {[
+            {
+              title: "Total Subscribers",
+              value: totalSubscribers,
+              icon: <People sx={{ fontSize: 40, color: "#ff9800" }} />,
+            },
+            {
+              title: "Total Inquiries",
+              value: totalInquiries,
+              icon: <Email sx={{ fontSize: 40, color: "#4caf50" }} />,
+            },
+            {
+              title: "Total Messages",
+              value: totalMessages,
+              icon: <History sx={{ fontSize: 40, color: "#2196f3" }} />,
+            },
+            {
+              title: "Total Events & Programs",
+              value: totalEvents,
+              icon: <Event sx={{ fontSize: 40, color: "#e91e63" }} />,
+            },
+          ].map((item, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <Card sx={{ textAlign: "center", p: 3, boxShadow: 3 }}>
+                {item.icon}
+                <Typography variant="h6" sx={{ mt: 1 }}>
+                  {item.title}
+                </Typography>
+                <Typography variant="h5" fontWeight="bold">
+                  {loading ? <CircularProgress size={24} /> : item.value}
+                </Typography>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       </Box>
 
       {/* Biography Section */}
       <Paper
-        sx={{ p: 4, mt: 4, borderRadius: 3, bgcolor: "white", boxShadow: 3 }}
+        sx={{ p: 4, mx: 4, borderRadius: 3, bgcolor: "white", boxShadow: 3 }}
       >
         <Typography variant="h5" fontWeight="bold" gutterBottom>
           Biography
@@ -99,7 +125,14 @@ const Dashboard = () => {
 
       {/* Key Achievements */}
       <Paper
-        sx={{ p: 4, mt: 4, borderRadius: 3, bgcolor: "white", boxShadow: 3 }}
+        sx={{
+          p: 4,
+          mx: 4,
+          mt: 4,
+          borderRadius: 3,
+          bgcolor: "white",
+          boxShadow: 3,
+        }}
       >
         <Typography variant="h5" fontWeight="bold" gutterBottom>
           Key Achievements
@@ -114,56 +147,6 @@ const Dashboard = () => {
           ].map((achievement, index) => (
             <ListItem key={index}>
               <ListItemText primary={achievement} />
-            </ListItem>
-          ))}
-        </List>
-      </Paper>
-
-      {/* Political Career Timeline */}
-      <Paper
-        sx={{ p: 4, mt: 4, borderRadius: 3, bgcolor: "white", boxShadow: 3 }}
-      >
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Political Career Timeline
-        </Typography>
-        <List>
-          {[
-            { year: "1996", event: "First Term as Prime Minister (13 days)" },
-            {
-              year: "1998-2004",
-              event: "Second & Third Term as Prime Minister",
-            },
-            { year: "1977-1979", event: "Minister of External Affairs" },
-            { year: "1980", event: "BJP Co-Founder & First President" },
-            { year: "1957", event: "Elected to Lok Sabha for the First Time" },
-          ].map((item, index) => (
-            <React.Fragment key={index}>
-              <ListItem>
-                <ListItemText primary={item.event} secondary={item.year} />
-              </ListItem>
-              {index < 4 && <Divider />}
-            </React.Fragment>
-          ))}
-        </List>
-      </Paper>
-
-      {/* Policies Section */}
-      <Paper
-        sx={{ p: 4, mt: 4, borderRadius: 3, bgcolor: "white", boxShadow: 3 }}
-      >
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Major Policies
-        </Typography>
-        <List>
-          {[
-            "Pradhan Mantri Gram Sadak Yojana",
-            "Sarva Shiksha Abhiyan",
-            "National Highway Development Project",
-            "Prevention of Terrorism Act (2002)",
-            "Economic Liberalization",
-          ].map((policy, index) => (
-            <ListItem key={index}>
-              <ListItemText primary={policy} />
             </ListItem>
           ))}
         </List>

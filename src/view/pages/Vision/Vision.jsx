@@ -21,7 +21,7 @@ import debounce from "lodash.debounce";
 const Vision = () => {
   const dispatch = useDispatch();
   const visionData = useSelector((state) => state.vision);
-  console.log("visionData", visionData);
+  // console.log("visionData", visionData);
 
   const [title, setTitle] = useState(visionData.title);
   const [visionText, setVisionText] = useState(visionData.visionContent);

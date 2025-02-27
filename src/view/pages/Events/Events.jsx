@@ -130,12 +130,7 @@ const Events = () => {
           <Typography variant="h6" sx={{ mt: 2 }}>
             Event Description
           </Typography>
-          {/* <JoditEditor
-            ref={editor}
-            value={description}
-            config={{ readonly: !isEditable }}
-            onChange={(newContent) => setDescription(newContent?.trim() || "")}
-          /> */}
+
           <JoditEditor
             ref={editor}
             value={description}

@@ -20,8 +20,10 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  TableHead,
 } from "@mui/material";
-
+import { Edit } from "@mui/icons-material";
+import { Image, VideoLibrary } from "@mui/icons-material";
 function Gallery() {
   const dispatch = useDispatch();
   const { gallery_image, gallery_video, loading, error } = useSelector(
@@ -55,18 +57,12 @@ function Gallery() {
       data
         ? {
             type,
-            title:
-              type === "image"
-                ? data.gallery_image_title
-                : data.gallery_video_title,
-            description:
-              type === "image"
-                ? data.gallery_image_description
-                : data.gallery_video_description,
+            title: data.title,
+            description: data.description,
             file: null,
-            id: data.id, // Ensure ID is passed for editing
+            id: data.id,
           }
-        : { type, file: null } // Only file for adding
+        : { type, file: null }
     );
     setEditData(data);
   };
@@ -87,62 +83,98 @@ function Gallery() {
   const handleSubmit = () => {
     const formDataToSend = new FormData();
 
-    // If it's a video, only send the video file without title/description
-    if (formData.type === "video") {
-      if (formData.file) {
-        formDataToSend.append("videos", formData.file); // Only append video file
-      }
-    }
-
-    // If it's an image, only send the image file without title/description
     if (formData.type === "image") {
-      if (formData.file) {
-        formDataToSend.append("images", formData.file); // Only append image file
+      if (formData.title) {
+        formDataToSend.append("gallery_image_title", formData.title);
+      }
+      if (formData.description) {
+        formDataToSend.append(
+          "gallery_image_description",
+          formData.description
+        );
+      }
+    } else if (formData.type === "video") {
+      if (formData.title) {
+        formDataToSend.append("gallery_video_title", formData.title);
+      }
+      if (formData.description) {
+        formDataToSend.append(
+          "gallery_video_description",
+          formData.description
+        );
       }
     }
 
-    // For updating the gallery item (when an item is being edited)
-    if (editData) {
+    if (formData.file) {
+      formDataToSend.append(
+        formData.type === "image" ? "images" : "videos",
+        formData.file
+      );
+    }
+
+    if (editData && formData.id) {
       dispatch(
         updateGalleryItem({
-          id: editData.id,
-          updatedItem: formData,
+          id: formData.id,
+          updatedItem: formDataToSend,
           type: formData.type,
         })
-      ).then(() => {
-        dispatch(fetchGallery()); // Re-fetch gallery data after update
-      });
+      ).then(() => dispatch(fetchGallery()));
     } else {
-      // For adding new image or video
-      dispatch(addGalleryItem(formDataToSend)).then(() => {
-        dispatch(fetchGallery()); // Re-fetch gallery data after adding new item
-      });
+      const galleryId =
+        formData.type === "image" ? gallery_image?._id : gallery_video?._id;
+      dispatch(
+        addGalleryItem({
+          galleryId,
+          formData: formDataToSend,
+          type: formData.type,
+        })
+      ).then(() => dispatch(fetchGallery()));
     }
 
     handleClose();
   };
 
-  const handleDelete = (id, type) => {
-    dispatch(deleteGalleryItem({ id, type })).then(() => {
-      dispatch(fetchGallery()); // Re-fetch gallery data after deleting item
+  const handleDelete = (fileUrl, type) => {
+    let galleryId = type === "image" ? gallery_image?._id : gallery_video?._id;
+
+    if (!galleryId) return;
+
+    dispatch(deleteGalleryItem({ galleryId, fileUrl, type })).then(() => {
+      dispatch(fetchGallery());
     });
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <Typography variant="h4" align="left" gutterBottom>
+    <div>
+      <Typography
+        variant="h4"
+        align="left"
+        gutterBottom
+        sx={{ mb: 2, fontWeight: "bold" }}
+      >
         Gallery
       </Typography>
-
-      <Button onClick={() => handleOpen("image")}>Add Image</Button>
+      {/* <Button onClick={() => handleOpen("image")}>Add Image</Button>
       <Button onClick={() => handleOpen("video")} style={{ marginLeft: 10 }}>
+        Add Video
+      </Button> */}
+      <Button onClick={() => handleOpen("image")} startIcon={<Image />}>
+        Add Image
+      </Button>
+
+      <Button
+        onClick={() => handleOpen("video")}
+        startIcon={<VideoLibrary />}
+        sx={{ ml: 1 }}
+      >
         Add Video
       </Button>
 
       {/* Image Gallery Section */}
       <Typography variant="h5" gutterBottom style={{ marginTop: 20 }}>
         {gallery_image.title}{" "}
-        <Button
+        {/* <Button
           onClick={() =>
             handleOpen("image", {
               title: gallery_image.title,
@@ -151,27 +183,69 @@ function Gallery() {
           }
         >
           Edit
+        </Button> */}
+        <Button
+          onClick={() =>
+            handleOpen("image", {
+              title: gallery_image.title,
+              description: gallery_image.description,
+            })
+          }
+          startIcon={<Edit />}
+        >
+          Edit
         </Button>
       </Typography>
-      <Typography variant="body1" gutterBottom>
-        {gallery_image.description}
+      <Typography variant="body1" gutterBottom sx={{ color: "gray", mb: 2 }}>
+        {gallery_image.description || "No description available."}
       </Typography>
       {gallery_image?.images?.length > 0 ? (
-        <TableContainer component={Paper} elevation={3} sx={{ mb: 3 }}>
-          <Table>
+        <TableContainer
+          component={Paper}
+          elevation={3}
+          sx={{ borderRadius: 2, overflow: "hidden" }}
+        >
+          <Table size="small">
+            <TableHead>
+              <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                <TableCell sx={{ fontWeight: "bold", width: "120px" }}>
+                  Image
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: "bold",
+                    width: "100px",
+                    textAlign: "center",
+                  }}
+                >
+                  Actions
+                </TableCell>
+              </TableRow>
+            </TableHead>
             <TableBody>
               {gallery_image.images.map((img, index) => (
-                <TableRow key={index}>
+                <TableRow key={index} hover>
                   <TableCell>
                     <img
                       src={img}
                       alt="gallery"
-                      width="120px"
-                      style={{ borderRadius: "5px" }}
+                      width="80px"
+                      height="60px"
+                      style={{
+                        objectFit: "cover",
+                        borderRadius: "5px",
+                        display: "block",
+                      }}
                     />
                   </TableCell>
-                  <TableCell>
-                    <Button onClick={() => handleDelete(index, "image")}>
+                  <TableCell align="center">
+                    <Button
+                      onClick={() => handleDelete(img, "image")}
+                      color="error"
+                      variant="outlined"
+                      size="small"
+                      sx={{ minWidth: "50px", padding: "4px" }}
+                    >
                       Delete
                     </Button>
                   </TableCell>
@@ -183,10 +257,9 @@ function Gallery() {
       ) : (
         <Typography>No images available.</Typography>
       )}
-
       {/* Video Gallery Section */}
-      <Typography variant="h5" gutterBottom>
-        {gallery_video.title}
+      <Typography variant="h5" gutterBottom style={{ marginTop: 20 }}>
+        {gallery_video.title}{" "}
         <Button
           onClick={() =>
             handleOpen("video", {
@@ -194,30 +267,61 @@ function Gallery() {
               description: gallery_video.description,
             })
           }
+          startIcon={<Edit />}
         >
           Edit
         </Button>
       </Typography>
-      <Typography variant="body1" gutterBottom>
-        {gallery_video.description}
+      <Typography variant="body1" gutterBottom sx={{ color: "gray", mb: 2 }}>
+        {gallery_video.description || "No description available."}
       </Typography>
       {gallery_video?.videos?.length > 0 ? (
-        <TableContainer component={Paper} elevation={3}>
-          <Table>
+        <TableContainer
+          component={Paper}
+          elevation={3}
+          sx={{ borderRadius: 2, overflow: "hidden" }}
+        >
+          <Table size="small">
+            <TableHead>
+              <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                <TableCell sx={{ fontWeight: "bold", width: "120px" }}>
+                  Video
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: "bold",
+                    width: "100px",
+                    textAlign: "center",
+                  }}
+                >
+                  Actions
+                </TableCell>
+              </TableRow>
+            </TableHead>
             <TableBody>
               {gallery_video.videos.map((vid, index) => (
-                <TableRow key={index}>
+                <TableRow key={index} hover>
                   <TableCell>
                     <video
                       controls
-                      width="200px"
-                      style={{ borderRadius: "5px" }}
+                      width="100px"
+                      height="100px"
+                      style={{
+                        borderRadius: "5px",
+                        display: "block",
+                      }}
                     >
                       <source src={vid} type="video/mp4" />
                     </video>
                   </TableCell>
-                  <TableCell>
-                    <Button onClick={() => handleDelete(index, "video")}>
+                  <TableCell align="center">
+                    <Button
+                      onClick={() => handleDelete(vid, "video")}
+                      color="error"
+                      variant="outlined"
+                      size="small"
+                      sx={{ minWidth: "50px", padding: "4px" }}
+                    >
                       Delete
                     </Button>
                   </TableCell>
@@ -229,7 +333,6 @@ function Gallery() {
       ) : (
         <Typography>No videos available.</Typography>
       )}
-
       {/* Dialog for Add/Edit Image or Video */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>

@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../axios/axios"; // Assuming axios instance is set up in 'api.js'
+import api from "../axios/axios";
 
-// Thunks for fetching and updating the gallery data
 export const fetchGallery = createAsyncThunk(
   "gallery/fetchGallery",
   async () => {
@@ -13,24 +12,54 @@ export const fetchGallery = createAsyncThunk(
 export const updateGalleryItem = createAsyncThunk(
   "gallery/updateGalleryItem",
   async ({ id, updatedItem, type }) => {
-    const response = await api.put(`/gallery/${type}/${id}`, updatedItem);
-    return response.data;
+    try {
+      const response = await api.put(`/gallery/${type}/${id}`, updatedItem, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Update failed");
+    }
   }
 );
 
 export const addGalleryItem = createAsyncThunk(
   "gallery/addGalleryItem",
-  async (formData) => {
-    const response = await api.post("/gallery/create", formData);
-    return response.data;
+  async ({ galleryId, formData, type }) => {
+    try {
+      const response = await api.put(
+        `/gallery/${type}/${galleryId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return { galleryId, type, updatedGallery: response.data };
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to add item");
+    }
   }
 );
-
 export const deleteGalleryItem = createAsyncThunk(
   "gallery/deleteGalleryItem",
-  async ({ id, type }) => {
-    const response = await api.delete(`/gallery/${type}/${id}`);
-    return response.data;
+  async ({ galleryId, fileUrl, type }) => {
+    try {
+      const payload =
+        type === "image"
+          ? { remove_images: [fileUrl] }
+          : { remove_videos: [fileUrl] };
+
+      const response = await api.put(`/gallery/${type}/${galleryId}`, payload);
+
+      return { galleryId, fileUrl, type, updatedGallery: response.data };
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to delete item");
+    }
   }
 );
 
@@ -58,19 +87,33 @@ const gallerySlice = createSlice({
         state.loading = false;
         state.error = action.error.message;
       })
-      .addCase(updateGalleryItem.fulfilled, (state, action) => {
-        const { type, id, title, description } = action.payload;
-        if (type === "image") {
-          const updatedImages = state.gallery_image.images.map((img) =>
-            img.id === id ? { ...img, title, description } : img
-          );
-          state.gallery_image.images = updatedImages;
-        } else if (type === "video") {
-          const updatedVideos = state.gallery_video.videos.map((vid) =>
-            vid.id === id ? { ...vid, title, description } : vid
-          );
-          state.gallery_video.videos = updatedVideos;
+      .addCase(addGalleryItem.fulfilled, (state, action) => {
+        const { galleryId, type, updatedGallery } = action.payload;
+
+        if (type === "image" && state.gallery_image?._id === galleryId) {
+          state.gallery_image.images = updatedGallery.images;
+        } else if (type === "video" && state.gallery_video?._id === galleryId) {
+          state.gallery_video.videos = updatedGallery.videos;
         }
+      })
+      .addCase(addGalleryItem.rejected, (state, action) => {
+        state.error = action.error.message;
+      })
+      .addCase(deleteGalleryItem.fulfilled, (state, action) => {
+        const { galleryId, fileUrl, type } = action.payload;
+
+        if (type === "image" && state.gallery_image?._id === galleryId) {
+          state.gallery_image.images = state.gallery_image.images.filter(
+            (img) => img !== fileUrl
+          );
+        } else if (type === "video" && state.gallery_video?._id === galleryId) {
+          state.gallery_video.videos = state.gallery_video.videos.filter(
+            (vid) => vid !== fileUrl
+          );
+        }
+      })
+      .addCase(deleteGalleryItem.rejected, (state, action) => {
+        state.error = action.error.message;
       });
   },
 });

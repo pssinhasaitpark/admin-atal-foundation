@@ -59,9 +59,9 @@ function ContactUs() {
           <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
             <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
             <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
-            <TableCell sx={{ fontWeight: "bold" }}>Contact No</TableCell>
-            <TableCell sx={{ fontWeight: "bold" }}>Enquiry</TableCell>
-            <TableCell sx={{ fontWeight: "bold" }}>Created At</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>Contact No.</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>Messages</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -82,7 +82,7 @@ function ContactUs() {
                 <TableCell>{contact.contact_no}</TableCell>
                 <TableCell>{contact.enquiry}</TableCell>
                 <TableCell>
-                  {new Date(contact.createdAt).toLocaleString()}
+                  {new Date(contact.createdAt).toLocaleDateString()}
                 </TableCell>
               </TableRow>
             ))

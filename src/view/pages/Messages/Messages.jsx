@@ -49,7 +49,7 @@ function Messages() {
             <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
             <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
             <TableCell sx={{ fontWeight: "bold" }}>Message</TableCell>
-            <TableCell sx={{ fontWeight: "bold" }}>Created At</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -69,7 +69,7 @@ function Messages() {
                 <TableCell>{msg.email}</TableCell>
                 <TableCell>{msg.message}</TableCell>
                 <TableCell>
-                  {new Date(msg.createdAt).toLocaleString()}
+                  {new Date(msg.createdAt).toLocaleDateString()}
                 </TableCell>
               </TableRow>
             ))
