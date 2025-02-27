@@ -12,12 +12,11 @@ import {
   Typography,
   CircularProgress,
   Alert,
+  Box,
 } from "@mui/material";
 
 function ContactUs() {
   const dispatch = useDispatch();
-
-  // Getting state from Redux store
   const { contacts, loading, error } = useSelector((state) => state.contact);
 
   useEffect(() => {
@@ -26,14 +25,19 @@ function ContactUs() {
 
   if (loading)
     return (
-      <div style={{ textAlign: "center", marginTop: "20px" }}>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
         <CircularProgress />
-      </div>
+      </Box>
     );
 
   if (error)
     return (
-      <Alert severity="error" style={{ margin: "20px" }}>
+      <Alert severity="error" sx={{ margin: "20px" }}>
         {error}
       </Alert>
     );
@@ -41,39 +45,29 @@ function ContactUs() {
   return (
     <TableContainer
       component={Paper}
-      sx={{ mt: 3, boxShadow: 3, borderRadius: 2 }}
+      sx={{ mt: 3, boxShadow: 3, borderRadius: 2, overflow: "hidden" }}
     >
       <Typography
-        variant="h5"
-        sx={{ p: 2, textAlign: "center", fontWeight: "bold" }}
+        variant="h6"
+        sx={{ p: 2, textAlign: "left", fontWeight: "bold" }}
       >
         Contact Inquiries
       </Typography>
 
       <Table>
         <TableHead>
-          <TableRow sx={{ backgroundColor: "#1976d2" }}>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Name
-            </TableCell>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Email
-            </TableCell>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Contact No
-            </TableCell>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Enquiry
-            </TableCell>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Created At
-            </TableCell>
+          <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
+            <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>Contact No</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>Enquiry</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>Created At</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {contacts.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} sx={{ textAlign: "center" }}>
+              <TableCell colSpan={5} sx={{ textAlign: "center", py: 3 }}>
                 No contact inquiries found.
               </TableCell>
             </TableRow>
@@ -81,7 +75,7 @@ function ContactUs() {
             contacts.map((contact) => (
               <TableRow
                 key={contact._id}
-                sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f5f5f5" } }}
+                sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f9f9f9" } }}
               >
                 <TableCell>{contact.name}</TableCell>
                 <TableCell>{contact.email}</TableCell>

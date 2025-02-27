@@ -49,26 +49,26 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
 
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
-    { text: "Home", icon: <Home />, path: "/home" },
+    // { text: "Home", icon: <Home />, path: "/home" },
     { text: "Events", icon: <Event />, path: "/events" },
     { text: "Gallery", icon: <PhotoLibrary />, path: "/gallery" },
     { text: "About Us", icon: <PersonAdd />, path: "/aboutus" }, // Changed icon
-    { text: "Members", icon: <Groups />, path: "/members" }, // Changed icon
+    // { text: "Members", icon: <Groups />, path: "/members" }, // Changed icon
     // { text: "Supporter Speak", icon: <RecordVoiceOver />, path: "/supportspeak" },
     // { text: "User Opinion", icon: <Comment />, path: "/useropinion" },
     // { text: "Registration", icon: <AppRegistration />, path: "/registration" },
-    { text: "Subscribers", icon: <Subscriptions />, path: "/subscribers" },
-    {
-      text: "Social Media",
-      icon: <ConnectWithoutContact />,
-      path: "/socialMedia",
-    },
-    { text: "Contact Inquiries", icon: <ContactPhone />, path: "/contactus" },
-    { text: "Message", icon: <Chat />, path: "/message" },
     {
       text: "Our Programmes",
       icon: <Business />,
       path: "/ourProgrammes",
+    },
+    { text: "Subscribers", icon: <Subscriptions />, path: "/subscribers" },
+    { text: "Contact Inquiries", icon: <ContactPhone />, path: "/contactus" },
+    { text: "Message", icon: <Chat />, path: "/message" },
+    {
+      text: "Social Media",
+      icon: <ConnectWithoutContact />,
+      path: "/socialMedia",
     },
   ];
 

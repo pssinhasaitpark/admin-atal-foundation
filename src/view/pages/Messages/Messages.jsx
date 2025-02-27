@@ -9,10 +9,9 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Typography,
   CircularProgress,
   Alert,
-  Box,
+  Typography,
 } from "@mui/material";
 
 function Messages() {
@@ -24,20 +23,11 @@ function Messages() {
   }, [dispatch]);
 
   if (loading)
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="50vh"
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <CircularProgress sx={{ display: "block", margin: "20px auto" }} />;
 
   if (error)
     return (
-      <Alert severity="error" sx={{ margin: "20px" }}>
+      <Alert severity="error" sx={{ margin: "20px", textAlign: "center" }}>
         {error}
       </Alert>
     );
@@ -45,36 +35,27 @@ function Messages() {
   return (
     <TableContainer
       component={Paper}
-      sx={{ mt: 3, boxShadow: 3, borderRadius: 2 }}
+      sx={{ mt: 3, boxShadow: 2, borderRadius: 2, overflow: "hidden" }}
     >
       <Typography
-        variant="h5"
-        sx={{ p: 2, textAlign: "center", fontWeight: "bold" }}
+        variant="h6"
+        sx={{ p: 2, textAlign: "left", fontWeight: "bold" }}
       >
         Messages
       </Typography>
-
       <Table>
         <TableHead>
-          <TableRow sx={{ backgroundColor: "#1976d2" }}>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Name
-            </TableCell>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Email
-            </TableCell>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Message
-            </TableCell>
-            <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-              Created At
-            </TableCell>
+          <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
+            <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>Message</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>Created At</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {messages.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} sx={{ textAlign: "center" }}>
+              <TableCell colSpan={4} align="center" sx={{ p: 2 }}>
                 No messages found.
               </TableCell>
             </TableRow>
@@ -82,7 +63,7 @@ function Messages() {
             messages.map((msg) => (
               <TableRow
                 key={msg._id}
-                sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f5f5f5" } }}
+                sx={{ "&:nth-of-type(odd)": { backgroundColor: "#fafafa" } }}
               >
                 <TableCell>{msg.name}</TableCell>
                 <TableCell>{msg.email}</TableCell>

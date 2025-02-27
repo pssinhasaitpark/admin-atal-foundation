@@ -1,158 +1,282 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Paper,
-  Stack,
-  IconButton,
-  Avatar,
-} from "@mui/material";
-import {  Delete as DeleteIcon } from "@mui/icons-material";
-import JoditEditor from "jodit-react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchGallery, saveGalleryToBackend, deleteGalleryItem } from "../../redux/slice/galleryslice";
-import { toast } from "react-toastify";
+import {
+  fetchGallery,
+  addGalleryItem,
+  updateGalleryItem,
+  deleteGalleryItem,
+} from "../../redux/slice/galleryslice";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Paper,
+  Typography,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
 
-const Gallery = () => {
+function Gallery() {
   const dispatch = useDispatch();
-  const { galleries, loading } = useSelector((state) => state.gallery);
+  const { gallery_image, gallery_video, loading, error } = useSelector(
+    (state) => state.gallery
+  );
 
-  const [galleryImageTitle, setGalleryImageTitle] = useState("");
-  const [galleryImageDescription, setGalleryImageDescription] = useState("");
-  const [galleryVideoTitle, setGalleryVideoTitle] = useState("");
-  const [galleryVideoDescription, setGalleryVideoDescription] = useState("");
-  const [galleryImages, setGalleryImages] = useState([]);
-  const [galleryVideos, setGalleryVideos] = useState([]);
-
-  const [selectedImages, setSelectedImages] = useState([]);
-  const [selectedVideos, setSelectedVideos] = useState([]);
-  const [isEditable, setIsEditable] = useState(false);
-
-  const imageEditor = useRef(null);
-  const videoEditor = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [formData, setFormData] = useState({
+    type: "image",
+    title: "",
+    description: "",
+    file: null,
+  });
 
   useEffect(() => {
     dispatch(fetchGallery());
   }, [dispatch]);
 
-  // When gallery data is fetched, update the state
-  useEffect(() => {
-    if (galleries?.length > 0) {
-      const gallery = galleries[0]; // Assuming only one gallery exists
-      setGalleryImageTitle(gallery.gallery_image.title || "");
-      setGalleryImageDescription(gallery.gallery_image.description || "");
-      setGalleryImages(gallery.gallery_image.images || []);
+  if (loading) return <Typography variant="h6">Loading...</Typography>;
+  if (error)
+    return (
+      <Typography variant="h6" color="error">
+        Error: {error}
+      </Typography>
+    );
 
-      setGalleryVideoTitle(gallery.gallery_video.title || "");
-      setGalleryVideoDescription(gallery.gallery_video.description || "");
-      setGalleryVideos(gallery.gallery_video.videos || []);
+  const handleOpen = (type, data = null) => {
+    setOpen(true);
+    setFormData(
+      data
+        ? {
+            type,
+            title:
+              type === "image"
+                ? data.gallery_image_title
+                : data.gallery_video_title,
+            description:
+              type === "image"
+                ? data.gallery_image_description
+                : data.gallery_video_description,
+            file: null,
+            id: data.id, // Ensure ID is passed for editing
+          }
+        : { type, file: null } // Only file for adding
+    );
+    setEditData(data);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setEditData(null);
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e) => {
+    setFormData({ ...formData, file: e.target.files[0] });
+  };
+
+  const handleSubmit = () => {
+    const formDataToSend = new FormData();
+
+    // If it's a video, only send the video file without title/description
+    if (formData.type === "video") {
+      if (formData.file) {
+        formDataToSend.append("videos", formData.file); // Only append video file
+      }
     }
-  }, [galleries]);
 
-  const handleFileUpload = (event, setter) => {
-    const files = Array.from(event.target.files);
-    setter((prev) => [...prev, ...files]);
+    // If it's an image, only send the image file without title/description
+    if (formData.type === "image") {
+      if (formData.file) {
+        formDataToSend.append("images", formData.file); // Only append image file
+      }
+    }
+
+    // For updating the gallery item (when an item is being edited)
+    if (editData) {
+      dispatch(
+        updateGalleryItem({
+          id: editData.id,
+          updatedItem: formData,
+          type: formData.type,
+        })
+      ).then(() => {
+        dispatch(fetchGallery()); // Re-fetch gallery data after update
+      });
+    } else {
+      // For adding new image or video
+      dispatch(addGalleryItem(formDataToSend)).then(() => {
+        dispatch(fetchGallery()); // Re-fetch gallery data after adding new item
+      });
+    }
+
+    handleClose();
   };
 
-  const handleDelete = async (id, type) => {
-    await dispatch(deleteGalleryItem({ id, type }));
-    toast.success(`${type} deleted successfully!`);
-  };
-
-  const handleSave = async () => {
-    const imageFormData = new FormData();
-    imageFormData.append("title", galleryImageTitle);
-    imageFormData.append("description", galleryImageDescription);
-    selectedImages.forEach((image) => imageFormData.append("images", image));
-
-    const videoFormData = new FormData();
-    videoFormData.append("title", galleryVideoTitle);
-    videoFormData.append("description", galleryVideoDescription);
-    selectedVideos.forEach((video) => videoFormData.append("videos", video));
-
-    await dispatch(saveGalleryToBackend({ imageFormData, videoFormData }));
-    setIsEditable(false);
-    toast.success("Gallery updated successfully!");
+  const handleDelete = (id, type) => {
+    dispatch(deleteGalleryItem({ id, type })).then(() => {
+      dispatch(fetchGallery()); // Re-fetch gallery data after deleting item
+    });
   };
 
   return (
-    <Box p={3}>
-      <Typography variant="h4" gutterBottom>Gallery Management</Typography>
+    <div style={{ padding: "20px" }}>
+      <Typography variant="h4" align="left" gutterBottom>
+        Gallery
+      </Typography>
 
-      {/* Image Section */}
-      <Paper sx={{ p: 3, border: "1px solid #ddd", mt: 3 }}>
-        <Typography variant="h5" sx={{ mb: 2 }}>Gallery Images</Typography>
+      <Button onClick={() => handleOpen("image")}>Add Image</Button>
+      <Button onClick={() => handleOpen("video")} style={{ marginLeft: 10 }}>
+        Add Video
+      </Button>
 
-        <TextField
-          fullWidth
-          label="Image Title"
-          variant="outlined"
-          value={galleryImageTitle}
-          onChange={(e) => setGalleryImageTitle(e.target.value)}
-          disabled={!isEditable}
-          sx={{ mb: 2 }}
-        />
+      {/* Image Gallery Section */}
+      <Typography variant="h5" gutterBottom style={{ marginTop: 20 }}>
+        {gallery_image.title}{" "}
+        <Button
+          onClick={() =>
+            handleOpen("image", {
+              title: gallery_image.title,
+              description: gallery_image.description,
+            })
+          }
+        >
+          Edit
+        </Button>
+      </Typography>
+      <Typography variant="body1" gutterBottom>
+        {gallery_image.description}
+      </Typography>
+      {gallery_image?.images?.length > 0 ? (
+        <TableContainer component={Paper} elevation={3} sx={{ mb: 3 }}>
+          <Table>
+            <TableBody>
+              {gallery_image.images.map((img, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <img
+                      src={img}
+                      alt="gallery"
+                      width="120px"
+                      style={{ borderRadius: "5px" }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Button onClick={() => handleDelete(index, "image")}>
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <Typography>No images available.</Typography>
+      )}
 
-        <Typography variant="h6" sx={{ mb: 1 }}>Image Description</Typography>
-        <JoditEditor ref={imageEditor} value={galleryImageDescription} onChange={setGalleryImageDescription} />
+      {/* Video Gallery Section */}
+      <Typography variant="h5" gutterBottom>
+        {gallery_video.title}
+        <Button
+          onClick={() =>
+            handleOpen("video", {
+              title: gallery_video.title,
+              description: gallery_video.description,
+            })
+          }
+        >
+          Edit
+        </Button>
+      </Typography>
+      <Typography variant="body1" gutterBottom>
+        {gallery_video.description}
+      </Typography>
+      {gallery_video?.videos?.length > 0 ? (
+        <TableContainer component={Paper} elevation={3}>
+          <Table>
+            <TableBody>
+              {gallery_video.videos.map((vid, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <video
+                      controls
+                      width="200px"
+                      style={{ borderRadius: "5px" }}
+                    >
+                      <source src={vid} type="video/mp4" />
+                    </video>
+                  </TableCell>
+                  <TableCell>
+                    <Button onClick={() => handleDelete(index, "video")}>
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <Typography>No videos available.</Typography>
+      )}
 
-        <Typography variant="h6" sx={{ mt: 3 }}>Upload Images</Typography>
-        <input type="file" multiple accept="image/*" onChange={(e) => handleFileUpload(e, setSelectedImages)} />
-        <Stack direction="row" spacing={2} mt={2}>
-          {galleryImages.map((img, index) => (
-            <Box key={index} sx={{ position: "relative" }}>
-              <Avatar src={img} sx={{ width: 100, height: 100 }} />
-              <IconButton onClick={() => handleDelete(img, "image")} sx={{ position: "absolute", top: 0, right: 0 }}>
-                <DeleteIcon color="error" />
-              </IconButton>
-            </Box>
-          ))}
-        </Stack>
-      </Paper>
-
-      {/* Video Section */}
-      <Paper sx={{ p: 3, border: "1px solid #ddd", mt: 3 }}>
-        <Typography variant="h5" sx={{ mb: 2 }}>Gallery Videos</Typography>
-
-        <TextField
-          fullWidth
-          label="Video Title"
-          variant="outlined"
-          value={galleryVideoTitle}
-          onChange={(e) => setGalleryVideoTitle(e.target.value)}
-          disabled={!isEditable}
-          sx={{ mb: 2 }}
-        />
-
-        <Typography variant="h6" sx={{ mb: 1 }}>Video Description</Typography>
-        <JoditEditor ref={videoEditor} value={galleryVideoDescription} onChange={setGalleryVideoDescription} />
-
-        <Typography variant="h6" sx={{ mt: 3 }}>Upload Videos</Typography>
-        <input type="file" multiple accept="video/*" onChange={(e) => handleFileUpload(e, setSelectedVideos)} />
-        <Stack direction="row" spacing={2} mt={2}>
-          {galleryVideos.map((vid, index) => (
-            <Box key={index} sx={{ position: "relative" }}>
-              <video src={vid} width={150} height={100} controls />
-              <IconButton onClick={() => handleDelete(vid, "video")} sx={{ position: "absolute", top: 0, right: 0 }}>
-                <DeleteIcon color="error" />
-              </IconButton>
-            </Box>
-          ))}
-        </Stack>
-      </Paper>
-
-      {/* Save and Edit Buttons */}
-      <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-        {!isEditable ? (
-          <Button variant="outlined" onClick={() => setIsEditable(true)}>Edit</Button>
-        ) : (
-          <Button variant="contained" onClick={handleSave}>Save</Button>
-        )}
-      </Stack>
-    </Box>
+      {/* Dialog for Add/Edit Image or Video */}
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>
+          {editData ? "Edit" : "Add"} {formData.type}
+        </DialogTitle>
+        <DialogContent>
+          {/* Conditionally render title and description inputs for editing */}
+          {editData ? (
+            <>
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                multiline
+                rows={4}
+              />
+            </>
+          ) : (
+            // Only show file input when adding a new item
+            <input
+              type="file"
+              name="file"
+              accept="image/*,video/*"
+              onChange={handleFileChange}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleSubmit} color="primary">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
-};
+}
 
 export default Gallery;

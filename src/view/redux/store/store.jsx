@@ -13,6 +13,8 @@ import userOpinionReducer from "../slice/userOpinionSlice";
 import registrationReducer from "../slice/registrationSlice";
 import subscribersReducer from "../slice/subscribersSlice";
 import programmesReducer from "../slice/ourProgrammesSlice";
+import socialMediaReducer from "../slice/socialMediaSlice"; // Import the new slice
+
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -29,6 +31,7 @@ const store = configureStore({
     registration: registrationReducer,
     subscribers: subscribersReducer,
     programmes: programmesReducer,
+    socialMedia: socialMediaReducer, // Add this line
   },
 });
 
