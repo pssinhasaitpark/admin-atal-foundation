@@ -7,12 +7,12 @@ import {
   Typography,
   Avatar,
   Box,
-  Divider,
   CircularProgress,
   Paper,
+  Grid,
 } from "@mui/material";
 import { Email, Person, Phone } from "@mui/icons-material";
-import logo from "../../../assets/Images/logo.png";
+
 const Profile = () => {
   const dispatch = useDispatch();
   const { first_name, last_name, user_name, email, mobile, loading, error } =
@@ -21,6 +21,12 @@ const Profile = () => {
   useEffect(() => {
     dispatch(fetchProfileData());
   }, [dispatch]);
+
+  // Generate initials for avatar
+  const getInitials = (first, last) => {
+    if (first && last) return `${first[0]}${last[0]}`.toUpperCase();
+    return "A P";
+  };
 
   if (loading) {
     return (
@@ -59,35 +65,27 @@ const Profile = () => {
           backgroundColor: "#ffffff",
         }}
       >
-        {/* Avatar */}
+        {/* Avatar with Initials */}
         <Avatar
-          sx={{ width: 100, height: 100, margin: "auto", mb: 2 }}
-          src={logo}
-          alt="User Avatar"
-        />
+          sx={{
+            width: 100,
+            height: 100,
+            margin: "auto",
+            mb: 2,
+            fontSize: 32,
+            fontWeight: "bold",
+            bgcolor: "#FF7900",
+            color: "#fff",
+          }}
+        >
+          {getInitials(first_name, last_name)}
+        </Avatar>
 
         <CardContent>
-          {/* User Information */}
-          <Typography variant="h5" fontWeight="bold" gutterBottom>
-            {first_name} {last_name}
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            color="text.secondary"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            gap={1}
-          >
-            <Person fontSize="small" />
-            {user_name || "User"}
-          </Typography>
-
-          <Divider sx={{ my: 2 }} />
-
           {/* Profile Details */}
-          <Box container spacing={2}>
-            <Box item xs={12}>
+          <Grid container spacing={2}>
+            {/* Full Name */}
+            <Grid item xs={12}>
               <Paper
                 sx={{
                   padding: 2,
@@ -95,16 +93,18 @@ const Profile = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: 1,
+                  boxShadow: 1,
                 }}
               >
-                <Email fontSize="small" />
-                <Typography variant="body1">
-                  {email || "No email available"}
+                <Person fontSize="small" color="primary" />
+                <Typography variant="body1" fontWeight="bold">
+                  {first_name} {last_name}
                 </Typography>
               </Paper>
-            </Box>
+            </Grid>
 
-            <Box item xs={12}>
+            {/* Username */}
+            <Grid item xs={12}>
               <Paper
                 sx={{
                   padding: 2,
@@ -112,15 +112,52 @@ const Profile = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: 1,
+                  boxShadow: 1,
                 }}
               >
-                <Phone fontSize="small" />
+                <Person fontSize="small" color="primary" />
+                <Typography variant="body1">{user_name || "User"}</Typography>
+              </Paper>
+            </Grid>
+
+            {/* Email */}
+            <Grid item xs={12}>
+              <Paper
+                sx={{
+                  padding: 2,
+                  backgroundColor: "#f0f0f0",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  boxShadow: 1,
+                }}
+              >
+                <Email fontSize="small" color="primary" />
                 <Typography variant="body1">
-                  {mobile || "No contact available"}
+                  {email || "admin@parkhya.net"}
                 </Typography>
               </Paper>
-            </Box>
-          </Box>
+            </Grid>
+
+            {/* Mobile */}
+            <Grid item xs={12}>
+              <Paper
+                sx={{
+                  padding: 2,
+                  backgroundColor: "#f0f0f0",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  boxShadow: 1,
+                }}
+              >
+                <Phone fontSize="small" color="primary" />
+                <Typography variant="body1">
+                  {mobile || "1234567898"}
+                </Typography>
+              </Paper>
+            </Grid>
+          </Grid>
         </CardContent>
       </Card>
     </Box>

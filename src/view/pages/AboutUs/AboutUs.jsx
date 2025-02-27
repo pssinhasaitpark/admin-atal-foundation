@@ -33,6 +33,7 @@ const AboutUs = () => {
   const [sections, setSections] = useState([]);
   const [data, setdata] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
+  // console.log("Sections:", sections);
 
   useEffect(() => {
     dispatch(fetchAboutData());
@@ -79,8 +80,8 @@ const AboutUs = () => {
       return prevSections.map((section, i) => {
         if (i === index) {
           return {
-            ...section, // Create a new object (avoids direct mutation)
-            images: [...(section.images || []), ...files], // Append images safely
+            ...section,
+            images: [...(section.images || []), ...files],
           };
         }
         return section;
@@ -100,8 +101,20 @@ const AboutUs = () => {
     if (selectedAbout?._id) formData.append("id", selectedAbout._id);
     if (bannerImage instanceof File) formData.append("banner", bannerImage);
 
-    // Append existing sections
     sections.forEach((section, index) => {
+      formData.append(`sections[${index}][title]`, section.title);
+      formData.append(`sections[${index}][description]`, section.description);
+
+      if (section.images && section.images.length > 0) {
+        section.images.forEach((image) => {
+          if (image instanceof File) {
+            formData.append("images", image);
+          }
+        });
+      }
+    });
+
+    data.forEach((section, index) => {
       formData.append(`sections[${index}][title]`, section.title);
       formData.append(`sections[${index}][description]`, section.description);
 
@@ -114,31 +127,12 @@ const AboutUs = () => {
       }
     });
 
-    // Append new sections
-    data.forEach((section, index) => {
-      formData.append(`newSections[${index}][title]`, section.title);
-      formData.append(
-        `newSections[${index}][description]`,
-        section.description
-      );
-
-      if (section.images && section.images.length > 0) {
-        section.images.forEach((image) => {
-          if (image instanceof File) {
-            formData.append(`newSections[${index}][images]`, image);
-          }
-        });
-      }
-    });
-
     try {
       await dispatch(saveAboutDataToBackend(formData));
 
-      // Clear new sections & reset editing index
       setdata([]);
       setEditingIndex(null);
 
-      // Refresh the data instead of reloading the page
       dispatch(fetchAboutData());
     } catch (error) {
       console.error("Error saving data:", error);
@@ -176,7 +170,7 @@ const AboutUs = () => {
       );
 
       setEditingIndex(null);
-      dispatch(fetchAboutData()); // Refresh data after update
+      dispatch(fetchAboutData());
     } catch (error) {
       console.error("Error updating section:", error);
     }
@@ -195,34 +189,108 @@ const AboutUs = () => {
         <Typography variant="h6" sx={{ mb: 2 }}>
           Banner Image
         </Typography>
+
         <Box sx={{ mb: 3 }}>
-          <input type="file" accept="image/*" onChange={handleBannerUpload} />
-          {bannerImage && (
-            <Stack
-              direction="row"
-              alignItems="center"
-              spacing={2}
-              sx={{ mt: 2 }}
+          <Stack direction="row" alignItems="center" spacing={2}>
+            {/* <Button
+              variant="contained"
+              component="label"
+              sx={{
+                backgroundColor: "#faa36c",
+                "&:hover": { backgroundColor: "#F68633" },
+                textTransform: "none",
+              }}
             >
-              <Avatar
-                src={
-                  bannerImage instanceof File
-                    ? URL.createObjectURL(bannerImage)
-                    : bannerImage
-                }
-                sx={{ width: 150, height: 80 }}
-                variant="rounded"
+              Choose File
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleBannerUpload}
               />
-              <IconButton onClick={handleBannerRemove}>
-                <DeleteIcon color="error" />
-              </IconButton>
-            </Stack>
-          )}
+            </Button> */}
+
+            {bannerImage && (
+              <Box
+                sx={{
+                  position: "relative",
+                  width: 350,
+                  height: 120,
+                  borderRadius: 2,
+                  overflow: "hidden",
+                  border: "2px solid #ddd",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Avatar
+                  src={
+                    bannerImage && typeof bannerImage === "object"
+                      ? URL.createObjectURL(bannerImage)
+                      : bannerImage
+                  }
+                  sx={{ width: "100%", height: "100%", borderRadius: 0 }}
+                  variant="square"
+                />
+                <IconButton
+                  onClick={handleBannerRemove}
+                  sx={{
+                    position: "absolute",
+                    top: 4,
+                    right: 4,
+                    backgroundColor: "white",
+                    boxShadow: 2,
+                    "&:hover": { backgroundColor: "#ff5252", color: "white" },
+                  }}
+                  size="small"
+                >
+                  <DeleteIcon fontSize="small" color="error" />
+                </IconButton>
+              </Box>
+            )}
+            <Button
+              variant="contained"
+              component="label"
+              sx={{
+                backgroundColor: "#faa36c",
+                "&:hover": { backgroundColor: "#F68633" },
+                textTransform: "none",
+              }}
+            >
+              Choose File
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleBannerUpload}
+              />
+            </Button>
+          </Stack>
         </Box>
 
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Existing Sections
-        </Typography>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{ mb: 2 }}
+        >
+          <Typography variant="h6">Existing Sections</Typography>
+
+          <IconButton
+            onClick={handleAddNew}
+            sx={{
+              backgroundColor: "#faa36c",
+              "&:hover": {
+                backgroundColor: "#F68633",
+              },
+              padding: "10px",
+            }}
+          >
+            <AddIcon />
+          </IconButton>
+        </Stack>
+
         {sections.map((section, index) => (
           <Box
             key={index}
@@ -239,6 +307,13 @@ const AboutUs = () => {
                   <Button
                     variant="contained"
                     onClick={() => handleUpdateSection(index)}
+                    sx={{
+                      ml: 2,
+                      backgroundColor: "#F68633",
+                      "&:hover": {
+                        backgroundColor: "#e0752d",
+                      },
+                    }}
                   >
                     Save
                   </Button>
@@ -252,6 +327,7 @@ const AboutUs = () => {
                 </IconButton>
               </Stack>
             </Stack>
+
             {editingIndex === index && (
               <Box sx={{ mt: 2 }}>
                 <TextField
@@ -269,11 +345,27 @@ const AboutUs = () => {
                     handleInputChange(index, "description", newContent)
                   }
                 />
+
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{ mt: 2, flexWrap: "wrap" }}
+                >
+                  {section.image && (
+                    <Avatar
+                      src={section.image}
+                      variant="rounded"
+                      sx={{ width: 150, height: 100, borderRadius: 2 }}
+                    />
+                  )}
+                </Stack>
+
                 <input
                   type="file"
                   multiple
                   accept="image/*"
                   onChange={(e) => handleImageUpload(index, e)}
+                  style={{ marginTop: "10px" }}
                 />
               </Box>
             )}
@@ -312,10 +404,17 @@ const AboutUs = () => {
           </Box>
         ))}
 
-        <IconButton onClick={handleAddNew}>
-          <AddIcon />
-        </IconButton>
-        <Button variant="contained" onClick={handleSaveAll} sx={{ ml: 2 }}>
+        <Button
+          variant="contained"
+          onClick={handleSaveAll}
+          sx={{
+            // ml: 2,
+            backgroundColor: "#F68633",
+            "&:hover": {
+              backgroundColor: "#e0752d",
+            },
+          }}
+        >
           <SaveIcon /> Save All
         </Button>
       </Paper>

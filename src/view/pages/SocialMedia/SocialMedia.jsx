@@ -14,11 +14,11 @@ import {
   fetchSocialMedia,
   updateSocialMedia,
 } from "../../redux/slice/socialMediaSlice";
+import { WhatsApp, Facebook, Instagram, YouTube } from "@mui/icons-material"; // Importing Icons
 
 const SocialMedia = () => {
   const dispatch = useDispatch();
   const { links, id, loading } = useSelector((state) => state.socialMedia);
-  console.log("Links:", links);
 
   const [socialLinks, setSocialLinks] = useState({
     whatsapp: "",
@@ -34,16 +34,14 @@ const SocialMedia = () => {
     severity: "success",
   });
 
-  // Fetch data on mount
   useEffect(() => {
     dispatch(fetchSocialMedia());
   }, [dispatch]);
 
-  // Update state when links are fetched
   useEffect(() => {
     if (links) {
       setSocialLinks({
-        whatsapp: links.whatsapp?.link || "", // Extracting `link` field
+        whatsapp: links.whatsapp?.link || "",
         facebook: links.facebook?.link || "",
         instagram: links.instagram?.link || "",
         youtube: links.youtube?.link || "",
@@ -51,12 +49,10 @@ const SocialMedia = () => {
     }
   }, [links]);
 
-  // Handle input change
   const handleChange = (e) => {
     setSocialLinks({ ...socialLinks, [e.target.name]: e.target.value });
   };
 
-  // Handle saving all fields at once
   const handleSaveAll = async () => {
     if (!id) {
       setSnackbar({
@@ -68,7 +64,6 @@ const SocialMedia = () => {
     }
 
     setSaving(true);
-
     try {
       await dispatch(updateSocialMedia({ id, updatedLinks: socialLinks }));
       setSnackbar({
@@ -85,49 +80,83 @@ const SocialMedia = () => {
     } finally {
       setSaving(false);
     }
+    dispatch(fetchSocialMedia());
+  };
+
+  const iconMap = {
+    whatsapp: <WhatsApp sx={{ color: "#25D366", fontSize: 32 }} />,
+    facebook: <Facebook sx={{ color: "#1877F2", fontSize: 32 }} />,
+    instagram: <Instagram sx={{ color: "#E1306C", fontSize: 32 }} />,
+    youtube: <YouTube sx={{ color: "red", fontSize: 32 }} />,
   };
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <Box
         sx={{
-          p: 3,
+          p: 4,
           boxShadow: 3,
           borderRadius: 2,
           backgroundColor: "white",
-          mt: 4,
+          mt: 5,
         }}
       >
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Update Social Media Links
+        <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 5 }}>
+          Social Media Links
         </Typography>
 
         {loading && (
-          <Box display="flex" justifyContent="center" my={2}>
+          <Box display="flex" justifyContent="center" my={3}>
             <CircularProgress />
           </Box>
         )}
 
-        {/* Input Fields */}
+        {/* Input Fields with Icons Outside */}
         {Object.keys(socialLinks).map((key) => (
-          <TextField
+          <Box
             key={key}
-            fullWidth
-            label={`${key.charAt(0).toUpperCase() + key.slice(1)} URL`}
-            name={key}
-            value={socialLinks[key]}
-            onChange={handleChange}
-            margin="normal"
-          />
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              mb: 3, // Adjusted margin-bottom for better spacing
+            }}
+          >
+            {/* Icon */}
+            <Box sx={{ width: 40, display: "flex", justifyContent: "center" }}>
+              {iconMap[key]}
+            </Box>
+
+            {/* Input Field */}
+            <TextField
+              fullWidth
+              label={`${key.charAt(0).toUpperCase() + key.slice(1)} URL`}
+              name={key}
+              value={socialLinks[key]}
+              onChange={handleChange}
+              sx={{
+                "& .MuiInputBase-root": {
+                  py: 1.2, // Adjust padding for input height consistency
+                },
+              }}
+            />
+          </Box>
         ))}
 
         {/* Save All Button */}
-        <Box sx={{ textAlign: "right", mt: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
           <Button
             variant="contained"
-            color="success"
             onClick={handleSaveAll}
             disabled={saving || loading}
+            sx={{
+              minWidth: 140,
+              py: 1,
+              backgroundColor: "#F68633",
+              "&:hover": {
+                backgroundColor: "#e0752d", // Darker shade for hover effect
+              },
+            }}
           >
             {saving ? <CircularProgress size={24} /> : "Update All"}
           </Button>

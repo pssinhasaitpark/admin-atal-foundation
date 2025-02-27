@@ -12,7 +12,7 @@ export const fetchContactData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/contact");
-      console.log("Fetched contact data", response.data);
+      // console.log("Fetched contact data", response.data);
       return response.data.contacts;
     } catch (error) {
       console.log("Error fetching contact data", error);
