@@ -42,7 +42,6 @@ const Events = () => {
     }
   }, [eventsData]);
 
-  // Fixed: Added memoized dependency array for debounce
   const debouncedEditorChange = useCallback(
     debounce((newContent) => {
       setDescription(newContent);
@@ -138,8 +137,8 @@ const Events = () => {
               readonly: !isEditable,
               placeholder: "Write about Atal's life...",
               height: 400,
-              cleanOnPaste: false, // Retain styles when pasting
-              cleanOnChange: false, // Retain the HTML structure while editing
+              cleanOnPaste: false,
+              cleanOnChange: false,
               toolbar: {
                 items: [
                   "bold",
@@ -169,7 +168,7 @@ const Events = () => {
               },
               uploader: {
                 insertImageAsBase64URI: true,
-                url: "/upload", // Define your upload endpoint
+                url: "/upload",
                 format: "json",
               },
             }}

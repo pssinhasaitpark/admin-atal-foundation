@@ -1,15 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-const BASEURL =process.env.REACT_APP_BASE_URL;
-// console.log("Base",BASEURL);
+const BASEURL = process.env.REACT_APP_BASE_URL;
 
 // Login request function
 const login = async (userData) => {
   try {
-    const response = await axios.post(
-      `${BASEURL}/login`,
-      userData
-    );
+    const response = await axios.post(`${BASEURL}/login`, userData);
     return response.data.data;
   } catch (error) {
     console.error("Login error:", error);
