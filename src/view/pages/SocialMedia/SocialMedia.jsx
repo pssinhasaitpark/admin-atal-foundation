@@ -18,7 +18,10 @@ import { WhatsApp, Facebook, Instagram, YouTube } from "@mui/icons-material"; //
 
 const SocialMedia = () => {
   const dispatch = useDispatch();
-  const { links, id, loading } = useSelector((state) => state.socialMedia);
+  const { links, id, loading, error } = useSelector(
+    (state) => state.socialMedia
+  );
+  const [showLoader, setShowLoader] = useState(true);
 
   const [socialLinks, setSocialLinks] = useState({
     whatsapp: "",
@@ -39,6 +42,14 @@ const SocialMedia = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000); // Ensure loader runs for at least one full round
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     if (links) {
       setSocialLinks({
         whatsapp: links.whatsapp?.link || "",
@@ -48,6 +59,25 @@ const SocialMedia = () => {
       });
     }
   }, [links]);
+
+  if (loading || showLoader)
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+
+  if (error)
+    return (
+      <Typography variant="h6" color="error">
+        Error: {error}
+      </Typography>
+    );
 
   const handleChange = (e) => {
     setSocialLinks({ ...socialLinks, [e.target.name]: e.target.value });
@@ -65,12 +95,17 @@ const SocialMedia = () => {
 
     setSaving(true);
     try {
-      await dispatch(updateSocialMedia({ id, updatedLinks: socialLinks }));
+      await dispatch(
+        updateSocialMedia({ id, updatedLinks: socialLinks })
+      ).unwrap();
+
       setSnackbar({
         open: true,
         message: "Social media links updated successfully!",
         severity: "success",
       });
+
+      dispatch(fetchSocialMedia()); // Fetch latest data only after successful update
     } catch (error) {
       setSnackbar({
         open: true,
@@ -80,7 +115,6 @@ const SocialMedia = () => {
     } finally {
       setSaving(false);
     }
-    dispatch(fetchSocialMedia());
   };
 
   const iconMap = {
@@ -104,12 +138,6 @@ const SocialMedia = () => {
         <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 5 }}>
           Social Media Links
         </Typography>
-
-        {loading && (
-          <Box display="flex" justifyContent="center" my={3}>
-            <CircularProgress />
-          </Box>
-        )}
 
         {/* Input Fields with Icons Outside */}
         {Object.keys(socialLinks).map((key) => (
@@ -148,7 +176,7 @@ const SocialMedia = () => {
           <Button
             variant="contained"
             onClick={handleSaveAll}
-            disabled={saving || loading}
+            disabled={saving}
             sx={{
               minWidth: 140,
               py: 1,

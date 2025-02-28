@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchContactData } from "../../redux/slice/contactusSlice";
 import {
@@ -11,19 +11,27 @@ import {
   Paper,
   Typography,
   CircularProgress,
-  Alert,
   Box,
 } from "@mui/material";
 
 function ContactUs() {
   const dispatch = useDispatch();
   const { contacts, loading, error } = useSelector((state) => state.contact);
+  const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
     dispatch(fetchContactData());
   }, [dispatch]);
 
-  if (loading)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000); // Ensure loader runs for at least one full round
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading || showLoader)
     return (
       <Box
         display="flex"
@@ -37,9 +45,9 @@ function ContactUs() {
 
   if (error)
     return (
-      <Alert severity="error" sx={{ margin: "20px" }}>
-        {error}
-      </Alert>
+      <Typography variant="h6" color="error">
+        Error: {error}
+      </Typography>
     );
 
   return (
