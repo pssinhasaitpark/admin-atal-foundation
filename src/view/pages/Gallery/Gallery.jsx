@@ -7,6 +7,7 @@ import {
   deleteGalleryItem,
 } from "../../redux/slice/galleryslice";
 import {
+  Box,
   Table,
   TableBody,
   TableCell,
@@ -21,6 +22,7 @@ import {
   DialogTitle,
   TextField,
   TableHead,
+  CircularProgress,
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import { Image, VideoLibrary } from "@mui/icons-material";
@@ -29,7 +31,7 @@ function Gallery() {
   const { gallery_image, gallery_video, loading, error } = useSelector(
     (state) => state.gallery
   );
-
+  const [showLoader, setShowLoader] = useState(true);
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [formData, setFormData] = useState({
@@ -43,7 +45,26 @@ function Gallery() {
     dispatch(fetchGallery());
   }, [dispatch]);
 
-  if (loading) return <Typography variant="h6">Loading...</Typography>;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000); // Ensure loader runs for at least one full round
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading || showLoader)
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+
   if (error)
     return (
       <Typography variant="h6" color="error">
@@ -155,10 +176,7 @@ function Gallery() {
       >
         Gallery
       </Typography>
-      {/* <Button onClick={() => handleOpen("image")}>Add Image</Button>
-      <Button onClick={() => handleOpen("video")} style={{ marginLeft: 10 }}>
-        Add Video
-      </Button> */}
+
       <Button onClick={() => handleOpen("image")} startIcon={<Image />}>
         Add Image
       </Button>
@@ -174,16 +192,6 @@ function Gallery() {
       {/* Image Gallery Section */}
       <Typography variant="h5" gutterBottom style={{ marginTop: 20 }}>
         {gallery_image.title}{" "}
-        {/* <Button
-          onClick={() =>
-            handleOpen("image", {
-              title: gallery_image.title,
-              description: gallery_image.description,
-            })
-          }
-        >
-          Edit
-        </Button> */}
         <Button
           onClick={() =>
             handleOpen("image", {

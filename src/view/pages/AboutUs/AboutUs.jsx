@@ -33,7 +33,7 @@ const AboutUs = () => {
   const [sections, setSections] = useState([]);
   const [data, setdata] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
-  // console.log("Sections:", sections);
+  // console.log("data:", data);
 
   useEffect(() => {
     dispatch(fetchAboutData());
@@ -73,22 +73,17 @@ const AboutUs = () => {
     isNew ? setdata(updatedList) : setSections(updatedList);
   };
 
-  const handleImageUpload = (index, event) => {
+  const handleImageUpload = (index, event, isNew = false) => {
     const files = Array.from(event.target.files);
+    const updatedList = isNew ? [...data] : [...sections];
 
-    setSections((prevSections) => {
-      return prevSections.map((section, i) => {
-        if (i === index) {
-          return {
-            ...section,
-            images: [...(section.images || []), ...files],
-          };
-        }
-        return section;
-      });
-    });
+    updatedList[index].images = [
+      ...(updatedList[index].images || []),
+      ...files,
+    ];
+
+    isNew ? setdata(updatedList) : setSections(updatedList);
   };
-
   const handleImageRemove = (sectionIndex, imageIndex, isNew = false) => {
     const updatedList = isNew ? [...data] : [...sections];
     updatedList[sectionIndex].images.splice(imageIndex, 1);
@@ -101,9 +96,10 @@ const AboutUs = () => {
     if (selectedAbout?._id) formData.append("id", selectedAbout._id);
     if (bannerImage instanceof File) formData.append("banner", bannerImage);
 
-    sections.forEach((section, index) => {
-      formData.append(`sections[${index}][title]`, section.title);
-      formData.append(`sections[${index}][description]`, section.description);
+    // Append only new sections
+    data.forEach((section, index) => {
+      formData.append(`data[${index}][title]`, section.title);
+      formData.append(`data[${index}][description]`, section.description);
 
       if (section.images && section.images.length > 0) {
         section.images.forEach((image) => {
@@ -114,25 +110,14 @@ const AboutUs = () => {
       }
     });
 
-    data.forEach((section, index) => {
-      formData.append(`sections[${index}][title]`, section.title);
-      formData.append(`sections[${index}][description]`, section.description);
-
-      if (section.images && section.images.length > 0) {
-        section.images.forEach((image) => {
-          if (image instanceof File) {
-            formData.append(`sections[${index}][images]`, image);
-          }
-        });
-      }
-    });
-
     try {
       await dispatch(saveAboutDataToBackend(formData));
 
+      // Clear new data and reset editing index
       setdata([]);
       setEditingIndex(null);
 
+      // Fetch updated data from backend
       dispatch(fetchAboutData());
     } catch (error) {
       console.error("Error saving data:", error);
@@ -179,7 +164,6 @@ const AboutUs = () => {
   const handleAddNew = () => {
     setdata([...data, { title: "", description: "", images: [] }]);
   };
-
   return (
     <Box>
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
@@ -192,24 +176,6 @@ const AboutUs = () => {
 
         <Box sx={{ mb: 3 }}>
           <Stack direction="row" alignItems="center" spacing={2}>
-            {/* <Button
-              variant="contained"
-              component="label"
-              sx={{
-                backgroundColor: "#faa36c",
-                "&:hover": { backgroundColor: "#F68633" },
-                textTransform: "none",
-              }}
-            >
-              Choose File
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleBannerUpload}
-              />
-            </Button> */}
-
             {bannerImage && (
               <Box
                 sx={{

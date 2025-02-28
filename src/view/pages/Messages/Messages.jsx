@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMessages } from "../../redux/slice/messageSlice";
 import {
+  Box,
   Table,
   TableBody,
   TableCell,
@@ -10,26 +11,43 @@ import {
   TableRow,
   Paper,
   CircularProgress,
-  Alert,
   Typography,
 } from "@mui/material";
 
 function Messages() {
   const dispatch = useDispatch();
   const { messages, loading, error } = useSelector((state) => state.message);
+  const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
     dispatch(fetchMessages());
   }, [dispatch]);
 
-  if (loading)
-    return <CircularProgress sx={{ display: "block", margin: "20px auto" }} />;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000); // Ensure loader runs for at least one full round
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading || showLoader)
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
 
   if (error)
     return (
-      <Alert severity="error" sx={{ margin: "20px", textAlign: "center" }}>
-        {error}
-      </Alert>
+      <Typography variant="h6" color="error">
+        Error: {error}
+      </Typography>
     );
 
   return (

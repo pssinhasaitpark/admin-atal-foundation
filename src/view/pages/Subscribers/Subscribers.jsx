@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSubscribers } from "../../redux/slice/subscribersSlice"; // Import the action
 import {
@@ -21,12 +21,20 @@ function Subscribers() {
     loading,
     error,
   } = useSelector((state) => state.subscribers);
-
+  const [showLoader, setShowLoader] = useState(true);
   useEffect(() => {
     dispatch(fetchSubscribers());
   }, [dispatch]);
 
-  if (loading)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000); // Ensure loader runs for at least one full round
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading || showLoader)
     return (
       <Box
         display="flex"
@@ -40,7 +48,7 @@ function Subscribers() {
 
   if (error)
     return (
-      <Typography color="error" align="center" mt={4}>
+      <Typography variant="h6" color="error">
         Error: {error}
       </Typography>
     );
