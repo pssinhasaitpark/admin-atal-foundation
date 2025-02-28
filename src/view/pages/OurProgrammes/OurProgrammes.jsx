@@ -1,112 +1,170 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
-  Select,
-  MenuItem,
   Button,
   TextField,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
+  Select,
+  MenuItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   IconButton,
-  Divider,
+  CircularProgress,
 } from "@mui/material";
-import { Delete, Edit } from "@mui/icons-material";
+import { Delete, Edit, Add } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchProgrammes,
+  addProgramme,
+  updateProgramme,
+  deleteProgramme,
+} from "../../redux/slice/ourProgrammesSlice";
 
 const categories = [
   "Education",
-  "Health",
-  "Environment",
-  "Women Empowerment",
-  "Child Welfare",
+  "Healthcare",
+  "Livelihood",
+  "Girl Child & Women Empowerment",
+  "Privileged Children",
+  "Civic Driven Change",
+  "Social Entrepreneurship",
+  "Special Support ourProgramme",
+  "Special Interventions",
 ];
 
-const exampleData = {
-  Education: [
-    {
-      id: 1,
-      title: "Educating Rural India: A Step Towards a Brighter Future",
-      description:
-        "India’s rapid economic growth has transformed urban landscapes, but rural areas continue to struggle with poverty and a lack of basic education. The disparity between urban and rural education is a major challenge, with millions of children in villages unable to access proper schooling. Despite the government’s vision for Universal Compulsory Primary Education, challenges such as poverty, lack of infrastructure, and the need for child labor prevent many children from receiving an education.Without basic education, these children remain trapped in a cycle of hard labor and low wages, limiting their opportunities for a better future. Education is the key to breaking this cycle, and ATAL FOUNDATION is committed to making quality education accessible to every child in rural India.ATAL FOUNDATION’s Mission for Rural EducationAt ATAL FOUNDATION, we believe that education is a fundamental right and a powerful tool for social change. Our primary mission is to educate thousands of village children who grow up illiterate, empowering them with knowledge and skills that will enable them to lead better lives.To achieve this, we are launching the Village Model School—a pilot initiative that will create a sustainable, high-quality education system tailored for rural communities.",
-      image: "",
-    },
-    {
-      id: 2,
-      title: "Village Model School: Transforming Rural Education",
-      description:
-        "The Village Model School is designed to provide primary and secondary education following the National Open School syllabus, ensuring that children receive a recognized and standardized curriculum.Key Focus Areas✔ Technology & Sciences: Introducing children to modern technology and scientific concepts.Hands-on learning experiences to spark curiosity and innovation.Digital literacy programs to prepare students for the future.✔ Health and Hygiene: Educating students on personal hygiene and sanitation.Awareness programs on nutrition, wellness, and preventive healthcare.Regular health check-ups and medical support.✔ Extra-Curricular Activities: Encouraging creativity through art, music, and drama.Skill-based programs to develop confidence and communication abilities.Exposure to new ideas through workshops and community projects.✔ Sports and Games: Promoting physical fitness and team spirit.Access to sports facilities and professional coaching.Opportunities to participate in inter-school competitions.",
-      image: "",
-    },
-  ],
-  Health: [
-    {
-      id: 1,
-      title: "Empowering Lives Through Quality Healthcare",
-      description:
-        "Street and Working Children live and work in extremely unhygienic conditions making them prone to severe skin conditions like scabies. At the same time, as these children live and work on the streets they are susceptible to physical injuries, which often left untreated leads to impairment of body parts. One can see a high incidence of substance use among the children and they are also susceptible to sexually transmitted infections thereby making them fall in the high-risk category of people who could be exposed to HIV. Thus to reduce the problems faced by children and at the same time also create awareness amongst them about hygiene and nutrition, the health care programme was started by Atal Foundation in 2011.ObjectivesTo provide both curative and preventive treatment accessible to the children directly on the streetTo form health cooperative of the children and to empower them to have ownership of the health projectTo increase the awareness level of the children in terms of their health needsTo establish a cadre of child health educatorsPropagating the concept of health cooperative at community and grass root level for collective action in the field of healthTo network with the health professionals in the city as well as the government health care institutionsAdvocate for change in policies on health issues at central, state and local levels, which has direct bearing on children's lives",
-    },
-  ],
-  Livelihood: [
-    {
-      id: 1,
-      title: "Livelihood: Empowering Communities, Transforming Lives",
-      description:
-        "At ATAL FOUNDATION, we believe that sustainable livelihoods are the key to breaking the cycle of poverty and fostering self-reliance. Our mission is to create opportunities that enable individuals, especially in rural and underprivileged communities, to earn a dignified living through skill development, entrepreneurship, and employment support.Our Approach to Livelihood DevelopmentSkill Development & Vocational TrainingWe provide hands-on training in various trades, including agriculture, handicrafts, tailoring, digital literacy, and more, equipping individuals with market-relevant skills for better employment opportunities.Entrepreneurship & Small Business SupportWe encourage self-employment by offering financial literacy programs, mentorship, and access to micro-financing, helping individuals start and sustain their businesses.Empowering Women & YouthSpecial focus is given to women and youth, ensuring they have equal access to resources, training, and employment, making them active contributors to their families and communities.Sustainable & Rural Livelihood InitiativesWe promote eco-friendly practices such as organic farming, dairy farming, and other sustainable income-generation activities that contribute to environmental conservation and economic growth.",
-    },
-  ],
-};
-
 const OurProgrammesAdmin = () => {
+  const dispatch = useDispatch();
+  const {
+    items: programmes,
+    loading,
+    error,
+  } = useSelector((state) => state.programmes);
+  // console.log("Items:", programmes);
+
   const [selectedCategory, setSelectedCategory] = useState("Education");
-  const [programmes, setProgrammes] = useState(exampleData["Education"] || []);
+  const [categoryBanner, setCategoryBanner] = useState(null);
+  const [categoryBannerPreview, setCategoryBannerPreview] = useState(null);
   const [newProgramme, setNewProgramme] = useState({
     title: "",
     description: "",
-    image: "",
+    category: selectedCategory,
+    detailImages: [],
   });
+  const [programmeImagePreviews, setProgrammeImagePreviews] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [expandedId, setExpandedId] = useState(null);
+  const [showEditor, setShowEditor] = useState(false);
 
-  // Handle Category Change
+  useEffect(() => {
+    dispatch(fetchProgrammes());
+  }, [dispatch]);
+
+  // Handle category selection change
   const handleCategoryChange = (event) => {
-    const category = event.target.value;
-    setSelectedCategory(category);
-    setProgrammes(exampleData[category] || []);
+    setSelectedCategory(event.target.value);
+    setNewProgramme({ ...newProgramme, category: event.target.value });
+    setCategoryBannerPreview(null);
   };
 
-  // Add or Update Programme
-  const handleSaveProgramme = () => {
-    if (!newProgramme.title || !newProgramme.description) return;
+  // Handle category banner upload
+  const handleCategoryBannerChange = (e) => {
+    const file = e.target.files[0];
+    setCategoryBanner(file);
+    setCategoryBannerPreview(URL.createObjectURL(file));
+  };
 
-    if (editingId !== null) {
-      setProgrammes((prev) =>
-        prev.map((p) => (p.id === editingId ? { ...p, ...newProgramme } : p))
-      );
-      setEditingId(null);
-    } else {
-      setProgrammes((prev) => [...prev, { id: Date.now(), ...newProgramme }]);
+  // Handle programme detail image upload
+  const handleProgrammeImagesChange = (e) => {
+    const files = Array.from(e.target.files);
+    setNewProgramme({
+      ...newProgramme,
+      detailImages: [...newProgramme.detailImages, ...files],
+    });
+
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setProgrammeImagePreviews([...programmeImagePreviews, ...previews]);
+  };
+
+  // Handle form submission (Add / Update Programme)
+  const handleSaveProgramme = () => {
+    if (
+      !newProgramme.title ||
+      !newProgramme.description ||
+      newProgramme.detailImages.length === 0
+    ) {
+      alert("All fields are required!");
+      return;
     }
 
-    setNewProgramme({ title: "", description: "", image: "" });
+    const formData = new FormData();
+    formData.append("category", newProgramme.category);
+    formData.append("banner", categoryBanner);
+
+    formData.append(
+      "details",
+      JSON.stringify([
+        { title: newProgramme.title, description: newProgramme.description },
+      ])
+    );
+
+    newProgramme.detailImages.forEach((image) => {
+      formData.append("detailImages", image);
+    });
+
+    let action;
+    if (editingId) {
+      formData.append("_id", editingId);
+      action = updateProgramme({ id: editingId, formData });
+    } else {
+      action = addProgramme(formData);
+    }
+
+    // Dispatch action and wait for it to complete
+    dispatch(action)
+      .then(() => {
+        dispatch(fetchProgrammes()); // Fetch updated data
+        resetForm(); // Reset form fields after success
+      })
+      .catch((error) => {
+        console.error("Error saving programme:", error);
+        alert("Failed to save programme. Please try again.");
+      });
+  };
+
+  // Reset form fields
+  const resetForm = () => {
+    setNewProgramme({
+      title: "",
+      description: "",
+      category: selectedCategory,
+      detailImages: [],
+    });
+    setProgrammeImagePreviews([]);
+    setCategoryBanner(null);
+    setShowEditor(false); // Hide editor after saving
   };
 
   // Edit Programme
   const handleEditProgramme = (programme) => {
-    setNewProgramme(programme);
-    setEditingId(programme.id);
+    setNewProgramme({
+      title: programme.details[0]?.title || "",
+      description: programme.details[0]?.description || "",
+      category: programme.category,
+      detailImages: [],
+    });
+
+    setProgrammeImagePreviews(programme.detailImages || []);
+    setEditingId(programme._id);
+    setShowEditor(true); // Show editor when editing
   };
 
   // Delete Programme
   const handleDeleteProgramme = (id) => {
-    setProgrammes((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  // Toggle Description View
-  const toggleExpand = (id) => {
-    setExpandedId(expandedId === id ? null : id);
+    dispatch(deleteProgramme(id));
   };
 
   return (
@@ -115,13 +173,15 @@ const OurProgrammesAdmin = () => {
         Our Programmes Admin
       </Typography>
 
-      {/* Category Selector */}
+      {/* Category Selection */}
+      <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+        Select Category
+      </Typography>
       <Select
         value={selectedCategory}
         onChange={handleCategoryChange}
-        displayEmpty
         fullWidth
-        sx={{ mb: 3 }}
+        sx={{ mb: 2 }}
       >
         {categories.map((category) => (
           <MenuItem key={category} value={category}>
@@ -130,100 +190,134 @@ const OurProgrammesAdmin = () => {
         ))}
       </Select>
 
-      {/* CRUD Form */}
+      {/* Category Banner Upload */}
       <Box mb={3} p={2} sx={{ border: "1px solid #ddd", borderRadius: 2 }}>
-        <Typography variant="h6">Add / Edit Programme</Typography>
-        <TextField
-          fullWidth
-          label="Title"
-          value={newProgramme.title}
-          onChange={(e) =>
-            setNewProgramme({ ...newProgramme, title: e.target.value })
-          }
-          sx={{ mt: 2 }}
-        />
-        <JoditEditor
-          value={newProgramme.description}
-          onChange={(content) =>
-            setNewProgramme({ ...newProgramme, description: content })
-          }
-          config={{
-            placeholder: "Enter programme description...",
-            minHeight: 200,
-          }}
-        />
-        <Button
-          variant="contained"
-          onClick={handleSaveProgramme}
-          sx={{
-            mt: 2,
-            backgroundColor: "#F68633",
-            "&:hover": { backgroundColor: "#e0752d" },
-          }}
-        >
-          {editingId ? "Update Programme" : "Add Programme"}
-        </Button>
+        <Typography variant="h6">Category Banner</Typography>
+        <input type="file" onChange={handleCategoryBannerChange} />
+        {categoryBannerPreview && (
+          <img
+            src={categoryBannerPreview}
+            alt="Category Banner"
+            style={{ width: "10%", height: "auto", marginTop: 10 }}
+          />
+        )}
       </Box>
 
-      {/* Programmes List */}
-      <List>
-        {programmes.map((programme) => {
-          const isExpanded = expandedId === programme.id;
-          const shortDescription =
-            programme.description.length > 100
-              ? programme.description.substring(0, 100) + "..."
-              : programme.description;
+      {/* Add/Edit Programme Form */}
+      {showEditor && (
+        <Box mb={3} p={2} sx={{ border: "1px solid #ddd", borderRadius: 2 }}>
+          <Typography variant="h6">Add / Edit Programme</Typography>
+          <TextField
+            fullWidth
+            label="Title"
+            value={newProgramme.title}
+            onChange={(e) =>
+              setNewProgramme({ ...newProgramme, title: e.target.value })
+            }
+            sx={{ mt: 2 }}
+          />
+          <JoditEditor
+            value={newProgramme.description}
+            onChange={(content) =>
+              setNewProgramme({ ...newProgramme, description: content })
+            }
+          />
 
-          return (
-            <React.Fragment key={programme.id}>
-              <ListItem
-                alignItems="flex-start"
-                sx={{ display: "flex", gap: 2 }}
-              >
-                <ListItemText
-                  primary={
-                    <Typography variant="h6">{programme.title}</Typography>
-                  }
-                  secondary={
-                    <>
-                      <Typography
-                        variant="body2"
-                        dangerouslySetInnerHTML={{
-                          __html: isExpanded
-                            ? programme.description
-                            : shortDescription,
-                        }}
-                        sx={{ whiteSpace: "pre-line", wordWrap: "break-word" }}
-                      />
-                      {programme.description.length > 100 && (
-                        <Button
-                          onClick={() => toggleExpand(programme.id)}
-                          size="small"
-                          sx={{ textTransform: "none", mt: 1 }}
-                        >
-                          {isExpanded ? "Show Less" : "Read More"}
-                        </Button>
-                      )}
-                    </>
-                  }
-                  sx={{ pr: 5 }} // Adds right padding to separate text from icons
-                />
-                <ListItemSecondaryAction sx={{ ml: 3 }}>
-                  <IconButton onClick={() => handleEditProgramme(programme)}>
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    onClick={() => handleDeleteProgramme(programme.id)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-              <Divider />
-            </React.Fragment>
-          );
-        })}
-      </List>
+          {/* Programme Images Upload */}
+          <Typography variant="body1" sx={{ mt: 2 }}>
+            Upload Programme Images
+          </Typography>
+          <input type="file" multiple onChange={handleProgrammeImagesChange} />
+          {programmeImagePreviews.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt="Programme"
+              style={{
+                width: "50px",
+                height: "auto",
+                marginTop: 10,
+                marginRight: 10,
+              }}
+            />
+          ))}
+
+          <Button
+            variant="contained"
+            onClick={handleSaveProgramme}
+            sx={{
+              mt: 2,
+              backgroundColor: "#F68633",
+              "&:hover": { backgroundColor: "#e0752d" },
+            }}
+          >
+            {editingId ? "Update Programme" : "Add Programme"}
+          </Button>
+        </Box>
+      )}
+
+      {/* Button to Add New Programme */}
+      <Button
+        variant="contained"
+        startIcon={<Add />}
+        onClick={() => {
+          resetForm(); // Reset form to add new programme
+          setShowEditor(true); // Show editor
+        }}
+        sx={{
+          mb: 2,
+          backgroundColor: "#F68633",
+          "&:hover": { backgroundColor: "#e0752d" },
+        }}
+      >
+        Add New Programme
+      </Button>
+
+      {/* Loading State */}
+      {loading && <CircularProgress sx={{ display: "block", mx: "auto" }} />}
+      {error && <Typography color="error">Error: {error}</Typography>}
+
+      {/* Filtered Programmes Table */}
+      <TableContainer>
+        <Table sx={{ border: "1px solid #ddd" }}>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ border: "1px solid #ddd" }}>Title</TableCell>
+              <TableCell sx={{ border: "1px solid #ddd" }}>
+                Description
+              </TableCell>
+              <TableCell sx={{ border: "1px solid #ddd" }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {programmes
+              .filter((programme) => programme.category === selectedCategory)
+              .map((programme) => (
+                <TableRow key={programme._id}>
+                  <TableCell sx={{ border: "1px solid #ddd" }}>
+                    {programme.details[0]?.title || "No Title"}
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ddd" }}
+                    dangerouslySetInnerHTML={{
+                      __html: programme.details[0]?.description || "",
+                    }}
+                  />
+                  <TableCell sx={{ border: "1px solid #ddd" }}>
+                    <IconButton onClick={() => handleEditProgramme(programme)}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => handleDeleteProgramme(programme._id)}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Box>
   );
 };

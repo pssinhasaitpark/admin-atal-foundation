@@ -37,8 +37,6 @@ const About = () => {
       contributions,
       image: selectedImage,
     };
-    // console.log("Saved Data:", aboutData);
-    // Here you can send aboutData to an API to save in the database
   };
 
   return (
@@ -75,7 +73,6 @@ const About = () => {
 
           {/* Form Fields */}
           <Box sx={{ flexBasis: { xs: "100%", md: "66%" }, mb: 2 }}>
-            {/* Name */}
             <TextField
               fullWidth
               label="Full Name"
@@ -85,7 +82,6 @@ const About = () => {
               sx={{ mb: 2 }}
             />
 
-            {/* Date of Birth */}
             <TextField
               fullWidth
               label="Date of Birth"
@@ -97,7 +93,6 @@ const About = () => {
               sx={{ mb: 2 }}
             />
 
-            {/* Key Achievements */}
             <TextField
               fullWidth
               multiline
@@ -110,7 +105,6 @@ const About = () => {
               sx={{ mb: 2 }}
             />
 
-            {/* Contributions */}
             <TextField
               fullWidth
               multiline
@@ -124,20 +118,18 @@ const About = () => {
             />
           </Box>
 
-          {/* About Text (Jodit Editor) */}
           <Box sx={{ width: "100%" }}>
             <JoditEditor
               value={aboutText}
               onChange={setAboutText}
               config={{
-                readonly: false, // true for readonly mode
+                readonly: false,
                 placeholder: "Write about अटल 's life...",
               }}
               style={{ width: "100%", minHeight: "200px" }}
             />
           </Box>
 
-          {/* Save Button */}
           <Box sx={{ width: "100%" }}>
             <Button
               variant="contained"

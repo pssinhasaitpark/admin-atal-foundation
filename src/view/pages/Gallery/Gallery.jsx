@@ -48,7 +48,7 @@ function Gallery() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowLoader(false);
-    }, 1000); // Ensure loader runs for at least one full round
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -347,7 +347,6 @@ function Gallery() {
           {editData ? "Edit" : "Add"} {formData.type}
         </DialogTitle>
         <DialogContent>
-          {/* Conditionally render title and description inputs for editing */}
           {editData ? (
             <>
               <TextField
@@ -370,7 +369,6 @@ function Gallery() {
               />
             </>
           ) : (
-            // Only show file input when adding a new item
             <input
               type="file"
               name="file"

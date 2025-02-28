@@ -22,7 +22,7 @@ const Home = () => {
         value={editorContent}
         onChange={(content) => setEditorContent(content)}
         config={{
-          readonly: false, // Set to true for readonly mode
+          readonly: false,
           placeholder: "Start writing here...",
         }}
       />
