@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../axios/axios"; // Ensure this is correctly configured
+import api from "../axios/axios";
 
 const initialState = {
   items: [],
@@ -7,7 +7,7 @@ const initialState = {
   error: null,
 };
 
-// Async thunk for fetching programmes
+// Async thunk for fetching all programmes
 export const fetchProgrammes = createAsyncThunk(
   "programmes/fetchProgrammes",
   async (_, { rejectWithValue }) => {
@@ -22,6 +22,21 @@ export const fetchProgrammes = createAsyncThunk(
   }
 );
 
+// Async thunk for fetching programmes by category
+export const fetchProgrammesByCategory = createAsyncThunk(
+  "programmes/fetchProgrammesByCategory",
+  async (category, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/our-programme/category/${category}`);
+      return response.data.ourProgrammes || [];
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Error fetching programmes by category"
+      );
+    }
+  }
+);
+
 // Async thunk for adding a programme
 export const addProgramme = createAsyncThunk(
   "programmes/addProgramme",
@@ -30,8 +45,8 @@ export const addProgramme = createAsyncThunk(
       await api.post("/our-programme", programmeData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      await dispatch(fetchProgrammes()); // ✅ Fetch updated data after adding
-      return null; // No need to return anything explicitly
+      await dispatch(fetchProgrammes());
+      return null;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Error adding programme");
     }
@@ -41,12 +56,12 @@ export const addProgramme = createAsyncThunk(
 // Async thunk for updating a programme
 export const updateProgramme = createAsyncThunk(
   "programmes/updateProgramme",
-  async ({ id, formData }, { rejectWithValue, dispatch }) => {
+  async ({ category, id, formData }, { rejectWithValue, dispatch }) => {
     try {
-      await api.put(`/our-programme/${id}`, formData, {
+      await api.patch(`/our-programme/update/${category}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      await dispatch(fetchProgrammes()); // ✅ Fetch updated data after updating
+      await dispatch(fetchProgrammes());
       return null;
     } catch (error) {
       return rejectWithValue(
@@ -56,17 +71,38 @@ export const updateProgramme = createAsyncThunk(
   }
 );
 
-// Async thunk for deleting a programme
-export const deleteProgramme = createAsyncThunk(
-  "programmes/deleteProgramme",
-  async (id, { rejectWithValue, dispatch }) => {
+export const updateSection = createAsyncThunk(
+  "programmes/updateSection",
+  async ({ category, id, formData }, { rejectWithValue, dispatch }) => {
     try {
-      await api.delete(`/our-programme/${id}`);
-      await dispatch(fetchProgrammes()); // ✅ Fetch updated data after deleting
-      return id;
+      await api.patch(
+        `/our-programme/update/${category}/details/${id}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      await dispatch(fetchProgrammes());
+      return null;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data || "Error deleting programme"
+        error.response?.data || "Error updating programme"
+      );
+    }
+  }
+);
+
+// Async thunk for deleting a programme detail
+export const deleteProgrammeDetail = createAsyncThunk(
+  "programmes/deleteProgrammeDetail",
+  async ({ category, detailId }, { rejectWithValue, dispatch }) => {
+    try {
+      await api.delete(`/our-programme/delete/${category}/details/${detailId}`);
+      await dispatch(fetchProgrammes());
+      return detailId;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Error deleting programme detail"
       );
     }
   }
@@ -82,10 +118,9 @@ const programmesSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Programmes
       .addCase(fetchProgrammes.pending, (state) => {
         state.loading = true;
-        state.error = null; // Clear previous errors
+        state.error = null;
       })
       .addCase(fetchProgrammes.fulfilled, (state, action) => {
         state.loading = false;
@@ -95,8 +130,18 @@ const programmesSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Add Programme (No Need to Modify State, We Fetch New Data)
+      .addCase(fetchProgrammesByCategory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProgrammesByCategory.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload;
+      })
+      .addCase(fetchProgrammesByCategory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       .addCase(addProgramme.pending, (state) => {
         state.loading = true;
       })
@@ -107,8 +152,6 @@ const programmesSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Update Programme (No Need to Modify State, We Fetch New Data)
       .addCase(updateProgramme.pending, (state) => {
         state.loading = true;
       })
@@ -119,15 +162,23 @@ const programmesSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Delete Programme (No Need to Modify State, We Fetch New Data)
-      .addCase(deleteProgramme.pending, (state) => {
+      .addCase(updateSection.pending, (state) => {
         state.loading = true;
       })
-      .addCase(deleteProgramme.fulfilled, (state) => {
+      .addCase(updateSection.fulfilled, (state) => {
         state.loading = false;
       })
-      .addCase(deleteProgramme.rejected, (state, action) => {
+      .addCase(updateSection.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteProgrammeDetail.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteProgrammeDetail.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(deleteProgrammeDetail.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
