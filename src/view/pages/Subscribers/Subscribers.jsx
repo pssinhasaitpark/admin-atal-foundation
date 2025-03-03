@@ -64,16 +64,14 @@ function Subscribers() {
     <TableContainer
       component={Paper}
       sx={{
-        mt: 2,
-        p: 2,
-        borderRadius: 2,
-        boxShadow: 3,
+        borderRadius: 0,
+        boxShadow: 0,
         maxWidth: "95%", // ✅ Shrinks width
         // margin: "auto", // ✅ Centers it
         overflowX: "auto",
       }}
     >
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         Subscribers
       </Typography>
       <Table sx={{ width: "100%" }}>

@@ -163,7 +163,7 @@ const AboutUs = () => {
 
   return (
     <Box>
-      <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 2 }}>
+      <Paper sx={{ borderRadius: 0, boxShadow: 0 }}>
         {status === "loading" ? (
           <Box
             sx={{
@@ -254,9 +254,9 @@ const AboutUs = () => {
               justifyContent="space-between"
               sx={{ mb: 2 }}
             >
-              <Typography variant="h6">Existing Sections</Typography>
+              {/* <Typography variant="h6">Existing Sections</Typography> */}
 
-              <IconButton
+              {/* <IconButton
                 onClick={handleAddNew}
                 sx={{
                   backgroundColor: "#faa36c",
@@ -267,7 +267,22 @@ const AboutUs = () => {
                 }}
               >
                 <AddIcon />
-              </IconButton>
+                Add New Section
+              </IconButton> */}
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleAddNew}
+                sx={{
+                  backgroundColor: "#F68633",
+                  "&:hover": {
+                    backgroundColor: "#F68633",
+                  },
+                  padding: "10px",
+                }}
+              >
+                Add New Section
+              </Button>
             </Stack>
 
             {sections.map((section, index) => (
@@ -351,9 +366,9 @@ const AboutUs = () => {
               </Box>
             ))}
 
-            <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
+            {/* <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
               Add New Section
-            </Typography>
+            </Typography> */}
             {data.map((entry, index) => (
               <Box
                 key={index}

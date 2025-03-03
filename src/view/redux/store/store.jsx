@@ -13,7 +13,7 @@ import userOpinionReducer from "../slice/userOpinionSlice";
 import registrationReducer from "../slice/registrationSlice";
 import subscribersReducer from "../slice/subscribersSlice";
 import programmesReducer from "../slice/ourProgrammesSlice";
-import socialMediaReducer from "../slice/socialMediaSlice"; // Import the new slice
+import socialMediaReducer from "../slice/socialMediaSlice";
 import dashboardReducer from "../slice/dashboardSlice";
 const store = configureStore({
   reducer: {

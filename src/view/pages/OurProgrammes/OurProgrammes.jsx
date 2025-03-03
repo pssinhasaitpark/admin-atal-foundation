@@ -14,6 +14,11 @@ import {
   TableRow,
   IconButton,
   CircularProgress,
+  Card,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { Delete, Edit, Add } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
@@ -22,7 +27,9 @@ import {
   fetchProgrammes,
   addProgramme,
   updateProgramme,
-  deleteProgramme,
+  updateSection,
+  deleteProgrammeDetail,
+  fetchProgrammesByCategory,
 } from "../../redux/slice/ourProgrammesSlice";
 
 const categories = [
@@ -44,9 +51,10 @@ const OurProgrammesAdmin = () => {
     loading,
     error,
   } = useSelector((state) => state.programmes);
-  // console.log("Items:", programmes);
 
-  const [selectedCategory, setSelectedCategory] = useState("Education");
+  const [selectedCategory, setSelectedCategory] = useState(
+    "Privileged Children"
+  );
   const [categoryBanner, setCategoryBanner] = useState(null);
   const [categoryBannerPreview, setCategoryBannerPreview] = useState(null);
   const [newProgramme, setNewProgramme] = useState({
@@ -57,27 +65,39 @@ const OurProgrammesAdmin = () => {
   });
   const [programmeImagePreviews, setProgrammeImagePreviews] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [showEditor, setShowEditor] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [detailId, setDetailId] = useState(null);
 
   useEffect(() => {
     dispatch(fetchProgrammes());
   }, [dispatch]);
 
-  // Handle category selection change
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
     setNewProgramme({ ...newProgramme, category: event.target.value });
     setCategoryBannerPreview(null);
+    dispatch(fetchProgrammesByCategory(event.target.value));
   };
 
-  // Handle category banner upload
   const handleCategoryBannerChange = (e) => {
-    const file = e.target.files[0];
+    const fileInput = e.target;
+    const file = fileInput.files[0];
+
+    if (!file || !(file instanceof Blob)) {
+      console.error("Invalid file selected");
+      return;
+    }
+
+    if (categoryBannerPreview) {
+      URL.revokeObjectURL(categoryBannerPreview);
+    }
+
+    const objectURL = URL.createObjectURL(file);
     setCategoryBanner(file);
-    setCategoryBannerPreview(URL.createObjectURL(file));
+    setCategoryBannerPreview(objectURL);
+    fileInput.value = "";
   };
 
-  // Handle programme detail image upload
   const handleProgrammeImagesChange = (e) => {
     const files = Array.from(e.target.files);
     setNewProgramme({
@@ -89,45 +109,77 @@ const OurProgrammesAdmin = () => {
     setProgrammeImagePreviews([...programmeImagePreviews, ...previews]);
   };
 
-  // Handle form submission (Add / Update Programme)
-  const handleSaveProgramme = () => {
-    if (
-      !newProgramme.title ||
-      !newProgramme.description ||
-      newProgramme.detailImages.length === 0
-    ) {
-      alert("All fields are required!");
+  const handleSaveBanner = () => {
+    if (!categoryBanner) {
+      alert("Please upload a banner before saving.");
       return;
     }
 
     const formData = new FormData();
-    formData.append("category", newProgramme.category);
     formData.append("banner", categoryBanner);
+    formData.append("category", selectedCategory); // Include category if needed
 
-    formData.append(
-      "details",
-      JSON.stringify([
-        { title: newProgramme.title, description: newProgramme.description },
-      ])
-    );
+    dispatch(
+      updateProgramme({ category: selectedCategory, id: editingId, formData })
+    )
+      .then(() => {
+        dispatch(fetchProgrammes());
+        setCategoryBanner(null);
+        setCategoryBannerPreview(null);
+      })
+      .catch((error) => {
+        console.error("Error saving banner:", error);
+        alert("Failed to save banner. Please try again.");
+      });
+  };
+
+  const handleSaveProgramme = () => {
+    const formData = new FormData();
+    formData.append("category", newProgramme.category);
+
+    // If title and description are provided, add them to the formData
+    if (newProgramme.title && newProgramme.description) {
+      formData.append(
+        "details",
+        JSON.stringify([
+          { title: newProgramme.title, description: newProgramme.description },
+        ])
+      );
+    }
 
     newProgramme.detailImages.forEach((image) => {
       formData.append("detailImages", image);
     });
 
+    if (categoryBanner) {
+      formData.append("banner", categoryBanner);
+    }
+
     let action;
-    if (editingId) {
-      formData.append("_id", editingId);
-      action = updateProgramme({ id: editingId, formData });
+    if (editingId && detailId) {
+      // If editing a specific section, call updateSection
+      action = updateSection({
+        category: newProgramme.category,
+        id: detailId, // Use detailId for updating the specific detail
+        formData,
+      });
+    } else if (editingId) {
+      // If editing the programme itself, call updateProgramme
+      action = updateProgramme({
+        category: newProgramme.category,
+        id: editingId, // Use editingId for updating the programme
+        formData,
+      });
     } else {
+      // If adding a new programme
       action = addProgramme(formData);
     }
 
-    // Dispatch action and wait for it to complete
     dispatch(action)
       .then(() => {
-        dispatch(fetchProgrammes()); // Fetch updated data
-        resetForm(); // Reset form fields after success
+        dispatch(fetchProgrammes());
+        resetForm();
+        setDialogOpen(false);
       })
       .catch((error) => {
         console.error("Error saving programme:", error);
@@ -135,7 +187,6 @@ const OurProgrammesAdmin = () => {
       });
   };
 
-  // Reset form fields
   const resetForm = () => {
     setNewProgramme({
       title: "",
@@ -145,10 +196,10 @@ const OurProgrammesAdmin = () => {
     });
     setProgrammeImagePreviews([]);
     setCategoryBanner(null);
-    setShowEditor(false); // Hide editor after saving
+    setCategoryBannerPreview(null);
+    setDetailId(null); // Reset detail ID
   };
 
-  // Edit Programme
   const handleEditProgramme = (programme) => {
     setNewProgramme({
       title: programme.details[0]?.title || "",
@@ -159,21 +210,29 @@ const OurProgrammesAdmin = () => {
 
     setProgrammeImagePreviews(programme.detailImages || []);
     setEditingId(programme._id);
-    setShowEditor(true); // Show editor when editing
+    setDetailId(programme.details[0]._id); // Set detail ID for updating
+    setDialogOpen(true);
   };
 
-  // Delete Programme
   const handleDeleteProgramme = (id) => {
-    dispatch(deleteProgramme(id));
+    dispatch(
+      deleteProgrammeDetail({ category: selectedCategory, detailId: id })
+    )
+      .then(() => {
+        dispatch(fetchProgrammes());
+      })
+      .catch((error) => {
+        console.error("Error deleting programme:", error);
+        alert("Failed to delete programme. Please try again.");
+      });
   };
 
   return (
     <Box>
       <Typography variant="h4" gutterBottom sx={{ mb: 2, fontWeight: "bold" }}>
-        Our Programmes Admin
+        Our Programmes
       </Typography>
 
-      {/* Category Selection */}
       <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
         Select Category
       </Typography>
@@ -190,79 +249,90 @@ const OurProgrammesAdmin = () => {
         ))}
       </Select>
 
-      {/* Category Banner Upload */}
-      <Box mb={3} p={2} sx={{ border: "1px solid #ddd", borderRadius: 2 }}>
-        <Typography variant="h6">Category Banner</Typography>
-        <input type="file" onChange={handleCategoryBannerChange} />
-        {categoryBannerPreview && (
-          <img
-            src={categoryBannerPreview}
-            alt="Category Banner"
-            style={{ width: "10%", height: "auto", marginTop: 10 }}
-          />
-        )}
-      </Box>
-
-      {/* Add/Edit Programme Form */}
-      {showEditor && (
-        <Box mb={3} p={2} sx={{ border: "1px solid #ddd", borderRadius: 2 }}>
-          <Typography variant="h6">Add / Edit Programme</Typography>
-          <TextField
-            fullWidth
-            label="Title"
-            value={newProgramme.title}
-            onChange={(e) =>
-              setNewProgramme({ ...newProgramme, title: e.target.value })
-            }
-            sx={{ mt: 2 }}
-          />
-          <JoditEditor
-            value={newProgramme.description}
-            onChange={(content) =>
-              setNewProgramme({ ...newProgramme, description: content })
-            }
-          />
-
-          {/* Programme Images Upload */}
-          <Typography variant="body1" sx={{ mt: 2 }}>
-            Upload Programme Images
-          </Typography>
-          <input type="file" multiple onChange={handleProgrammeImagesChange} />
-          {programmeImagePreviews.map((image, index) => (
-            <img
-              key={index}
-              src={image}
-              alt="Programme"
-              style={{
-                width: "50px",
-                height: "auto",
-                marginTop: 10,
-                marginRight: 10,
-              }}
-            />
-          ))}
-
+      <Box mb={3}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {/* Upload Banner Button */}
           <Button
             variant="contained"
-            onClick={handleSaveProgramme}
+            component="label"
             sx={{
-              mt: 2,
-              backgroundColor: "#F68633",
-              "&:hover": { backgroundColor: "#e0752d" },
+              textTransform: "none",
+              borderRadius: 2,
+              backgroundColor: "primary.main",
+              "&:hover": { backgroundColor: "primary.dark" },
             }}
           >
-            {editingId ? "Update Programme" : "Add Programme"}
+            Upload Banner
+            <input type="file" hidden onChange={handleCategoryBannerChange} />
           </Button>
-        </Box>
-      )}
 
-      {/* Button to Add New Programme */}
+          {/* Save Banner Button - Only Visible After Upload */}
+          {categoryBannerPreview && (
+            <Button
+              variant="contained"
+              onClick={handleSaveBanner}
+              sx={{
+                textTransform: "none",
+                borderRadius: 2,
+                backgroundColor: "#F68633",
+                "&:hover": { backgroundColor: "#e0752d" },
+              }}
+            >
+              Save Banner
+            </Button>
+          )}
+        </Box>
+
+        <Box mt={3}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
+            {categoryBannerPreview ? "Selected Banner" : "Existing Banner"}
+          </Typography>
+
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+            {categoryBannerPreview ? (
+              <Card
+                sx={{
+                  borderRadius: 2,
+                  boxShadow: 3,
+                  overflow: "hidden",
+                  width: 150,
+                }}
+              >
+                <img
+                  src={categoryBannerPreview}
+                  alt="Category Banner Preview"
+                  style={{ width: "100%", height: "auto" }}
+                />
+              </Card>
+            ) : (
+              programmes
+                .filter(
+                  (programme) =>
+                    programme.category === selectedCategory && programme.banner
+                )
+                .map((programme) => (
+                  <Card
+                    key={programme.id || programme.category}
+                    sx={{ borderRadius: 2, boxShadow: 2, overflow: "hidden" }}
+                  >
+                    <img
+                      src={programme.banner}
+                      alt={`${programme.category} Banner`}
+                      style={{ width: "150px", height: "auto" }}
+                    />
+                  </Card>
+                ))
+            )}
+          </Box>
+        </Box>
+      </Box>
+
       <Button
         variant="contained"
         startIcon={<Add />}
         onClick={() => {
-          resetForm(); // Reset form to add new programme
-          setShowEditor(true); // Show editor
+          resetForm();
+          setDialogOpen(true);
         }}
         sx={{
           mb: 2,
@@ -273,11 +343,13 @@ const OurProgrammesAdmin = () => {
         Add New Programme
       </Button>
 
-      {/* Loading State */}
       {loading && <CircularProgress sx={{ display: "block", mx: "auto" }} />}
-      {error && <Typography color="error">Error: {error}</Typography>}
+      {error && (
+        <Typography color="error">
+          Error: {typeof error === "object" ? error.message : error}
+        </Typography>
+      )}
 
-      {/* Filtered Programmes Table */}
       <TableContainer>
         <Table sx={{ border: "1px solid #ddd" }}>
           <TableHead>
@@ -308,7 +380,9 @@ const OurProgrammesAdmin = () => {
                       <Edit />
                     </IconButton>
                     <IconButton
-                      onClick={() => handleDeleteProgramme(programme._id)}
+                      onClick={() =>
+                        handleDeleteProgramme(programme.details[0]._id)
+                      } // Pass detail ID for deletion
                     >
                       <Delete />
                     </IconButton>
@@ -318,6 +392,71 @@ const OurProgrammesAdmin = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Dialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            width: "1000px",
+            maxWidth: "100%",
+          },
+        }}
+      >
+        <DialogTitle>
+          {editingId ? "Edit Programme" : "Add Programme"}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Title"
+            value={newProgramme.title}
+            onChange={(e) =>
+              setNewProgramme({ ...newProgramme, title: e.target.value })
+            }
+            sx={{ mt: 2 }}
+          />
+          <JoditEditor
+            value={newProgramme.description}
+            onChange={(content) =>
+              setNewProgramme({ ...newProgramme, description: content })
+            }
+          />
+
+          <Typography variant="body1" sx={{ mt: 2 }}>
+            Upload Programme Images
+          </Typography>
+          <input type="file" multiple onChange={handleProgrammeImagesChange} />
+          {programmeImagePreviews.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt="Programme"
+              style={{
+                width: "50px",
+                height: "auto",
+                marginTop: 10,
+                marginRight: 10,
+              }}
+            />
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveProgramme}
+            sx={{
+              backgroundColor: "#F68633",
+              "&:hover": { backgroundColor: "#e0752d" },
+            }}
+          >
+            {editingId ? "Update Programme" : "Add Programme"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
