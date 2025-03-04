@@ -1,228 +1,346 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Paper,
-  Stack,
-  IconButton,
-  Avatar,
-} from "@mui/material";
-import { Delete as DeleteIcon } from "@mui/icons-material";
-import JoditEditor from "jodit-react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchEventsData,
-  saveEventsToBackend,
+  createEvent,
+  updateEvent,
 } from "../../redux/slice/eventSlice";
-import debounce from "lodash.debounce";
-const Events = () => {
-  const dispatch = useDispatch();
-  const eventsData = useSelector((state) => state.events) || {};
-  const editor = useRef(null);
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  CircularProgress,
+  Button,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
 
-  const [title, setTitle] = useState("Events");
-  const [location, setLocation] = useState("");
-  const [description, setDescription] = useState("");
-  const [selectedImages, setSelectedImages] = useState([]);
-  const [removeImages, setRemoveImages] = useState([]);
-  const [isEditable, setIsEditable] = useState(false);
+function Events() {
+  const dispatch = useDispatch();
+  const { events, status, error } = useSelector((state) => state.events);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openBannerDialog, setOpenBannerDialog] = useState(false);
+  const [openAddEventDialog, setOpenAddEventDialog] = useState(false);
+  const [currentEvent, setCurrentEvent] = useState(null);
+  const [eventData, setEventData] = useState({
+    title: "",
+    description: "",
+  });
+  const [bannerFile, setBannerFile] = useState(null);
+  // console.log("events:", events);
 
   useEffect(() => {
     dispatch(fetchEventsData());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (eventsData) {
-      setTitle(eventsData.title || "Events");
-      setLocation(eventsData.location || "");
-      setDescription(eventsData.description || "");
-      setSelectedImages(eventsData.images || []);
-    }
-  }, [eventsData]);
-
-  const debouncedEditorChange = useCallback(
-    debounce((newContent) => {
-      setDescription(newContent);
-    }, 3000),
-    []
-  );
-
-  const handleImageUpload = (event) => {
-    const files = Array.from(event.target.files);
-    setSelectedImages([...selectedImages, ...files]);
+  // Handle creating a new event
+  const handleOpenAddEventDialog = () => {
+    setEventData({ title: "", description: "" });
+    setOpenAddEventDialog(true);
   };
 
-  const handleImageRemove = (index) => {
-    const imageToRemove = selectedImages[index];
-
-    if (typeof imageToRemove === "string") {
-      setRemoveImages((prev) => [...prev, imageToRemove]);
-    }
-
-    setSelectedImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  // Open dialog for updating title and description
+  const handleOpenEditDialog = (event) => {
+    setCurrentEvent(event);
+    setEventData({
+      title: event.title,
+      description: event.description,
+    });
+    setOpenEditDialog(true);
   };
 
-  const handleEditSave = async (e) => {
-    e.preventDefault();
+  // Open dialog for uploading banner
+  const handleOpenBannerDialog = (event) => {
+    setCurrentEvent(event);
+    setOpenBannerDialog(true);
+  };
 
-    if (isEditable) {
-      const eventsDataToSend = {
-        title,
-        location,
-        description: description?.trim() || "No description provided",
-        images: selectedImages,
-        removeImages: removeImages.length > 0 ? removeImages : [],
+  // Handle updating the title and description
+  const handleUpdateEvent = () => {
+    if (currentEvent) {
+      const updatedData = {
+        ...eventData,
       };
+      dispatch(
+        updateEvent({ eventId: currentEvent._id, eventData: updatedData })
+      );
+      setOpenEditDialog(false);
+    }
+  };
 
-      try {
-        await dispatch(
-          saveEventsToBackend({
-            id: eventsData._id,
-            eventsData: eventsDataToSend,
-          })
-        );
-        setRemoveImages([]);
-        window.location.reload();
-      } catch (error) {
-        console.error("Error saving/updating data: ", error);
+  // Handle file change for banner
+  const handleFileChange = (e) => {
+    setBannerFile(e.target.files[0]);
+  };
+
+  // Handle saving the banner
+  const handleSaveBanner = async () => {
+    if (!bannerFile) return alert("Please select a banner image to upload");
+
+    const formData = new FormData();
+    formData.append("banner", bannerFile); // Ensure "banner" matches your backend field
+
+    try {
+      const response = await dispatch(
+        updateEvent({
+          eventId: currentEvent._id,
+          eventData: formData, // Send FormData directly
+          isFormData: true, // Custom flag to handle multipart data in the slice
+        })
+      );
+
+      if (response.error) {
+        throw new Error("Failed to upload banner");
       }
-    }
 
-    setIsEditable(!isEditable);
+      setOpenBannerDialog(false);
+      setBannerFile(null); // Reset banner file after upload
+    } catch (error) {
+      console.error("Error uploading banner:", error);
+    }
   };
 
-  const renderImageSource = (image) => {
-    if (image instanceof File) {
-      return URL.createObjectURL(image);
-    } else if (typeof image === "string") {
-      return image;
-    }
-    return "";
+  // Handle input changes for title and description
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEventData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
+
+  // Handle adding a new event
+  const handleAddEvent = async () => {
+    try {
+      await dispatch(updateEvent(eventData));
+      setOpenAddEventDialog(false); // Close dialog after adding
+    } catch (error) {
+      console.error("Error adding event:", error);
+    }
+  };
+
+  if (status === "loading") {
+    return <CircularProgress />;
+  }
+
+  if (status === "failed") {
+    return <Typography color="error">Error: {error}</Typography>;
+  }
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
-        {title}
+      <Typography variant="h4" gutterBottom>
+        Events
       </Typography>
-      <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
-        <form onSubmit={handleEditSave}>
-          <TextField
-            fullWidth
-            label="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={!isEditable}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            disabled={!isEditable}
-            sx={{ mb: 2 }}
-          />
 
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Event Description
-          </Typography>
-
-          <JoditEditor
-            ref={editor}
-            value={description}
-            config={{
-              readonly: !isEditable,
-              placeholder: "Write about Atal's life...",
-              height: 400,
-              cleanOnPaste: false,
-              cleanOnChange: false,
-              toolbar: {
-                items: [
-                  "bold",
-                  "italic",
-                  "underline",
-                  "strikethrough",
-                  "eraser",
-                  "|",
-                  "font",
-                  "fontsize",
-                  "paragraph",
-                  "|",
-                  "align",
-                  "outdent",
-                  "indent",
-                  "|",
-                  "link",
-                  "image",
-                  "video",
-                  "table",
-                  "line",
-                  "code",
-                  "fullsize",
-                  "undo",
-                  "redo",
-                ],
-              },
-              uploader: {
-                insertImageAsBase64URI: true,
-                url: "/upload",
-                format: "json",
-              },
-            }}
-            style={{ width: "100%", minHeight: "200px" }}
-            onChange={debouncedEditorChange}
-            onBlur={(newContent) => setDescription(newContent?.trim() || "")}
-          />
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Upload Event Images
-          </Typography>
-
-          {isEditable && (
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              style={{ marginBottom: "1rem" }}
-            />
-          )}
-
-          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
-            {selectedImages.map((image, index) => (
-              <Box key={index} sx={{ position: "relative" }}>
-                <Avatar
-                  src={renderImageSource(image)}
-                  sx={{ width: 100, height: 100 }}
-                />
-                {isEditable && (
-                  <IconButton
-                    onClick={() => handleImageRemove(index)}
-                    sx={{
-                      position: "absolute",
-                      top: -10,
-                      right: -10,
-                      backgroundColor: "white",
-                    }}
-                  >
-                    <DeleteIcon color="error" />
-                  </IconButton>
-                )}
+      {events.length === 0 ? (
+        <Typography variant="body1">No events available.</Typography>
+      ) : (
+        events.map((event) => (
+          <div key={event._id} style={{ marginBottom: "20px" }}>
+            <Box
+              display="flex"
+              alignItems="center"
+              sx={{ mb: 2 }} // Adds some spacing below
+            >
+              {/* Left Side: Title & Description */}
+              <Box>
+                <Typography variant="h5" gutterBottom>
+                  {event.title}
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  {event.description}
+                </Typography>
               </Box>
-            ))}
-          </Stack>
 
-          <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-            <Button type="submit" variant="contained">
-              {isEditable ? "Save" : "Edit"}
+              {/* Right Side: Edit and Upload Banner Buttons */}
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => handleOpenEditDialog(event)}
+                sx={{ mx: 2 }}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => handleOpenBannerDialog(event)}
+              >
+                Upload Banner
+              </Button>
+            </Box>
+            {/* Event Banner */}
+            {event.banner && (
+              <img
+                src={event.banner}
+                alt="Event Banner"
+                style={{
+                  width: "100%",
+                  maxHeight: "300px",
+                  objectFit: "cover",
+                  marginBottom: "10px",
+                }}
+              />
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleOpenAddEventDialog}
+            >
+              Add Event
             </Button>
-          </Stack>
-        </form>
-      </Paper>
+            {/* Image Groups Table */}
+            {Array.isArray(event.imageGroups) &&
+              event.imageGroups.length > 0 && (
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Image Title</TableCell>
+                        <TableCell>Image Description</TableCell>
+                        <TableCell>Images</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {event.imageGroups.map((group) => (
+                        <TableRow key={group._id}>
+                          <TableCell>{group.image_title}</TableCell>
+                          <TableCell>{group.image_description}</TableCell>
+                          <TableCell>
+                            {Array.isArray(group.images) &&
+                              group.images.map((image, index) => (
+                                <img
+                                  key={index}
+                                  src={image}
+                                  alt={group.image_title}
+                                  style={{ width: "100px", margin: "5px" }}
+                                />
+                              ))}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+          </div>
+        ))
+      )}
+      {/* Dialog for Adding New Event */}
+      <Dialog
+        open={openAddEventDialog}
+        onClose={() => setOpenAddEventDialog(false)}
+      >
+        <DialogTitle>Add New Event</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            name="title"
+            label="Title"
+            type="text"
+            fullWidth
+            value={eventData.title}
+            onChange={handleInputChange}
+          />
+          <TextField
+            margin="dense"
+            name="description"
+            label="Description"
+            type="text"
+            fullWidth
+            value={eventData.description}
+            onChange={handleInputChange}
+          />
+          <input
+            accept="image/*"
+            style={{ display: "block", marginTop: "10px" }}
+            type="file"
+            onChange={handleFileChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenAddEventDialog(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleAddEvent} color="primary">
+            Add Event
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Dialog for Updating Title and Description */}
+      <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)}>
+        <DialogTitle>Update Title and Description</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            name="title"
+            label="Title"
+            type="text"
+            fullWidth
+            value={eventData.title}
+            onChange={handleInputChange}
+          />
+          <TextField
+            margin="dense"
+            name="description"
+            label="Description"
+            type="text"
+            fullWidth
+            value={eventData.description}
+            onChange={handleInputChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenEditDialog(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleUpdateEvent} color="primary">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Dialog for Uploading Banner */}
+      <Dialog
+        open={openBannerDialog}
+        onClose={() => setOpenBannerDialog(false)}
+      >
+        <DialogTitle>Upload Banner</DialogTitle>
+        <DialogContent>
+          <input
+            accept="image/*"
+            style={{ display: "block", marginBottom: "10px" }}
+            type="file"
+            onChange={handleFileChange}
+          />
+          {bannerFile && (
+            <Typography variant="body2">
+              Selected File: {bannerFile.name}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenBannerDialog(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleSaveBanner} color="primary">
+            Save Banner
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
-};
+}
 
 export default Events;

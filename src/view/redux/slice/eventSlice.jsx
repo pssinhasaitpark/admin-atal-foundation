@@ -2,73 +2,82 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../axios/axios";
 
 const initialState = {
-  title: "Events",
-  location: "",
-  description: "",
-  images: [],
+  events: [],
   status: "idle",
   error: null,
-  _id: null,
 };
 
-// Fetch Events from backend
+// Fetch all events
 export const fetchEventsData = createAsyncThunk(
   "events/fetchEventsData",
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/event");
-      // console.log("Fetched event Data:", response.data.events);
-      return response.data.events[0] || {};
+      return response.data.events || [];
     } catch (error) {
-      console.error("Error fetching events data:", error);
+      console.error("Error fetching events:", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-// Save or Update Events data to backend
-export const saveEventsToBackend = createAsyncThunk(
-  "events/saveEventsToBackend",
-  async ({ id, eventsData }, { rejectWithValue }) => {
+// Create a new event if no data exists
+export const createEvent = createAsyncThunk(
+  "events/createEvent",
+  async (eventData, { rejectWithValue }) => {
     try {
-      const formData = new FormData();
-      formData.append("title", eventsData.title);
-      formData.append("location", eventsData.location);
-
-      // Ensure description is properly trimmed
-      formData.append(
-        "description",
-        eventsData.description?.trim() || "No description provided"
-      );
-
-      // Append only image files (not URLs)
-      eventsData.images.forEach((image) => {
-        if (image instanceof File) {
-          formData.append("images", image);
-        }
-      });
-
-      // Ensure `removeImages` is only appended if it has values
-      if (eventsData.removeImages?.length > 0) {
-        formData.append(
-          "removeImages",
-          JSON.stringify(eventsData.removeImages)
-        );
-      }
-
-      const endpoint = id ? `/event/create?id=${id}` : "/event/create";
-      // console.log("Sending Data:", Object.fromEntries(formData));
-
-      const response = await api.post(endpoint, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      // console.log("Saved events Data:", response.data.data);
-      return response.data.data || {};
+      const response = await api.post("/event", eventData);
+      return response.data;
     } catch (error) {
-      console.error("Error saving events data:", error);
+      console.error("Error creating event:", error);
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Update an event (title, description, banner)
+export const updateEvent = createAsyncThunk(
+  "events/updateEvent",
+  async ({ eventId, eventData, isFormData = false }) => {
+    try {
+      const response = await api.patch(
+        `/event/${eventId}`,
+        eventData,
+        isFormData ? { headers: { "Content-Type": "multipart/form-data" } } : {}
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || "Failed to update event";
+    }
+  }
+);
+
+// Update a specific event section
+export const updateEventSection = createAsyncThunk(
+  "events/updateEventSection",
+  async ({ eventId, sectionId, sectionData }, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(
+        `/event/${eventId}/section/${sectionId}`,
+        sectionData
+      );
+      return { eventId, sectionId, updatedSection: response.data };
+    } catch (error) {
+      console.error("Error updating event section:", error);
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Delete a specific event section
+export const deleteEventSection = createAsyncThunk(
+  "events/deleteEventSection",
+  async (sectionId, { rejectWithValue }) => {
+    try {
+      await api.delete(`/event/section/${sectionId}`);
+      return sectionId;
+    } catch (error) {
+      console.error("Error deleting event section:", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -79,9 +88,58 @@ const eventSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(fetchEventsData.fulfilled, (state, action) => {
-      Object.assign(state, action.payload);
-    });
+    builder
+      // Fetch all events
+      .addCase(fetchEventsData.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchEventsData.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.events = action.payload;
+      })
+      .addCase(fetchEventsData.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      })
+
+      // Create a new event
+      .addCase(createEvent.fulfilled, (state, action) => {
+        state.events.push(action.payload);
+      })
+
+      // Update an event
+      .addCase(updateEvent.fulfilled, (state, action) => {
+        const updatedEvent = action.payload;
+        const index = state.events.findIndex(
+          (event) => event._id === updatedEvent._id
+        );
+        if (index !== -1) {
+          state.events[index] = updatedEvent;
+        }
+      })
+
+      // Update a section inside an event
+      .addCase(updateEventSection.fulfilled, (state, action) => {
+        const { eventId, sectionId, updatedSection } = action.payload;
+        const event = state.events.find((event) => event._id === eventId);
+        if (event) {
+          const sectionIndex = event.imageGroups.findIndex(
+            (section) => section._id === sectionId
+          );
+          if (sectionIndex !== -1) {
+            event.imageGroups[sectionIndex] = updatedSection;
+          }
+        }
+      })
+
+      // Delete a section
+      .addCase(deleteEventSection.fulfilled, (state, action) => {
+        state.events.forEach((event) => {
+          event.imageGroups = event.imageGroups.filter(
+            (section) => section._id !== action.payload
+          );
+        });
+      });
   },
 });
 

@@ -1,4 +1,3 @@
-// App.js
 import "./App.css";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./view/pages/auth/Login/Login";
@@ -17,15 +16,6 @@ import {
   Messages,
   ContactUs,
   Profile,
-  // Education,
-  // CivicDriven,
-  // Empowerment,
-  // Entrepreneurship,
-  // Healthcare,
-  // Livelihood,
-  // Privileged,
-  // SpecialInterventions,
-  // SupportProgramme,
   Subscribers,
   SocialMedia,
   OurProgrammes,
@@ -62,14 +52,6 @@ function App() {
 
         {/* Our Programmes Routes */}
         <Route path="/ourProgrammes" element={<OurProgrammes />} />
-        {/* <Route path="/programmes/healthcare" element={<CivicDriven/>} />
-        <Route path="/programmes/livelihood" element={<Empowerment/>} />
-        <Route path="/programmes/girl-child-women-empowerment" element={<Entrepreneurship/>} />
-        <Route path="/programmes/privileged-children" element={<Healthcare/>} />
-        <Route path="/programmes/civic-driven-change" element={<Livelihood/>} />
-        <Route path="/programmes/social-entrepreneurship" element={<Privileged/>} />
-        <Route path="/programmes/special-support-programme" element={<SpecialInterventions/>} />
-        <Route path="/programmes/special-interventions" element={<SupportProgramme/>} /> */}
       </Route>
 
       <Route path="*" element={<Navigate to="/login" />} />
