@@ -24,7 +24,12 @@ import {
   TableHead,
   CircularProgress,
 } from "@mui/material";
-import { Edit } from "@mui/icons-material";
+import {
+  Delete as DeleteIcon,
+  Edit,
+  Add as AddIcon,
+  Save as SaveIcon,
+} from "@mui/icons-material";
 import { Image, VideoLibrary } from "@mui/icons-material";
 function Gallery() {
   const dispatch = useDispatch();
@@ -249,12 +254,11 @@ function Gallery() {
                   <TableCell align="center">
                     <Button
                       onClick={() => handleDelete(img, "image")}
-                      color="error"
                       variant="outlined"
                       size="small"
-                      sx={{ minWidth: "50px", padding: "4px" }}
+                      sx={{ minWidth: "50px", padding: "4px", border: 0 }}
                     >
-                      Delete
+                      <DeleteIcon fontSize="small" color="error" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -325,12 +329,11 @@ function Gallery() {
                   <TableCell align="center">
                     <Button
                       onClick={() => handleDelete(vid, "video")}
-                      color="error"
                       variant="outlined"
                       size="small"
-                      sx={{ minWidth: "50px", padding: "4px" }}
+                      sx={{ minWidth: "50px", padding: "4px", border: 0 }}
                     >
-                      Delete
+                      <DeleteIcon fontSize="small" color="error" />
                     </Button>
                   </TableCell>
                 </TableRow>

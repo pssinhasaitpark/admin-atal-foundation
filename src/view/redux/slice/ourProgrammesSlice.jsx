@@ -56,7 +56,7 @@ export const addProgramme = createAsyncThunk(
 // Async thunk for updating a programme
 export const updateProgramme = createAsyncThunk(
   "programmes/updateProgramme",
-  async ({ category, id, formData }, { rejectWithValue, dispatch }) => {
+  async ({ category, formData }, { rejectWithValue, dispatch }) => {
     try {
       await api.patch(`/our-programme/update/${category}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
