@@ -24,12 +24,7 @@ import {
   TableHead,
   CircularProgress,
 } from "@mui/material";
-import {
-  Delete as DeleteIcon,
-  Edit,
-  Add as AddIcon,
-  Save as SaveIcon,
-} from "@mui/icons-material";
+import { Delete as DeleteIcon, Edit } from "@mui/icons-material";
 import { Image, VideoLibrary } from "@mui/icons-material";
 function Gallery() {
   const dispatch = useDispatch();

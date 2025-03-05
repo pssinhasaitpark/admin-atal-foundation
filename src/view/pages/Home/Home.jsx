@@ -1,42 +1,47 @@
-import React, { useState, useRef } from "react";
-import JoditEditor from "jodit-react";
-import { Box, Typography, Button } from "@mui/material";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchHomeData } from "../../redux/slice/homeSlice";
 
-const Home = () => {
-  const editor = useRef(null);
-  const [editorContent, setEditorContent] = useState("");
+function Home() {
+  const dispatch = useDispatch();
 
-  // Handler to send editor content
-  const handleSubmit = () => {
-    // console.log("Submitted Content (HTML):", editorContent);
-  };
+  const { data, loading, error } = useSelector((state) => state.home);
+  const dataArray = Array.isArray(data) ? data : [data];
+
+  useEffect(() => {
+    dispatch(fetchHomeData());
+  }, [dispatch]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
-    <Box>
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
-        Home
-      </Typography>
+    <div>
+      <h1>Home Page</h1>
+      {data ? (
+        <div>
+          {dataArray?.map((item, index) => (
+            <div key={index}>
+              <h2>{item.title}</h2>
+              <p>{item.description}</p>
 
-      <JoditEditor
-        ref={editor}
-        value={editorContent}
-        onChange={(content) => setEditorContent(content)}
-        config={{
-          readonly: false,
-          placeholder: "Start writing here...",
-        }}
-      />
-
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleSubmit}
-        sx={{ mt: 3 }}
-      >
-        Submit
-      </Button>
-    </Box>
+              {console.log("item:", item.image1[0].url)}
+              {item.image1?.map((img, index) => {
+                return <img key={index} src={img.url} alt="" />;
+              })}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div>No data available</div>
+      )}
+    </div>
   );
-};
+}
 
 export default Home;

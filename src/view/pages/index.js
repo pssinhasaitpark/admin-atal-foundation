@@ -13,6 +13,7 @@ import Home from "./Home/Home";
 import Subscribers from "./Subscribers/Subscribers";
 import SocialMedia from "./SocialMedia/SocialMedia";
 import OurProgrammes from "./OurProgrammes/OurProgrammes";
+import NewsPage from "./News/NewsPage";
 export {
   Home,
   Dashboard,
@@ -29,4 +30,5 @@ export {
   Subscribers,
   SocialMedia,
   OurProgrammes,
+  NewsPage,
 };

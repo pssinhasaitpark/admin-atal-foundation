@@ -4,9 +4,10 @@ import {
   fetchEventsData,
   createEvent,
   updateEvent,
+  updateEventSection,
+  deleteEventSection,
 } from "../../redux/slice/eventSlice";
 import {
-  Box,
   Table,
   TableBody,
   TableCell,
@@ -14,332 +15,502 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Box,
   Typography,
-  CircularProgress,
-  Button,
+  Divider,
   TextField,
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-
+import { Delete as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
+import EventVideos from "./EventVideos.jsx";
 function Events() {
   const dispatch = useDispatch();
-  const { events, status, error } = useSelector((state) => state.events);
-  const [openEditDialog, setOpenEditDialog] = useState(false);
-  const [openBannerDialog, setOpenBannerDialog] = useState(false);
-  const [openAddEventDialog, setOpenAddEventDialog] = useState(false);
-  const [currentEvent, setCurrentEvent] = useState(null);
-  const [eventData, setEventData] = useState({
+  const { events = [], loading, error } = useSelector((state) => state.events);
+
+  const [newBanner, setNewBanner] = useState(null);
+  const [newEvent, setNewEvent] = useState({
     title: "",
     description: "",
+    banner: "",
+    imageGroups: [],
   });
-  const [bannerFile, setBannerFile] = useState(null);
-  // console.log("events:", events);
+
+  const [newSection, setNewSection] = useState({
+    image_title: "",
+    image_description: "",
+    images: [],
+  });
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [addSectionDialogOpen, setAddSectionDialogOpen] = useState(false);
+  const [editSectionDialogOpen, setEditSectionDialogOpen] = useState(false); // New state for editing section
+  const [newSectionImages, setNewSectionImages] = useState([]);
+  const [selectedSectionId, setSelectedSectionId] = useState(null); // Track which section is being edited
 
   useEffect(() => {
     dispatch(fetchEventsData());
   }, [dispatch]);
 
-  // Handle creating a new event
-  const handleOpenAddEventDialog = () => {
-    setEventData({ title: "", description: "" });
-    setOpenAddEventDialog(true);
-  };
-
-  // Open dialog for updating title and description
-  const handleOpenEditDialog = (event) => {
-    setCurrentEvent(event);
-    setEventData({
-      title: event.title,
-      description: event.description,
+  const handleCreateEvent = () => {
+    dispatch(createEvent(newEvent)).then(() => {
+      setNewEvent({ title: "", description: "", banner: "", imageGroups: [] });
+      dispatch(fetchEventsData());
     });
-    setOpenEditDialog(true);
   };
 
-  // Open dialog for uploading banner
-  const handleOpenBannerDialog = (event) => {
-    setCurrentEvent(event);
-    setOpenBannerDialog(true);
-  };
-
-  // Handle updating the title and description
   const handleUpdateEvent = () => {
-    if (currentEvent) {
-      const updatedData = {
-        ...eventData,
-      };
-      dispatch(
-        updateEvent({ eventId: currentEvent._id, eventData: updatedData })
-      );
-      setOpenEditDialog(false);
-    }
+    if (!events[0]) return;
+    dispatch(updateEvent({ eventId: events[0]._id, eventData: newEvent })).then(
+      () => {
+        setEditDialogOpen(false);
+        dispatch(fetchEventsData());
+      }
+    );
   };
 
-  // Handle file change for banner
-  const handleFileChange = (e) => {
-    setBannerFile(e.target.files[0]);
+  const handleBannerUpload = (e) => {
+    const file = e.target.files[0];
+    setNewBanner(file);
   };
 
-  // Handle saving the banner
-  const handleSaveBanner = async () => {
-    if (!bannerFile) return alert("Please select a banner image to upload");
+  const handleSubmitBanner = () => {
+    if (!events[0] || !newBanner) return;
 
     const formData = new FormData();
-    formData.append("banner", bannerFile); // Ensure "banner" matches your backend field
+    formData.append("banner", newBanner);
 
-    try {
-      const response = await dispatch(
-        updateEvent({
-          eventId: currentEvent._id,
-          eventData: formData, // Send FormData directly
-          isFormData: true, // Custom flag to handle multipart data in the slice
-        })
-      );
-
-      if (response.error) {
-        throw new Error("Failed to upload banner");
-      }
-
-      setOpenBannerDialog(false);
-      setBannerFile(null); // Reset banner file after upload
-    } catch (error) {
-      console.error("Error uploading banner:", error);
-    }
+    dispatch(
+      updateEvent({
+        eventId: events[0]._id,
+        eventData: formData,
+        isFormData: true,
+      })
+    ).then(() => {
+      setNewBanner(null);
+      dispatch(fetchEventsData());
+    });
   };
 
-  // Handle input changes for title and description
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEventData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+  const handleAddSection = () => {
+    if (!events[0]) return;
+
+    const formData = new FormData();
+    formData.append("image_title_1", newSection.image_title);
+    formData.append("image_description_1", newSection.image_description);
+
+    // Append each image file in binary format to FormData
+    newSection.images.forEach((file) => {
+      formData.append("images", file); // Each image is appended as binary data
+    });
+
+    dispatch(
+      updateEvent({
+        eventId: events[0]._id,
+        eventData: formData,
+        isFormData: true, // Indicating it's FormData
+      })
+    ).then(() => {
+      // Reset form fields after submission
+      setNewSection({ image_title: "", image_description: "", images: [] });
+      setNewSectionImages([]);
+      setAddSectionDialogOpen(false);
+      dispatch(fetchEventsData()); // Fetch updated events data
+    });
   };
 
-  // Handle adding a new event
-  const handleAddEvent = async () => {
-    try {
-      await dispatch(updateEvent(eventData));
-      setOpenAddEventDialog(false); // Close dialog after adding
-    } catch (error) {
-      console.error("Error adding event:", error);
-    }
+  const handleNewSectionImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const imageUrls = files.map((file) => URL.createObjectURL(file));
+    setNewSectionImages(imageUrls);
+    setNewSection({ ...newSection, images: files });
   };
 
-  if (status === "loading") {
-    return <CircularProgress />;
-  }
+  const handleEditSection = (section) => {
+    setNewSection({
+      image_title: section.image_title,
+      image_description: section.image_description,
+      images: section.images,
+    });
+    setSelectedSectionId(section._id); // Set the ID of the section being edited
+    setEditSectionDialogOpen(true); // Open the edit section dialog
+  };
 
-  if (status === "failed") {
-    return <Typography color="error">Error: {error}</Typography>;
-  }
+  const handleUpdateSection = () => {
+    if (!events[0] || !selectedSectionId) return;
+
+    const formData = new FormData();
+    formData.append("image_title", newSection.image_title);
+    formData.append("image_description", newSection.image_description);
+
+    newSection.images.forEach((file) => {
+      formData.append("images", file); // Each image is appended as binary data
+    });
+
+    dispatch(
+      updateEventSection({
+        eventId: events[0]._id,
+        sectionId: selectedSectionId,
+        sectionData: formData,
+      })
+    ).then(() => {
+      setEditSectionDialogOpen(false);
+      setNewSection({ image_title: "", image_description: "", images: [] });
+      setNewSectionImages([]);
+      dispatch(fetchEventsData()); // Fetch updated events data
+    });
+  };
+
+  const handleDeleteSection = (sectionId) => {
+    dispatch(deleteEventSection(sectionId)).then(() => {
+      dispatch(fetchEventsData()); // Fetch updated events data after deletion
+    });
+  };
+
+  if (loading) return <Typography variant="h6">Loading events...</Typography>;
+  if (error)
+    return (
+      <Typography variant="h6" color="error">
+        Error: {error}
+      </Typography>
+    );
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
+    <div className="p-4">
+      <Typography variant="h4" fontWeight="bold" gutterBottom>
         Events
       </Typography>
 
       {events.length === 0 ? (
-        <Typography variant="body1">No events available.</Typography>
+        <>
+          <Typography variant="body1">
+            No events available. Create one:
+          </Typography>
+          <TextField
+            label="Title"
+            fullWidth
+            margin="normal"
+            value={newEvent.title}
+            onChange={(e) =>
+              setNewEvent({ ...newEvent, title: e.target.value })
+            }
+          />
+          <TextField
+            label="Description"
+            fullWidth
+            margin="normal"
+            multiline
+            rows={3}
+            value={newEvent.description}
+            onChange={(e) =>
+              setNewEvent({ ...newEvent, description: e.target.value })
+            }
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleCreateEvent}
+            sx={{
+              backgroundColor: "#F68633",
+              "&:hover": {
+                backgroundColor: "#e0752d",
+              },
+            }}
+          >
+            Create Event
+          </Button>
+        </>
       ) : (
-        events.map((event) => (
-          <div key={event._id} style={{ marginBottom: "20px" }}>
-            <Box
-              display="flex"
-              alignItems="center"
-              sx={{ mb: 2 }} // Adds some spacing below
-            >
-              {/* Left Side: Title & Description */}
-              <Box>
-                <Typography variant="h5" gutterBottom>
-                  {event.title}
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  {event.description}
-                </Typography>
-              </Box>
-
-              {/* Right Side: Edit and Upload Banner Buttons */}
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={() => handleOpenEditDialog(event)}
-                sx={{ mx: 2 }}
-              >
-                Edit
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => handleOpenBannerDialog(event)}
-              >
-                Upload Banner
-              </Button>
+        <>
+          {/* Event Title, Description & Banner */}
+          <Box display="flex" alignItems="center">
+            <Box>
+              <Typography variant="h5" fontWeight="bold" gutterBottom>
+                {events[0]?.title}
+              </Typography>
+              <Typography variant="body1" color="textSecondary" paragraph>
+                {events[0]?.description}
+              </Typography>
             </Box>
-            {/* Event Banner */}
-            {event.banner && (
-              <img
-                src={event.banner}
-                alt="Event Banner"
-                style={{
-                  width: "100%",
-                  maxHeight: "300px",
-                  objectFit: "cover",
-                  marginBottom: "10px",
-                }}
-              />
-            )}
             <Button
               variant="contained"
-              color="primary"
-              onClick={handleOpenAddEventDialog}
+              onClick={() => setEditDialogOpen(true)}
+              sx={{
+                backgroundColor: "#F68633",
+                "&:hover": {
+                  backgroundColor: "#e0752d",
+                },
+              }}
             >
-              Add Event
+              <EditIcon />
             </Button>
-            {/* Image Groups Table */}
-            {Array.isArray(event.imageGroups) &&
-              event.imageGroups.length > 0 && (
-                <TableContainer component={Paper}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Image Title</TableCell>
-                        <TableCell>Image Description</TableCell>
-                        <TableCell>Images</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {event.imageGroups.map((group) => (
-                        <TableRow key={group._id}>
-                          <TableCell>{group.image_title}</TableCell>
-                          <TableCell>{group.image_description}</TableCell>
-                          <TableCell>
-                            {Array.isArray(group.images) &&
-                              group.images.map((image, index) => (
-                                <img
-                                  key={index}
-                                  src={image}
-                                  alt={group.image_title}
-                                  style={{ width: "100px", margin: "5px" }}
-                                />
-                              ))}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-          </div>
-        ))
-      )}
-      {/* Dialog for Adding New Event */}
-      <Dialog
-        open={openAddEventDialog}
-        onClose={() => setOpenAddEventDialog(false)}
-      >
-        <DialogTitle>Add New Event</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            name="title"
-            label="Title"
-            type="text"
-            fullWidth
-            value={eventData.title}
-            onChange={handleInputChange}
-          />
-          <TextField
-            margin="dense"
-            name="description"
-            label="Description"
-            type="text"
-            fullWidth
-            value={eventData.description}
-            onChange={handleInputChange}
-          />
-          <input
-            accept="image/*"
-            style={{ display: "block", marginTop: "10px" }}
-            type="file"
-            onChange={handleFileChange}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenAddEventDialog(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleAddEvent} color="primary">
-            Add Event
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {/* Dialog for Updating Title and Description */}
-      <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)}>
-        <DialogTitle>Update Title and Description</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            name="title"
-            label="Title"
-            type="text"
-            fullWidth
-            value={eventData.title}
-            onChange={handleInputChange}
-          />
-          <TextField
-            margin="dense"
-            name="description"
-            label="Description"
-            type="text"
-            fullWidth
-            value={eventData.description}
-            onChange={handleInputChange}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenEditDialog(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleUpdateEvent} color="primary">
-            Submit
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {/* Dialog for Uploading Banner */}
-      <Dialog
-        open={openBannerDialog}
-        onClose={() => setOpenBannerDialog(false)}
-      >
-        <DialogTitle>Upload Banner</DialogTitle>
-        <DialogContent>
-          <input
-            accept="image/*"
-            style={{ display: "block", marginBottom: "10px" }}
-            type="file"
-            onChange={handleFileChange}
-          />
-          {bannerFile && (
-            <Typography variant="body2">
-              Selected File: {bannerFile.name}
-            </Typography>
+          </Box>
+
+          {/* Edit Dialog */}
+          <Dialog
+            open={editDialogOpen}
+            onClose={() => setEditDialogOpen(false)}
+          >
+            <DialogTitle>Edit Event</DialogTitle>
+            <DialogContent>
+              <TextField
+                label="Title"
+                fullWidth
+                margin="normal"
+                value={newEvent.title}
+                onChange={(e) =>
+                  setNewEvent({ ...newEvent, title: e.target.value })
+                }
+              />
+              <TextField
+                label="Description"
+                fullWidth
+                margin="normal"
+                multiline
+                rows={3}
+                value={newEvent.description}
+                onChange={(e) =>
+                  setNewEvent({ ...newEvent, description: e.target.value })
+                }
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+              <Button
+                variant="contained"
+                onClick={handleUpdateEvent}
+                sx={{
+                  backgroundColor: "#F68633",
+                  "&:hover": {
+                    backgroundColor: "#e0752d",
+                  },
+                }}
+              >
+                Save
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Banner Upload */}
+
+          {events[0]?.banner && (
+            <img
+              src={events[0].banner}
+              alt="Event Banner"
+              style={{
+                width: "100%",
+                height: "400px",
+                objectFit: "cover",
+                borderRadius: "8px",
+              }}
+            />
           )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenBannerDialog(false)} color="primary">
-            Cancel
+          <input type="file" onChange={handleBannerUpload} />
+          <Button
+            variant="contained"
+            onClick={handleSubmitBanner}
+            sx={{
+              backgroundColor: "#F68633",
+              "&:hover": {
+                backgroundColor: "#e0752d",
+              },
+            }}
+          >
+            Upload Banner
           </Button>
-          <Button onClick={handleSaveBanner} color="primary">
-            Save Banner
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+
+          {/* Image Groups Table */}
+          <Divider sx={{ my: 3 }} />
+          <Box display="flex" justifyContent="space-between">
+            <Typography variant="h6" fontWeight="bold">
+              Image Sections
+            </Typography>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => setAddSectionDialogOpen(true)}
+              sx={{
+                backgroundColor: "#F68633",
+                "&:hover": {
+                  backgroundColor: "#e0752d",
+                },
+              }}
+            >
+              Add Section
+            </Button>
+          </Box>
+          <TableContainer component={Paper} elevation={3}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#f1f1f1" }}>
+                  <TableCell sx={{ fontWeight: "bold" }}>Image Title</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>
+                    Image Description
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Images</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {events[0]?.imageGroups?.map((group) => (
+                  <TableRow key={group._id}>
+                    <TableCell>{group.image_title}</TableCell>
+                    <TableCell>{group.image_description}</TableCell>
+                    <TableCell>
+                      <Box display="flex" gap={1} flexWrap="wrap">
+                        {group.images?.map((img, index) => (
+                          <img
+                            key={index}
+                            src={img}
+                            alt={group.image_title}
+                            style={{
+                              width: "60px",
+                              height: "60px",
+                              objectFit: "cover",
+                              borderRadius: "5px",
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Button onClick={() => handleEditSection(group)}>
+                        <EditIcon />
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteSection(group._id)} // Delete button
+                      >
+                        <DeleteIcon color="error" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {/* Add Section Dialog */}
+          <Dialog
+            open={addSectionDialogOpen}
+            onClose={() => setAddSectionDialogOpen(false)}
+          >
+            <DialogTitle>Add New Section</DialogTitle>
+            <DialogContent>
+              <TextField
+                label="Image Title"
+                fullWidth
+                margin="normal"
+                onChange={(e) =>
+                  setNewSection({ ...newSection, image_title: e.target.value })
+                }
+              />
+              <TextField
+                label="Image Description"
+                fullWidth
+                margin="normal"
+                onChange={(e) =>
+                  setNewSection({
+                    ...newSection,
+                    image_description: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="file"
+                multiple
+                onChange={handleNewSectionImageUpload}
+              />
+              <Box display="flex" gap={1} flexWrap="wrap" mt={2}>
+                {newSectionImages?.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt={`New Section Image ${index}`}
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      objectFit: "cover",
+                      borderRadius: "5px",
+                    }}
+                  />
+                ))}
+              </Box>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setAddSectionDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddSection} color="primary">
+                Submit
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Edit Section Dialog */}
+          <Dialog
+            open={editSectionDialogOpen}
+            onClose={() => setEditSectionDialogOpen(false)}
+          >
+            <DialogTitle>Edit Section</DialogTitle>
+            <DialogContent>
+              <TextField
+                label="Image Title"
+                fullWidth
+                margin="normal"
+                value={newSection.image_title}
+                onChange={(e) =>
+                  setNewSection({ ...newSection, image_title: e.target.value })
+                }
+              />
+              <TextField
+                label="Image Description"
+                fullWidth
+                margin="normal"
+                value={newSection.image_description}
+                onChange={(e) =>
+                  setNewSection({
+                    ...newSection,
+                    image_description: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="file"
+                multiple
+                onChange={handleNewSectionImageUpload}
+              />
+              <Box display="flex" gap={1} flexWrap="wrap" mt={2}>
+                {newSectionImages?.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt={`Edit Section Image ${index}`}
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      objectFit: "cover",
+                      borderRadius: "5px",
+                    }}
+                  />
+                ))}
+              </Box>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setEditSectionDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateSection} color="primary">
+                Update
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
+      )}
+      <EventVideos />
+    </div>
   );
 }
 

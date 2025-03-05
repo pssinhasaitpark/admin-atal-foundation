@@ -27,7 +27,7 @@ import {
   ConnectWithoutContact,
 } from "@mui/icons-material";
 import logo from "../../../assets/Images/logo.png";
-
+import HomeIcon from "@mui/icons-material/Home";
 const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,6 +36,8 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
 
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
+    { text: "News", icon: <HomeIcon />, path: "/news" },
+    // { text: "Home", icon: <HomeIcon />, path: "/home" },
     { text: "Events", icon: <Event />, path: "/events" },
     { text: "Gallery", icon: <PhotoLibrary />, path: "/gallery" },
     { text: "About Us", icon: <PersonAdd />, path: "/aboutus" },

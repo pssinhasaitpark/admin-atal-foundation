@@ -15,12 +15,17 @@ import subscribersReducer from "../slice/subscribersSlice";
 import programmesReducer from "../slice/ourProgrammesSlice";
 import socialMediaReducer from "../slice/socialMediaSlice";
 import dashboardReducer from "../slice/dashboardSlice";
+import eventVideosReducer from "../slice/eventVideoSlice";
+import homeReducer from "../slice/homeSlice";
+import newsReducer from "../slice/newsPageSlice";
+
 const store = configureStore({
   reducer: {
     auth: authReducer,
     vision: visionReducer,
     gallery: galleryReducer,
     events: eventReducer,
+    eventVideos: eventVideosReducer,
     profile: profileReducer,
     contact: contactReducer,
     message: messageReducer,
@@ -33,6 +38,8 @@ const store = configureStore({
     programmes: programmesReducer,
     socialMedia: socialMediaReducer,
     dashboard: dashboardReducer,
+    home: homeReducer,
+    news: newsReducer,
   },
 });
 
