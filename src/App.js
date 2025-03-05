@@ -4,7 +4,7 @@ import Login from "./view/pages/auth/Login/Login";
 import DashboardLayout from "./view/layout/DashboardLayout/DashboardLayout";
 import PrivateRoute from "./view/routes/PrivateRoute";
 import {
-  Home,
+  // Home,
   Dashboard,
   Events,
   Gallery,
@@ -19,6 +19,7 @@ import {
   Subscribers,
   SocialMedia,
   OurProgrammes,
+  NewsPage,
 } from "./view/pages/index.js";
 
 function App() {
@@ -36,7 +37,7 @@ function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/home" element={<Home />} />
+        {/* <Route path="/home" element={<Home />} /> */}
         <Route path="/events" element={<Events />} />
         <Route path="/gallery" element={<Gallery />} />
         <Route path="/aboutus" element={<AboutUs />} />
@@ -46,6 +47,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/subscribers" element={<Subscribers />} />
         <Route path="/socialMedia" element={<SocialMedia />} />
+        <Route path="/news" element={<NewsPage />} />
         {/* <Route path="/supportspeak" element={<SupportSpeak />} /> */}
         {/* <Route path="/useropinion" element={<UserOpinion />} /> */}
         {/* <Route path="/registration" element={<Registration />} /> */}

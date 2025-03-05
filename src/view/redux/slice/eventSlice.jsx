@@ -35,7 +35,7 @@ export const createEvent = createAsyncThunk(
   }
 );
 
-// Update an event (title, description, banner)
+// Update an event (title, description, banner, and add a new section in the list)
 export const updateEvent = createAsyncThunk(
   "events/updateEvent",
   async ({ eventId, eventData, isFormData = false }) => {
@@ -59,8 +59,12 @@ export const updateEventSection = createAsyncThunk(
     try {
       const response = await api.patch(
         `/event/${eventId}/section/${sectionId}`,
-        sectionData
+        sectionData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
+
       return { eventId, sectionId, updatedSection: response.data };
     } catch (error) {
       console.error("Error updating event section:", error);
