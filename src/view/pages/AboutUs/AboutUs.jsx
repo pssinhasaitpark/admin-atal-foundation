@@ -185,17 +185,21 @@ const AboutUs = () => {
             </Typography>
 
             <Box sx={{ mb: 3 }}>
-              <Stack direction="row" alignItems="center" spacing={2}>
+              <Stack
+                display="block"
+                direction="row"
+                alignItems="center"
+                // spacing={2}
+              >
                 {bannerImage && (
                   <Box
                     sx={{
                       position: "relative",
-                      width: 350,
-                      height: 120,
+                      width: "100%",
+                      height: "300px",
                       borderRadius: 2,
                       overflow: "hidden",
                       border: "2px solid #ddd",
-                      display: "flex",
                       justifyContent: "center",
                       alignItems: "center",
                     }}
@@ -232,7 +236,7 @@ const AboutUs = () => {
                   variant="contained"
                   component="label"
                   sx={{
-                    backgroundColor: "#faa36c",
+                    backgroundColor: "#e0752d",
                     "&:hover": { backgroundColor: "#F68633" },
                     textTransform: "none",
                   }}
@@ -245,30 +249,23 @@ const AboutUs = () => {
                     onChange={handleBannerUpload}
                   />
                 </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleSaveAll}
+                  sx={{
+                    ml: 3,
+                    backgroundColor: "#e0752d",
+                    "&:hover": {
+                      backgroundColor: "#F68633",
+                    },
+                  }}
+                >
+                  Upload Banner
+                </Button>
               </Stack>
             </Box>
 
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ mb: 2 }}
-            >
-              {/* <Typography variant="h6">Existing Sections</Typography> */}
-
-              {/* <IconButton
-                onClick={handleAddNew}
-                sx={{
-                  backgroundColor: "#faa36c",
-                  "&:hover": {
-                    backgroundColor: "#F68633",
-                  },
-                  padding: "10px",
-                }}
-              >
-                <AddIcon />
-                Add New Section
-              </IconButton> */}
+            <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}

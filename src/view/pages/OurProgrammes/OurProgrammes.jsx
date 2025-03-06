@@ -10,7 +10,6 @@ import {
   MenuItem,
   Select,
   FormControl,
-  // InputLabel,
   Typography,
   CircularProgress,
   Container,
@@ -34,7 +33,6 @@ import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   Add as AddIcon,
-  Save as SaveIcon,
 } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 
@@ -59,11 +57,12 @@ function OurProgrammes() {
     image: null,
   });
   const [banner, setBanner] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null); // State for banner preview
   const [editMode, setEditMode] = useState(false);
   const [selectedDetailId, setSelectedDetailId] = useState(null);
   const [expandedDescription, setExpandedDescription] = useState({});
   const [imagesToRemove, setImagesToRemove] = useState([]);
-  const [existingImages, setExistingImages] = useState([]); // State for existing images
+  const [existingImages, setExistingImages] = useState([]);
   const [showLoader, setShowLoader] = useState(true);
   const dispatch = useDispatch();
   const {
@@ -152,6 +151,7 @@ function OurProgrammes() {
     setSelectedDetailId(null);
     setImagesToRemove([]);
     setExistingImages([]); // Reset existing images
+    setBannerPreview(null); // Reset banner preview
   };
 
   const handleBannerUpload = async () => {
@@ -161,6 +161,15 @@ function OurProgrammes() {
 
     await dispatch(updateProgramme({ category: selectedCategory, formData }));
     setBanner(null);
+    setBannerPreview(null); // Reset banner preview after upload
+  };
+
+  const handleBannerChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setBanner(file);
+      setBannerPreview(URL.createObjectURL(file)); // Set the preview URL
+    }
   };
 
   const handleEditClick = (detail) => {
@@ -205,7 +214,15 @@ function OurProgrammes() {
   };
 
   return (
-    <Container maxWidth="xlg" sx={{ p: 0 }}>
+    <Container
+      maxWidth="false"
+      sx={{
+        "@media (min-width: 600px)": {
+          paddingLeft: "0 !important",
+          paddingRight: "0 !important",
+        },
+      }}
+    >
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         Our Programmes
       </Typography>
@@ -214,7 +231,6 @@ function OurProgrammes() {
         <Typography variant="p" sx={{ mb: 2 }}>
           Select Category:
         </Typography>
-        {/* <InputLabel>Select Category</InputLabel> */}
         <Select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
@@ -239,29 +255,65 @@ function OurProgrammes() {
           </Typography>
         )}
 
-      {Array.isArray(programmes) &&
-        programmes.length > 0 &&
-        programmes[0]?.banner && (
-          <CardMedia
-            component="img"
-            height="300"
-            image={programmes[0].banner}
-            alt="Banner"
-            sx={{ mb: 2, borderRadius: 2 }}
+      {Array.isArray(programmes) && programmes.length > 0 && (
+        <>
+          {bannerPreview ? (
+            <CardMedia
+              component="img"
+              height="300"
+              image={bannerPreview} // Use the selected banner preview
+              alt="Selected Banner"
+              sx={{ mb: 2, borderRadius: 2 }}
+            />
+          ) : (
+            programmes[0]?.banner && (
+              <CardMedia
+                component="img"
+                height="300"
+                image={programmes[0].banner} // Fallback to the original banner
+                alt="Banner"
+                sx={{ mb: 2, borderRadius: 2 }}
+              />
+            )
+          )}
+        </>
+      )}
+      {/* Display the selected banner preview */}
+      {/* {bannerPreview && (
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h6">Selected Banner:</Typography>
+          <img
+            src={bannerPreview}
+            alt="Selected Banner"
+            style={{ width: "10%", height: "100px", borderRadius: "5px" }}
           />
-        )}
+        </Box>
+      )} */}
 
       <Box display="flex" alignItems="center" gap={2}>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setBanner(e.target.files[0])}
-        />
+        <Button
+          variant="contained"
+          component="label"
+          sx={{
+            backgroundColor: "#e0752d",
+            "&:hover": { backgroundColor: "#F68633" },
+            textTransform: "none",
+          }}
+        >
+          Choose File
+          <input
+            type="file"
+            hidden
+            accept="image/*"
+            onChange={handleBannerChange} // Use the new handler
+          />
+        </Button>
+
         <Button
           variant="contained"
           onClick={handleBannerUpload}
           sx={{
-            backgroundColor: "#faa36c",
+            backgroundColor: "#e0752d",
             "&:hover": { backgroundColor: "#F68633" },
             textTransform: "none",
           }}
@@ -273,6 +325,7 @@ function OurProgrammes() {
       <Box display="flex" justifyContent="flex-end" sx={{ mt: 2, mb: 2 }}>
         <Button
           variant="contained"
+          startIcon={<AddIcon />}
           onClick={() => {
             setOpenModal(true);
             setEditMode(false);

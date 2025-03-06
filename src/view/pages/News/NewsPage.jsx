@@ -4,7 +4,7 @@ import {
   fetchNews,
   createNews,
   updateNews,
-  deleteNews, // Import deleteNews
+  deleteNews,
 } from "../../redux/slice/newsPageSlice";
 import {
   Container,
@@ -26,7 +26,11 @@ import {
   DialogTitle,
   DialogContentText,
 } from "@mui/material";
-import { Delete as DeleteIcon, Edit } from "@mui/icons-material";
+import {
+  Delete as DeleteIcon,
+  Edit,
+  Add as AddIcon,
+} from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 
 const NewsPage = () => {
@@ -169,7 +173,15 @@ const NewsPage = () => {
   }
 
   return (
-    <Container maxWidth="xlg" sx={{ p: 0 }}>
+    <Container
+      maxWidth="false"
+      sx={{
+        "@media (min-width: 600px)": {
+          paddingLeft: "0 !important",
+          paddingRight: "0 !important",
+        },
+      }}
+    >
       <Typography
         variant="h4"
         align="left"
@@ -191,9 +203,12 @@ const NewsPage = () => {
             No news available
           </Typography>
           <Button
-            variant="contained"
-            color="primary"
             onClick={() => handleOpen()}
+            sx={{
+              backgroundColor: "#e0752d",
+              "&:hover": { backgroundColor: "#F68633" },
+              textTransform: "none",
+            }}
           >
             Create News
           </Button>
@@ -202,9 +217,13 @@ const NewsPage = () => {
         <>
           <Button
             variant="contained"
-            color="primary"
+            startIcon={<AddIcon />}
             onClick={() => handleOpen()}
-            sx={{ mb: 2 }}
+            sx={{
+              backgroundColor: "#e0752d",
+              "&:hover": { backgroundColor: "#F68633" },
+              textTransform: "none",
+            }}
           >
             Add News
           </Button>
@@ -276,13 +295,12 @@ const NewsPage = () => {
 
           {/* Jodit Editor for Description */}
           <JoditEditor
-            value={formData.description} // The description fetched from the backend (HTML format)
-            onChange={
-              (newContent) =>
-                setFormData((prev) => ({ ...prev, description: newContent })) // Update the description
+            value={formData.description}
+            onChange={(newContent) =>
+              setFormData((prev) => ({ ...prev, description: newContent }))
             }
             config={{
-              readonly: false, // Set to true if you want the editor to be read-only
+              readonly: false,
               placeholder: "Enter the description here...",
             }}
             style={{ marginTop: "10px" }}

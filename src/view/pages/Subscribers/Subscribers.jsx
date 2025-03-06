@@ -12,6 +12,7 @@ import {
   Typography,
   CircularProgress,
   Box,
+  TablePagination,
 } from "@mui/material";
 
 function Subscribers() {
@@ -21,7 +22,13 @@ function Subscribers() {
     loading,
     error,
   } = useSelector((state) => state.subscribers);
+
   const [showLoader, setShowLoader] = useState(true);
+
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5); // Default rows per page
+
   useEffect(() => {
     dispatch(fetchSubscribers());
   }, [dispatch]);
@@ -29,7 +36,7 @@ function Subscribers() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowLoader(false);
-    }, 1000); // Ensure loader runs for at least one full round
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -60,14 +67,28 @@ function Subscribers() {
       </Typography>
     );
 
+  // Slice the data to get only the current page's subscribers
+  const displaySubscribers = subscribers.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to the first page when rows per page is changed
+  };
+
   return (
     <TableContainer
       component={Paper}
       sx={{
         borderRadius: 0,
         boxShadow: 0,
-        maxWidth: "95%", // ✅ Shrinks width
-        // margin: "auto", // ✅ Centers it
+        maxWidth: "95%",
         overflowX: "auto",
       }}
     >
@@ -89,12 +110,12 @@ function Subscribers() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {subscribers.map((subscriber, index) => (
+          {displaySubscribers.map((subscriber, index) => (
             <TableRow
               key={subscriber._id}
               sx={{ "&:nth-of-type(odd)": { backgroundColor: "#fafafa" } }}
             >
-              <TableCell>{index + 1}</TableCell>
+              <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
               <TableCell>{subscriber.email}</TableCell>
               <TableCell>
                 {new Date(subscriber.createdAt).toLocaleDateString()}
@@ -103,6 +124,17 @@ function Subscribers() {
           ))}
         </TableBody>
       </Table>
+      <Box display="flex" justifyContent="center" width="100%" mt={2}>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={subscribers.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Box>
     </TableContainer>
   );
 }

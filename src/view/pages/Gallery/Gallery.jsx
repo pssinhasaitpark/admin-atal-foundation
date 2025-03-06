@@ -23,9 +23,11 @@ import {
   TextField,
   TableHead,
   CircularProgress,
+  TablePagination,
 } from "@mui/material";
 import { Delete as DeleteIcon, Edit } from "@mui/icons-material";
 import { Image, VideoLibrary } from "@mui/icons-material";
+
 function Gallery() {
   const dispatch = useDispatch();
   const { gallery_image, gallery_video, loading, error } = useSelector(
@@ -40,6 +42,12 @@ function Gallery() {
     description: "",
     file: null,
   });
+
+  // Pagination states
+  const [imagePage, setImagePage] = useState(0);
+  const [imageRowsPerPage, setImageRowsPerPage] = useState(5);
+  const [videoPage, setVideoPage] = useState(0);
+  const [videoRowsPerPage, setVideoRowsPerPage] = useState(5);
 
   useEffect(() => {
     dispatch(fetchGallery());
@@ -166,6 +174,26 @@ function Gallery() {
     });
   };
 
+  // Handle pagination for images
+  const handleImageChangePage = (event, newPage) => {
+    setImagePage(newPage);
+  };
+
+  const handleImageChangeRowsPerPage = (event) => {
+    setImageRowsPerPage(parseInt(event.target.value, 10));
+    setImagePage(0);
+  };
+
+  // Handle pagination for videos
+  const handleVideoChangePage = (event, newPage) => {
+    setVideoPage(newPage);
+  };
+
+  const handleVideoChangeRowsPerPage = (event) => {
+    setVideoRowsPerPage(parseInt(event.target.value, 10));
+    setVideoPage(0);
+  };
+
   return (
     <div>
       <Typography
@@ -177,14 +205,29 @@ function Gallery() {
         Gallery
       </Typography>
 
-      <Button onClick={() => handleOpen("image")} startIcon={<Image />}>
+      <Button
+        variant="contained"
+        onClick={() => handleOpen("image")}
+        startIcon={<Image />}
+        sx={{
+          backgroundColor: "#e0752d",
+          "&:hover": { backgroundColor: "#F68633" },
+          textTransform: "none",
+        }}
+      >
         Add Image
       </Button>
 
       <Button
+        variant="contained"
         onClick={() => handleOpen("video")}
         startIcon={<VideoLibrary />}
-        sx={{ ml: 1 }}
+        sx={{
+          ml: 1,
+          backgroundColor: "#e0752d",
+          "&:hover": { backgroundColor: "#F68633" },
+          textTransform: "none",
+        }}
       >
         Add Video
       </Button>
@@ -193,6 +236,7 @@ function Gallery() {
       <Typography variant="h5" gutterBottom style={{ marginTop: 20 }}>
         {gallery_image.title}{" "}
         <Button
+          variant="contained"
           onClick={() =>
             handleOpen("image", {
               title: gallery_image.title,
@@ -200,9 +244,12 @@ function Gallery() {
             })
           }
           startIcon={<Edit />}
-        >
-          Edit
-        </Button>
+          sx={{
+            backgroundColor: "#e0752d",
+            "&:hover": { backgroundColor: "#F68633" },
+            textTransform: "none",
+          }}
+        ></Button>
       </Typography>
       <Typography variant="body1" gutterBottom sx={{ color: "gray", mb: 2 }}>
         {gallery_image.description || "No description available."}
@@ -231,35 +278,49 @@ function Gallery() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {gallery_image.images.map((img, index) => (
-                <TableRow key={index} hover>
-                  <TableCell>
-                    <img
-                      src={img}
-                      alt="gallery"
-                      width="80px"
-                      height="60px"
-                      style={{
-                        objectFit: "cover",
-                        borderRadius: "5px",
-                        display: "block",
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Button
-                      onClick={() => handleDelete(img, "image")}
-                      variant="outlined"
-                      size="small"
-                      sx={{ minWidth: "50px", padding: "4px", border: 0 }}
-                    >
-                      <DeleteIcon fontSize="small" color="error" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {gallery_image.images
+                .slice(
+                  imagePage * imageRowsPerPage,
+                  imagePage * imageRowsPerPage + imageRowsPerPage
+                )
+                .map((img, index) => (
+                  <TableRow key={index} hover>
+                    <TableCell>
+                      <img
+                        src={img}
+                        alt="gallery"
+                        width="80px"
+                        height="60px"
+                        style={{
+                          objectFit: "cover",
+                          borderRadius: "5px",
+                          display: "block",
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Button
+                        onClick={() => handleDelete(img, "image")}
+                        variant="outlined"
+                        size="small"
+                        sx={{ minWidth: "50px", padding: "4px", border: 0 }}
+                      >
+                        <DeleteIcon fontSize="small" color="error" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={gallery_image.images.length}
+            rowsPerPage={imageRowsPerPage}
+            page={imagePage}
+            onPageChange={handleImageChangePage}
+            onRowsPerPageChange={handleImageChangeRowsPerPage}
+          />
         </TableContainer>
       ) : (
         <Typography>No images available.</Typography>
@@ -268,6 +329,7 @@ function Gallery() {
       <Typography variant="h5" gutterBottom style={{ marginTop: 20 }}>
         {gallery_video.title}{" "}
         <Button
+          variant="contained"
           onClick={() =>
             handleOpen("video", {
               title: gallery_video.title,
@@ -275,9 +337,12 @@ function Gallery() {
             })
           }
           startIcon={<Edit />}
-        >
-          Edit
-        </Button>
+          sx={{
+            backgroundColor: "#e0752d",
+            "&:hover": { backgroundColor: "#F68633" },
+            textTransform: "none",
+          }}
+        ></Button>
       </Typography>
       <Typography variant="body1" gutterBottom sx={{ color: "gray", mb: 2 }}>
         {gallery_video.description || "No description available."}
@@ -306,35 +371,49 @@ function Gallery() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {gallery_video.videos.map((vid, index) => (
-                <TableRow key={index} hover>
-                  <TableCell>
-                    <video
-                      controls
-                      width="100px"
-                      height="100px"
-                      style={{
-                        borderRadius: "5px",
-                        display: "block",
-                      }}
-                    >
-                      <source src={vid} type="video/mp4" />
-                    </video>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Button
-                      onClick={() => handleDelete(vid, "video")}
-                      variant="outlined"
-                      size="small"
-                      sx={{ minWidth: "50px", padding: "4px", border: 0 }}
-                    >
-                      <DeleteIcon fontSize="small" color="error" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {gallery_video.videos
+                .slice(
+                  videoPage * videoRowsPerPage,
+                  videoPage * videoRowsPerPage + videoRowsPerPage
+                )
+                .map((vid, index) => (
+                  <TableRow key={index} hover>
+                    <TableCell>
+                      <video
+                        controls
+                        width="100px"
+                        height="100px"
+                        style={{
+                          borderRadius: "5px",
+                          display: "block",
+                        }}
+                      >
+                        <source src={vid} type="video/mp4" />
+                      </video>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Button
+                        onClick={() => handleDelete(vid, "video")}
+                        variant="outlined"
+                        size="small"
+                        sx={{ minWidth: "50px", padding: "4px", border: 0 }}
+                      >
+                        <DeleteIcon fontSize="small" color="error" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={gallery_video.videos.length}
+            rowsPerPage={videoRowsPerPage}
+            page={videoPage}
+            onPageChange={handleVideoChangePage}
+            onRowsPerPageChange={handleVideoChangeRowsPerPage}
+          />
         </TableContainer>
       ) : (
         <Typography>No videos available.</Typography>

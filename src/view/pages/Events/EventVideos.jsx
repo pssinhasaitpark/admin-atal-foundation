@@ -5,6 +5,7 @@ import {
   updateEventVideo,
 } from "../../redux/slice/eventVideoSlice";
 import {
+  Stack,
   Box,
   Typography,
   CircularProgress,
@@ -22,7 +23,11 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material";
-import { Delete as DeleteIcon } from "@mui/icons-material";
+import {
+  Delete as DeleteIcon,
+  Edit,
+  Add as AddIcon,
+} from "@mui/icons-material";
 function EventVideos() {
   const dispatch = useDispatch();
 
@@ -108,17 +113,40 @@ function EventVideos() {
           <Typography variant="body1" gutterBottom>
             {eventVideos[0].video_description}
           </Typography>
-          <Button variant="outlined" color="primary" onClick={handleEditClick}>
-            Edit
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => setAddDialogOpen(true)}
-            sx={{ marginLeft: "10px" }}
+          <Stack
+            direction="row"
+            justifyContent="space-between" // Aligns buttons to opposite ends
+            alignItems="center"
+            sx={{ width: "100%", mb: 2 }}
           >
-            Add Video
-          </Button>
+            {/* Left-aligned Edit button */}
+            <Button
+              variant="contained"
+              onClick={handleEditClick}
+              sx={{
+                backgroundColor: "#e0752d",
+                "&:hover": { backgroundColor: "#F68633" },
+                textTransform: "none",
+              }}
+            >
+              <Edit />
+            </Button>
+
+            {/* Right-aligned Add Video button */}
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => setAddDialogOpen(true)}
+              sx={{
+                backgroundColor: "#e0752d",
+                "&:hover": { backgroundColor: "#F68633" },
+                textTransform: "none",
+              }}
+            >
+              Add Video
+            </Button>
+          </Stack>
         </Box>
       )}
 

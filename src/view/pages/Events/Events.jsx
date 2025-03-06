@@ -25,7 +25,11 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-import { Delete as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
+import {
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Add as AddIcon,
+} from "@mui/icons-material";
 import EventVideos from "./EventVideos.jsx";
 function Events() {
   const dispatch = useDispatch();
@@ -331,6 +335,7 @@ function Events() {
             <Button
               variant="contained"
               color="secondary"
+              startIcon={<AddIcon />}
               onClick={() => setAddSectionDialogOpen(true)}
               sx={{
                 backgroundColor: "#F68633",
