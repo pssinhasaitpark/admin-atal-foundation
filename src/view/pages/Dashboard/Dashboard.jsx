@@ -18,7 +18,7 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import { History, Email, Event, People } from "@mui/icons-material";
+import { Chat, Email, Event, People } from "@mui/icons-material";
 import banner from "../../../assets/Images/BannerImg.png";
 
 const Dashboard = () => {
@@ -83,7 +83,7 @@ const Dashboard = () => {
             {
               title: "Total Messages",
               value: totalMessages,
-              icon: <History sx={{ fontSize: 40, color: "#2196f3" }} />,
+              icon: <Chat sx={{ fontSize: 40, color: "#2196f3" }} />,
             },
             {
               title: "Total Events & Programs",
@@ -121,23 +121,12 @@ const Dashboard = () => {
           (RSS). He was awarded the Bharat Ratna, India's highest civilian
           award, in 2015.
         </Typography>
-      </Paper>
 
-      {/* Key Achievements */}
-      <Paper
-        sx={{
-          p: 4,
-          mx: 4,
-          mt: 4,
-          borderRadius: 3,
-          bgcolor: "white",
-          boxShadow: 3,
-        }}
-      >
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
+        {/* Key Achievements */}
+        <Typography variant="h5" fontWeight="bold" sx={{ mt: 5 }}>
           Key Achievements
         </Typography>
-        <List>
+        <List sx={{ listStyleType: "disc" }}>
           {[
             "Pokhran-II Nuclear Tests (1998)",
             "Golden Quadrilateral Highway Project",
@@ -145,7 +134,7 @@ const Dashboard = () => {
             "First PM to speak in Hindi at UN",
             "Economic Reforms & Privatization",
           ].map((achievement, index) => (
-            <ListItem key={index}>
+            <ListItem sx={{ display: "list-item" }} key={index}>
               <ListItemText primary={achievement} />
             </ListItem>
           ))}
