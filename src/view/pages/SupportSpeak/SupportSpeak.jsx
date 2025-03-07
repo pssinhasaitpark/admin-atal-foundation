@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useRef } from "react";
 import {
   Box,
   Typography,
@@ -13,10 +13,10 @@ import { Delete as DeleteIcon } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  fetchSupportSpeakData,
+  // fetchSupportSpeakData,
   saveSupportSpeakToBackend,
 } from "../../redux/slice/supportSpeakSlice";
-import debounce from "lodash.debounce";
+// import debounce from "lodash.debounce";
 
 const SupportSpeak = () => {
   const dispatch = useDispatch();

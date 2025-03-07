@@ -14,7 +14,7 @@ import {
   fetchSocialMedia,
   updateSocialMedia,
 } from "../../redux/slice/socialMediaSlice";
-import { WhatsApp, Facebook, Instagram, YouTube } from "@mui/icons-material"; // Importing Icons
+import { WhatsApp, Facebook, Instagram, YouTube } from "@mui/icons-material";
 
 const SocialMedia = () => {
   const dispatch = useDispatch();
@@ -68,7 +68,7 @@ const SocialMedia = () => {
         alignItems="center"
         height="50vh"
       >
-        <CircularProgress />
+        <CircularProgress sx={{ color: "#F68633" }} />
       </Box>
     );
 

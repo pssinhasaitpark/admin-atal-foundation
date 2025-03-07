@@ -27,7 +27,7 @@ import {
 } from "@mui/material";
 import { Delete as DeleteIcon, Edit } from "@mui/icons-material";
 import { Image, VideoLibrary } from "@mui/icons-material";
-
+import { SlideshowLightbox } from "lightbox.js-react";
 function Gallery() {
   const dispatch = useDispatch();
   const { gallery_image, gallery_video, loading, error } = useSelector(
@@ -69,7 +69,7 @@ function Gallery() {
         alignItems="center"
         height="50vh"
       >
-        <CircularProgress />
+        <CircularProgress sx={{ color: "#F68633" }} />
       </Box>
     );
 
@@ -286,17 +286,19 @@ function Gallery() {
                 .map((img, index) => (
                   <TableRow key={index} hover>
                     <TableCell>
-                      <img
-                        src={img}
-                        alt="gallery"
-                        width="80px"
-                        height="60px"
-                        style={{
-                          objectFit: "cover",
-                          borderRadius: "5px",
-                          display: "block",
-                        }}
-                      />
+                      <SlideshowLightbox>
+                        <img
+                          src={img}
+                          alt="gallery"
+                          width="80px"
+                          height="60px"
+                          style={{
+                            objectFit: "cover",
+                            borderRadius: "5px",
+                            display: "block",
+                          }}
+                        />
+                      </SlideshowLightbox>
                     </TableCell>
                     <TableCell align="center">
                       <Button

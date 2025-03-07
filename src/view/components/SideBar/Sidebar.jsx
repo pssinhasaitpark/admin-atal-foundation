@@ -129,7 +129,7 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
                 sx={{
                   backgroundColor:
                     activeParent === index ? "#eafaf1" : "transparent",
-                  "&:hover": { backgroundColor: "#eafaf1" },
+                  "&:hover": { backgroundColor: "#eafaf1", cursor: "pointer" },
                 }}
               >
                 <ListItemIcon

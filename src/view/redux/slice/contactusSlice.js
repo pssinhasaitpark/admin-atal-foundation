@@ -21,6 +21,18 @@ export const fetchContactData = createAsyncThunk(
   }
 );
 
+export const deleteContactData = createAsyncThunk(
+  "contact/deleteContactData",
+  async (id, { rejectWithValue }) => {
+    try {
+      await api.delete(`/contact/${id}`); // No need to return response
+      return id; // Return only the deleted testimonial ID
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 const contactSlice = createSlice({
   name: "contact",
   initialState,
@@ -36,6 +48,19 @@ const contactSlice = createSlice({
         state.contacts = action.payload;
       })
       .addCase(fetchContactData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteContactData.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteContactData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.contacts = state.contacts.filter(
+          (contact) => contact._id !== action.payload
+        ); // Remove the deleted testimonial
+      })
+      .addCase(deleteContactData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

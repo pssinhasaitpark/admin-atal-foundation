@@ -10,9 +10,6 @@ import {
   Gallery,
   AboutUs,
   Members,
-  // SupportSpeak,
-  // UserOpinion,
-  // Registration,
   Messages,
   ContactUs,
   Profile,
@@ -48,9 +45,6 @@ function App() {
         <Route path="/subscribers" element={<Subscribers />} />
         <Route path="/socialMedia" element={<SocialMedia />} />
         <Route path="/news" element={<NewsPage />} />
-        {/* <Route path="/supportspeak" element={<SupportSpeak />} /> */}
-        {/* <Route path="/useropinion" element={<UserOpinion />} /> */}
-        {/* <Route path="/registration" element={<Registration />} /> */}
 
         {/* Our Programmes Routes */}
         <Route path="/ourProgrammes" element={<OurProgrammes />} />

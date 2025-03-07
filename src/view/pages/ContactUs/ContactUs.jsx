@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchContactData } from "../../redux/slice/contactusSlice";
+import {
+  fetchContactData,
+  deleteContactData,
+} from "../../redux/slice/contactusSlice";
 import {
   Table,
   TableBody,
@@ -13,7 +16,15 @@ import {
   CircularProgress,
   Box,
   TablePagination,
+  Tooltip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
+import { Delete } from "@mui/icons-material";
 
 function ContactUs() {
   const dispatch = useDispatch();
@@ -23,7 +34,11 @@ function ContactUs() {
 
   // Pagination states
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5); // You can adjust this number
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  // Delete dialog states
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedContactId, setSelectedContactId] = useState(null);
 
   useEffect(() => {
     dispatch(fetchContactData());
@@ -33,7 +48,6 @@ function ContactUs() {
     const timer = setTimeout(() => {
       setShowLoader(false);
     }, 1000);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -53,6 +67,28 @@ function ContactUs() {
     setPage(0); // Reset to first page when rows per page change
   };
 
+  const handleOpenDialog = (id) => {
+    setSelectedContactId(id);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedContactId(null);
+  };
+
+  const handleDelete = async () => {
+    if (selectedContactId) {
+      try {
+        await dispatch(deleteContactData(selectedContactId)).unwrap();
+      } catch (error) {
+        console.error("Error deleting contact:", error);
+        alert("Failed to delete the contact. Please try again.");
+      }
+      handleCloseDialog();
+    }
+  };
+
   const displayContacts = contacts.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
@@ -66,7 +102,7 @@ function ContactUs() {
         alignItems="center"
         height="50vh"
       >
-        <CircularProgress />
+        <CircularProgress sx={{ color: "#F68633" }} />
       </Box>
     );
 
@@ -80,7 +116,7 @@ function ContactUs() {
   return (
     <TableContainer
       component={Paper}
-      sx={{ boxShadow: 0, borderRadius: 0, overflow: "hidden" }}
+      sx={{ boxShadow: 0, borderRadius: 0, overflow: "hidden", p: 2 }}
     >
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         Contact Inquiries
@@ -89,22 +125,24 @@ function ContactUs() {
       <Table>
         <TableHead>
           <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
+            <TableCell sx={{ fontWeight: "bold" }}>S. No.</TableCell>
             <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
             <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
             <TableCell sx={{ fontWeight: "bold" }}>Contact No.</TableCell>
             <TableCell sx={{ fontWeight: "bold" }}>Messages</TableCell>
             <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {displayContacts.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} sx={{ textAlign: "center", py: 3 }}>
+              <TableCell colSpan={6} sx={{ textAlign: "center", py: 3 }}>
                 No contact inquiries found.
               </TableCell>
             </TableRow>
           ) : (
-            displayContacts.map((contact) => {
+            displayContacts.map((contact, index) => {
               const isExpanded = expandedRows[contact._id];
 
               return (
@@ -112,6 +150,7 @@ function ContactUs() {
                   key={contact._id}
                   sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f9f9f9" } }}
                 >
+                  <TableCell>{page * rowsPerPage + index + 1}</TableCell>
                   <TableCell>{contact.name}</TableCell>
                   <TableCell>{contact.email}</TableCell>
                   <TableCell>{contact.contact_no}</TableCell>
@@ -149,15 +188,27 @@ function ContactUs() {
                   <TableCell>
                     {new Date(contact.createdAt).toLocaleDateString()}
                   </TableCell>
+                  <TableCell>
+                    <Tooltip title="Delete">
+                      <IconButton
+                        color="error"
+                        onClick={() => handleOpenDialog(contact._id)}
+                        size="small"
+                      >
+                        <Delete />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                 </TableRow>
               );
             })
           )}
         </TableBody>
       </Table>
+
       <Box display="flex" justifyContent="center" width="100%" mt={2}>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]} // You can customize these options
+          rowsPerPageOptions={[5, 10, 25]} // Customize options
           component="div"
           count={contacts.length}
           rowsPerPage={rowsPerPage}
@@ -166,6 +217,22 @@ function ContactUs() {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Box>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this contact?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </TableContainer>
   );
 }
