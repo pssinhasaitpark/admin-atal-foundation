@@ -57,7 +57,13 @@ const Header = () => {
           pt: 0.5,
         }}
       >
-        <div style={{ flexGrow: 1, textAlign: "center", paddingLeft: "250px" }}>
+        <div
+          style={{
+            flexGrow: 1,
+            textAlign: "center",
+            paddingLeft: isMobile ? "37px" : "250px",
+          }}
+        >
           <Typography
             variant="h6"
             sx={{

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchSubscribers } from "../../redux/slice/subscribersSlice"; // Import the action
+import { fetchSubscribers } from "../../redux/slice/subscribersSlice";
 import {
   Table,
   TableBody,
@@ -27,7 +27,7 @@ function Subscribers() {
 
   // Pagination state
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5); // Default rows per page
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     dispatch(fetchSubscribers());
@@ -49,7 +49,7 @@ function Subscribers() {
         alignItems="center"
         height="50vh"
       >
-        <CircularProgress />
+        <CircularProgress sx={{ color: "#F68633" }} />
       </Box>
     );
 
@@ -79,7 +79,7 @@ function Subscribers() {
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0); // Reset to the first page when rows per page is changed
+    setPage(0);
   };
 
   return (
@@ -88,7 +88,7 @@ function Subscribers() {
       sx={{
         borderRadius: 0,
         boxShadow: 0,
-        maxWidth: "95%",
+        maxWidth: "100%",
         overflowX: "auto",
       }}
     >

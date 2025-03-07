@@ -35,7 +35,7 @@ import {
   Add as AddIcon,
 } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
-
+import { SlideshowLightbox } from "lightbox.js-react";
 const categories = [
   "Education",
   "Healthcare",
@@ -91,7 +91,7 @@ function OurProgrammes() {
         alignItems="center"
         height="50vh"
       >
-        <CircularProgress />
+        <CircularProgress sx={{ color: "#F68633" }} />
       </Box>
     );
 
@@ -129,7 +129,6 @@ function OurProgrammes() {
       formData.append("detailImages", newProgramme.image);
     }
 
-    // Include images to remove in the payload
     if (imagesToRemove.length > 0) {
       formData.append("removeImages", JSON.stringify(imagesToRemove));
     }
@@ -150,8 +149,8 @@ function OurProgrammes() {
     setEditMode(false);
     setSelectedDetailId(null);
     setImagesToRemove([]);
-    setExistingImages([]); // Reset existing images
-    setBannerPreview(null); // Reset banner preview
+    setExistingImages([]);
+    setBannerPreview(null);
   };
 
   const handleBannerUpload = async () => {
@@ -161,14 +160,14 @@ function OurProgrammes() {
 
     await dispatch(updateProgramme({ category: selectedCategory, formData }));
     setBanner(null);
-    setBannerPreview(null); // Reset banner preview after upload
+    setBannerPreview(null);
   };
 
   const handleBannerChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       setBanner(file);
-      setBannerPreview(URL.createObjectURL(file)); // Set the preview URL
+      setBannerPreview(URL.createObjectURL(file));
     }
   };
 
@@ -182,7 +181,7 @@ function OurProgrammes() {
     setEditMode(true);
     setOpenModal(true);
     setImagesToRemove([]);
-    setExistingImages(detail.images.map((img) => img.url)); // Set existing images for editing
+    setExistingImages(detail.images.map((img) => img.url));
   };
 
   const toggleDescription = (id) => {
@@ -193,10 +192,8 @@ function OurProgrammes() {
   };
 
   const handleRemoveImage = (imageUrl) => {
-    // Update existing images state
     setExistingImages((prev) => prev.filter((url) => url !== imageUrl));
 
-    // Update images to remove state
     setImagesToRemove((prev) => {
       if (prev.includes(imageUrl)) {
         return prev.filter((url) => url !== imageUrl);
@@ -261,7 +258,7 @@ function OurProgrammes() {
             <CardMedia
               component="img"
               height="300"
-              image={bannerPreview} // Use the selected banner preview
+              image={bannerPreview}
               alt="Selected Banner"
               sx={{ mb: 2, borderRadius: 2 }}
             />
@@ -270,7 +267,7 @@ function OurProgrammes() {
               <CardMedia
                 component="img"
                 height="300"
-                image={programmes[0].banner} // Fallback to the original banner
+                image={programmes[0].banner}
                 alt="Banner"
                 sx={{ mb: 2, borderRadius: 2 }}
               />
@@ -278,17 +275,6 @@ function OurProgrammes() {
           )}
         </>
       )}
-      {/* Display the selected banner preview */}
-      {/* {bannerPreview && (
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h6">Selected Banner:</Typography>
-          <img
-            src={bannerPreview}
-            alt="Selected Banner"
-            style={{ width: "10%", height: "100px", borderRadius: "5px" }}
-          />
-        </Box>
-      )} */}
 
       <Box display="flex" alignItems="center" gap={2}>
         <Button
@@ -305,7 +291,7 @@ function OurProgrammes() {
             type="file"
             hidden
             accept="image/*"
-            onChange={handleBannerChange} // Use the new handler
+            onChange={handleBannerChange}
           />
         </Button>
 
@@ -345,10 +331,10 @@ function OurProgrammes() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Title</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Images</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Images</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -356,9 +342,13 @@ function OurProgrammes() {
                 <TableRow key={detail._id}>
                   <TableCell>{detail.title}</TableCell>
                   <TableCell>
-                    {expandedDescription[detail._id]
-                      ? detail.description
-                      : `${detail.description.substring(0, 50)}...`}
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: expandedDescription[detail._id]
+                          ? detail.description
+                          : `${detail.description.substring(0, 50)}...`,
+                      }}
+                    />
                     <Button
                       onClick={() => toggleDescription(detail._id)}
                       sx={{ ml: 1 }}
@@ -368,18 +358,21 @@ function OurProgrammes() {
                         : "Show More"}
                     </Button>
                   </TableCell>
+
                   <TableCell>
                     {detail.images?.map((img) => (
                       <div
                         key={img._id}
                         style={{ display: "flex", alignItems: "center" }}
                       >
-                        <img
-                          src={img.url}
-                          alt="Programme"
-                          width="100"
-                          style={{ marginRight: "5px", borderRadius: "5px" }}
-                        />
+                        <SlideshowLightbox>
+                          <img
+                            src={img.url}
+                            alt="Programme"
+                            width="100"
+                            style={{ marginRight: "5px", borderRadius: "5px" }}
+                          />
+                        </SlideshowLightbox>
                       </div>
                     ))}
                   </TableCell>
@@ -456,12 +449,14 @@ function OurProgrammes() {
                     marginTop: "5px",
                   }}
                 >
-                  <img
-                    src={imgUrl}
-                    alt="Existing Programme"
-                    width="100"
-                    style={{ marginRight: "5px", borderRadius: "5px" }}
-                  />
+                  <SlideshowLightbox>
+                    <img
+                      src={imgUrl}
+                      alt="Existing Programme"
+                      width="100"
+                      style={{ marginRight: "5px", borderRadius: "5px" }}
+                    />
+                  </SlideshowLightbox>
                   <Button
                     variant="outlined"
                     onClick={() => handleRemoveImage(imgUrl)}

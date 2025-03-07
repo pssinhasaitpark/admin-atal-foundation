@@ -128,7 +128,7 @@ const aboutSlice = createSlice({
       })
       .addCase(deleteSection.fulfilled, (state, action) => {
         state.status = "succeeded";
-        const { aboutId, sectionId } = action.payload;
+        const { sectionId } = action.payload;
         state.data = state.data.map((about) => ({
           ...about,
           sections: about.sections.filter(

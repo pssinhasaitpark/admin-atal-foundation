@@ -12,7 +12,10 @@ import {
 } from "@mui/material";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserOpinions, saveUserOpinions } from "../../redux/slice/userOpinionSlice";
+import {
+  fetchUserOpinions,
+  saveUserOpinions,
+} from "../../redux/slice/userOpinionSlice";
 
 const UserOpinion = () => {
   const dispatch = useDispatch();

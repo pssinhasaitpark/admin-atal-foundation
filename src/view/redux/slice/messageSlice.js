@@ -19,6 +19,17 @@ export const fetchMessages = createAsyncThunk(
     }
   }
 );
+export const deleteMessageData = createAsyncThunk(
+  "message/deleteMessageData",
+  async (id, { rejectWithValue }) => {
+    try {
+      await api.delete(`/message/${id}`); // No need to return response
+      return id; // Return only the deleted testimonial ID
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 const messageSlice = createSlice({
   name: "messages",
   initialState,

@@ -32,7 +32,7 @@ import {
   Add as AddIcon,
 } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
-
+import { SlideshowLightbox } from "lightbox.js-react";
 const NewsPage = () => {
   const dispatch = useDispatch();
   const { news, loading, error } = useSelector((state) => state.news);
@@ -47,12 +47,18 @@ const NewsPage = () => {
   // For Delete Confirmation Dialog
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [newsToDelete, setNewsToDelete] = useState(null);
-
+  const [showLoader, setShowLoader] = useState(true);
   // Fetch news on component mount
   useEffect(() => {
     dispatch(fetchNews());
   }, [dispatch]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000);
 
+    return () => clearTimeout(timer);
+  }, []);
   // For handling the news data
   useEffect(() => {
     if (news && editingNews) {
@@ -143,34 +149,24 @@ const NewsPage = () => {
     dispatch(fetchNews());
     handleClose();
   };
-
-  if (loading) {
+  if (loading || showLoader)
     return (
       <Box
         display="flex"
         justifyContent="center"
         alignItems="center"
-        height="100vh"
+        height="50vh"
       >
-        <CircularProgress />
+        <CircularProgress sx={{ color: "#F68633" }} />
       </Box>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <Typography variant="h6" color="error">
-          Error: {error}
-        </Typography>
-      </Box>
+      <Typography variant="h6" color="error">
+        Error: {error}
+      </Typography>
     );
-  }
 
   return (
     <Container
@@ -232,10 +228,10 @@ const NewsPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Headline</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Image</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Headline</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Image</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -252,11 +248,13 @@ const NewsPage = () => {
                     </TableCell>
                     <TableCell>
                       {newsItem.images?.length > 0 && (
-                        <img
-                          src={newsItem.images[0]}
-                          alt={newsItem.headline}
-                          style={{ width: "100px", height: "auto" }}
-                        />
+                        <SlideshowLightbox>
+                          <img
+                            src={newsItem.images[0]}
+                            alt={newsItem.headline}
+                            style={{ width: "100px", height: "auto" }}
+                          />
+                        </SlideshowLightbox>
                       )}
                     </TableCell>
                     <TableCell>

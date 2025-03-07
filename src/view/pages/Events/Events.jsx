@@ -24,6 +24,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  CircularProgress,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
@@ -31,10 +32,11 @@ import {
   Add as AddIcon,
 } from "@mui/icons-material";
 import EventVideos from "./EventVideos.jsx";
+import { SlideshowLightbox } from "lightbox.js-react";
 function Events() {
   const dispatch = useDispatch();
   const { events = [], loading, error } = useSelector((state) => state.events);
-
+  const [showLoader, setShowLoader] = useState(true);
   const [newBanner, setNewBanner] = useState(null);
   const [newEvent, setNewEvent] = useState({
     title: "",
@@ -58,6 +60,13 @@ function Events() {
   useEffect(() => {
     dispatch(fetchEventsData());
   }, [dispatch]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleCreateEvent = () => {
     dispatch(createEvent(newEvent)).then(() => {
@@ -174,7 +183,18 @@ function Events() {
     });
   };
 
-  if (loading) return <Typography variant="h6">Loading events...</Typography>;
+  if (loading || showLoader)
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <CircularProgress sx={{ color: "#F68633" }} />
+      </Box>
+    );
+
   if (error)
     return (
       <Typography variant="h6" color="error">
@@ -367,17 +387,19 @@ function Events() {
                     <TableCell>
                       <Box display="flex" gap={1} flexWrap="wrap">
                         {group.images?.map((img, index) => (
-                          <img
-                            key={index}
-                            src={img}
-                            alt={group.image_title}
-                            style={{
-                              width: "60px",
-                              height: "60px",
-                              objectFit: "cover",
-                              borderRadius: "5px",
-                            }}
-                          />
+                          <SlideshowLightbox>
+                            <img
+                              key={index}
+                              src={img}
+                              alt={group.image_title}
+                              style={{
+                                width: "60px",
+                                height: "60px",
+                                objectFit: "cover",
+                                borderRadius: "5px",
+                              }}
+                            />
+                          </SlideshowLightbox>
                         ))}
                       </Box>
                     </TableCell>
@@ -433,7 +455,7 @@ function Events() {
                   <img
                     key={index}
                     src={img}
-                    alt={`New Section Image ${index}`}
+                    alt={`New Section ${index}`}
                     style={{
                       width: "60px",
                       height: "60px",
@@ -492,7 +514,7 @@ function Events() {
                   <img
                     key={index}
                     src={img}
-                    alt={`Edit Section Image ${index}`}
+                    alt={`Edit Section ${index}`}
                     style={{
                       width: "60px",
                       height: "60px",

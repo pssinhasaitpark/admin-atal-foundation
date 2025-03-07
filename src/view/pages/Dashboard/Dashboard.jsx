@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchSubscribersCount,
@@ -23,6 +23,8 @@ import banner from "../../../assets/Images/BannerImg.png";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
+  const status = useSelector((state) => state.about.status);
+  const [showLoader, setShowLoader] = useState(true);
   const {
     totalSubscribers,
     totalInquiries,
@@ -38,6 +40,31 @@ const Dashboard = () => {
     dispatch(fetchMessagesCount());
     dispatch(fetchEventsCount());
   }, [dispatch]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+  if (status === "loading" || showLoader)
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <CircularProgress sx={{ color: "#F68633" }} />
+      </Box>
+    );
+
+  if (status === "error")
+    return (
+      <Typography variant="h6" color="error">
+        Error: {status}
+      </Typography>
+    );
 
   return (
     <Box sx={{ bgcolor: "#f4f6f8", minHeight: "100vh", pb: 4 }}>

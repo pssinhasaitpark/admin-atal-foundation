@@ -161,7 +161,7 @@ function EventVideos() {
             <TableHead>
               <TableRow>
                 <TableCell>Videos</TableCell>
-                <TableCell sx={{ fontWeight: "bold", width: "300px" }}>
+                <TableCell sx={{ fontWeight: "bold", width: "233px" }}>
                   Actions
                 </TableCell>
               </TableRow>
