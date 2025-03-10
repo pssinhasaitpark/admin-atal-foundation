@@ -33,6 +33,7 @@ import {
 } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { SlideshowLightbox } from "lightbox.js-react";
+
 const NewsPage = () => {
   const dispatch = useDispatch();
   const { news, loading, error } = useSelector((state) => state.news);
@@ -48,10 +49,13 @@ const NewsPage = () => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [newsToDelete, setNewsToDelete] = useState(null);
   const [showLoader, setShowLoader] = useState(true);
+  const [expandedNews, setExpandedNews] = useState({}); // Track expanded news items
+
   // Fetch news on component mount
   useEffect(() => {
     dispatch(fetchNews());
   }, [dispatch]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowLoader(false);
@@ -59,6 +63,7 @@ const NewsPage = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
   // For handling the news data
   useEffect(() => {
     if (news && editingNews) {
@@ -149,6 +154,14 @@ const NewsPage = () => {
     dispatch(fetchNews());
     handleClose();
   };
+
+  const toggleExpand = (newsId) => {
+    setExpandedNews((prev) => ({
+      ...prev,
+      [newsId]: !prev[newsId],
+    }));
+  };
+
   if (loading || showLoader)
     return (
       <Box
@@ -238,13 +251,33 @@ const NewsPage = () => {
                 {news.map((newsItem) => (
                   <TableRow key={newsItem._id}>
                     <TableCell>{newsItem.headline}</TableCell>
-
                     <TableCell>
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: newsItem.description,
-                        }}
-                      />
+                      <div>
+                        {expandedNews[newsItem._id] ? (
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: newsItem.description,
+                            }}
+                          />
+                        ) : (
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: `${newsItem.description.substring(
+                                0,
+                                100
+                              )}...`,
+                            }}
+                          />
+                        )}
+                        <Button
+                          onClick={() => toggleExpand(newsItem._id)}
+                          sx={{ textTransform: "none", ml: 1 }}
+                        >
+                          {expandedNews[newsItem._id]
+                            ? "Read Less"
+                            : "Read More"}
+                        </Button>
+                      </div>
                     </TableCell>
                     <TableCell>
                       {newsItem.images?.length > 0 && (
@@ -312,10 +345,20 @@ const NewsPage = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="secondary">
+          <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} color="primary" variant="contained">
+          <Button
+            onClick={handleSubmit}
+            color="primary"
+            variant="contained"
+            sx={{
+              ml: 1,
+              backgroundColor: "#e0752d",
+              "&:hover": { backgroundColor: "#F68633" },
+              textTransform: "none",
+            }}
+          >
             {editingNews ? "Update" : "Submit"}
           </Button>
         </DialogActions>

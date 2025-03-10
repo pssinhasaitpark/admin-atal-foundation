@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import JoditEditor from "jodit-react";
 import {
   fetchEventsData,
   createEvent,
@@ -30,36 +31,42 @@ import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   Add as AddIcon,
+  Upload as UploadIcon,
 } from "@mui/icons-material";
 import EventVideos from "./EventVideos.jsx";
 import { SlideshowLightbox } from "lightbox.js-react";
+
 function Events() {
   const dispatch = useDispatch();
   const { events = [], loading, error } = useSelector((state) => state.events);
   const [showLoader, setShowLoader] = useState(true);
   const [newBanner, setNewBanner] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null);
   const [newEvent, setNewEvent] = useState({
     title: "",
     description: "",
     banner: "",
     imageGroups: [],
   });
-
+  const [isExpanded, setIsExpanded] = useState(false);
   const [newSection, setNewSection] = useState({
     image_title: "",
     image_description: "",
     images: [],
   });
-
+  const editor = useRef(null);
+  const fileInputRef = useRef(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [addSectionDialogOpen, setAddSectionDialogOpen] = useState(false);
-  const [editSectionDialogOpen, setEditSectionDialogOpen] = useState(false); // New state for editing section
+  const [editSectionDialogOpen, setEditSectionDialogOpen] = useState(false);
   const [newSectionImages, setNewSectionImages] = useState([]);
-  const [selectedSectionId, setSelectedSectionId] = useState(null); // Track which section is being edited
+  const [selectedSectionId, setSelectedSectionId] = useState(null);
+  const [expandedSections, setExpandedSections] = useState({});
 
   useEffect(() => {
     dispatch(fetchEventsData());
   }, [dispatch]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowLoader(false);
@@ -87,7 +94,11 @@ function Events() {
 
   const handleBannerUpload = (e) => {
     const file = e.target.files[0];
-    setNewBanner(file);
+    if (file) {
+      setNewBanner(file);
+      const previewUrl = URL.createObjectURL(file);
+      setBannerPreview(previewUrl);
+    }
   };
 
   const handleSubmitBanner = () => {
@@ -108,6 +119,10 @@ function Events() {
     });
   };
 
+  const handleChooseFile = () => {
+    fileInputRef.current.click();
+  };
+
   const handleAddSection = () => {
     if (!events[0]) return;
 
@@ -115,23 +130,21 @@ function Events() {
     formData.append("image_title_1", newSection.image_title);
     formData.append("image_description_1", newSection.image_description);
 
-    // Append each image file in binary format to FormData
     newSection.images.forEach((file) => {
-      formData.append("images", file); // Each image is appended as binary data
+      formData.append("images", file);
     });
 
     dispatch(
       updateEvent({
         eventId: events[0]._id,
         eventData: formData,
-        isFormData: true, // Indicating it's FormData
+        isFormData: true,
       })
     ).then(() => {
-      // Reset form fields after submission
       setNewSection({ image_title: "", image_description: "", images: [] });
       setNewSectionImages([]);
       setAddSectionDialogOpen(false);
-      dispatch(fetchEventsData()); // Fetch updated events data
+      dispatch(fetchEventsData());
     });
   };
 
@@ -148,8 +161,8 @@ function Events() {
       image_description: section.image_description,
       images: section.images,
     });
-    setSelectedSectionId(section._id); // Set the ID of the section being edited
-    setEditSectionDialogOpen(true); // Open the edit section dialog
+    setSelectedSectionId(section._id);
+    setEditSectionDialogOpen(true);
   };
 
   const handleUpdateSection = () => {
@@ -160,7 +173,7 @@ function Events() {
     formData.append("image_description", newSection.image_description);
 
     newSection.images.forEach((file) => {
-      formData.append("images", file); // Each image is appended as binary data
+      formData.append("images", file);
     });
 
     dispatch(
@@ -173,14 +186,26 @@ function Events() {
       setEditSectionDialogOpen(false);
       setNewSection({ image_title: "", image_description: "", images: [] });
       setNewSectionImages([]);
-      dispatch(fetchEventsData()); // Fetch updated events data
+      dispatch(fetchEventsData());
     });
   };
 
   const handleDeleteSection = (sectionId) => {
     dispatch(deleteEventSection(sectionId)).then(() => {
-      dispatch(fetchEventsData()); // Fetch updated events data after deletion
+      dispatch(fetchEventsData());
     });
+  };
+
+  const handleToggleExpand = (sectionId) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [sectionId]: !prev[sectionId],
+    }));
+  };
+
+  const truncateText = (text, limit) => {
+    if (!text) return ""; // Return an empty string if text is undefined or null
+    return text.length > limit ? text.substring(0, limit) + "..." : text;
   };
 
   if (loading || showLoader)
@@ -249,7 +274,6 @@ function Events() {
         </>
       ) : (
         <>
-          {/* Event Title, Description & Banner */}
           <Box display="flex" alignItems="center">
             <Box>
               <Typography variant="h5" fontWeight="bold" gutterBottom>
@@ -273,7 +297,6 @@ function Events() {
             </Button>
           </Box>
 
-          {/* Edit Dialog */}
           <Dialog
             open={editDialogOpen}
             onClose={() => setEditDialogOpen(false)}
@@ -318,35 +341,96 @@ function Events() {
             </DialogActions>
           </Dialog>
 
-          {/* Banner Upload */}
-
-          {events[0]?.banner && (
-            <img
-              src={events[0].banner}
-              alt="Event Banner"
-              style={{
+          <Box my={3}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              Banner
+            </Typography>
+            <Box
+              sx={{
                 width: "100%",
                 height: "400px",
-                objectFit: "cover",
                 borderRadius: "8px",
+                border: "1px dashed #ccc",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                overflow: "hidden",
+                mb: 2,
               }}
-            />
-          )}
-          <input type="file" onChange={handleBannerUpload} />
-          <Button
-            variant="contained"
-            onClick={handleSubmitBanner}
-            sx={{
-              backgroundColor: "#F68633",
-              "&:hover": {
-                backgroundColor: "#e0752d",
-              },
-            }}
-          >
-            Upload Banner
-          </Button>
+            >
+              {bannerPreview ? (
+                <img
+                  src={bannerPreview}
+                  alt="Banner Preview"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : events[0]?.banner ? (
+                <img
+                  src={events[0].banner}
+                  alt="Event Banner"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <Typography variant="body1" color="textSecondary">
+                  No banner uploaded
+                </Typography>
+              )}
+            </Box>
 
-          {/* Image Groups Table */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleBannerUpload}
+              accept="image/*"
+            />
+
+            <Box display="flex" gap={2}>
+              <Button
+                variant="contained"
+                startIcon={<UploadIcon />}
+                onClick={handleChooseFile}
+                sx={{
+                  backgroundColor: "#F68633",
+                  "&:hover": {
+                    backgroundColor: "#e0752d",
+                  },
+                }}
+              >
+                Choose File
+              </Button>
+
+              {newBanner && (
+                <Button
+                  variant="contained"
+                  onClick={handleSubmitBanner}
+                  sx={{
+                    backgroundColor: "#F68633",
+                    "&:hover": {
+                      backgroundColor: "#e0752d",
+                    },
+                  }}
+                >
+                  Upload Banner
+                </Button>
+              )}
+            </Box>
+
+            {newBanner && (
+              <Typography variant="body2" mt={1}>
+                Selected file: {newBanner.name}
+              </Typography>
+            )}
+          </Box>
+
           <Divider sx={{ my: 3 }} />
           <Box display="flex" justifyContent="space-between">
             <Typography variant="h6" fontWeight="bold">
@@ -383,13 +467,30 @@ function Events() {
                 {events[0]?.imageGroups?.map((group) => (
                   <TableRow key={group._id}>
                     <TableCell>{group.image_title}</TableCell>
-                    <TableCell>{group.image_description}</TableCell>
+                    <TableCell>
+                      <div>
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: expandedSections[group._id]
+                              ? group.image_description || "" // Fallback to empty string
+                              : truncateText(group.image_description, 150),
+                          }}
+                        />
+                        <Button
+                          onClick={() => handleToggleExpand(group._id)}
+                          sx={{ textTransform: "none", ml: 1 }}
+                        >
+                          {expandedSections[group._id]
+                            ? "Read Less"
+                            : "Read More"}
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Box display="flex" gap={1} flexWrap="wrap">
                         {group.images?.map((img, index) => (
-                          <SlideshowLightbox>
+                          <SlideshowLightbox key={index}>
                             <img
-                              key={index}
                               src={img}
                               alt={group.image_title}
                               style={{
@@ -407,9 +508,7 @@ function Events() {
                       <Button onClick={() => handleEditSection(group)}>
                         <EditIcon />
                       </Button>
-                      <Button
-                        onClick={() => handleDeleteSection(group._id)} // Delete button
-                      >
+                      <Button onClick={() => handleDeleteSection(group._id)}>
                         <DeleteIcon color="error" />
                       </Button>
                     </TableCell>
@@ -419,7 +518,6 @@ function Events() {
             </Table>
           </TableContainer>
 
-          {/* Add Section Dialog */}
           <Dialog
             open={addSectionDialogOpen}
             onClose={() => setAddSectionDialogOpen(false)}
@@ -434,22 +532,24 @@ function Events() {
                   setNewSection({ ...newSection, image_title: e.target.value })
                 }
               />
-              <TextField
-                label="Image Description"
-                fullWidth
-                margin="normal"
-                onChange={(e) =>
+
+              <JoditEditor
+                ref={editor}
+                value={newSection.image_description || ""}
+                onChange={(newContent) =>
                   setNewSection({
                     ...newSection,
-                    image_description: e.target.value,
+                    image_description: newContent,
                   })
                 }
               />
+
               <input
                 type="file"
                 multiple
                 onChange={handleNewSectionImageUpload}
               />
+
               <Box display="flex" gap={1} flexWrap="wrap" mt={2}>
                 {newSectionImages?.map((img, index) => (
                   <img
@@ -476,7 +576,6 @@ function Events() {
             </DialogActions>
           </Dialog>
 
-          {/* Edit Section Dialog */}
           <Dialog
             open={editSectionDialogOpen}
             onClose={() => setEditSectionDialogOpen(false)}
@@ -492,18 +591,18 @@ function Events() {
                   setNewSection({ ...newSection, image_title: e.target.value })
                 }
               />
-              <TextField
-                label="Image Description"
-                fullWidth
-                margin="normal"
+
+              <JoditEditor
+                ref={editor}
                 value={newSection.image_description}
-                onChange={(e) =>
+                onChange={(newContent) =>
                   setNewSection({
                     ...newSection,
-                    image_description: e.target.value,
+                    image_description: newContent,
                   })
                 }
               />
+
               <input
                 type="file"
                 multiple
