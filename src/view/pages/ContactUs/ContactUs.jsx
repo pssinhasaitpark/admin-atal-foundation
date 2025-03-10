@@ -64,7 +64,7 @@ function ContactUs() {
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0); // Reset to first page when rows per page change
+    setPage(0);
   };
 
   const handleOpenDialog = (id) => {
@@ -116,7 +116,7 @@ function ContactUs() {
   return (
     <TableContainer
       component={Paper}
-      sx={{ boxShadow: 0, borderRadius: 0, overflow: "hidden", p: 2 }}
+      sx={{ boxShadow: 0, borderRadius: 0, overflow: "hidden" }}
     >
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         Contact Inquiries

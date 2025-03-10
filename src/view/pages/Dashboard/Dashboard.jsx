@@ -82,7 +82,7 @@ const Dashboard = () => {
       {/* Header Section */}
       <Box sx={{ display: "flex", alignItems: "center", p: 4 }}>
         <Typography variant="h4" fontWeight="bold" sx={{ color: "#333" }}>
-          Admin Dashboard - Atal Bihari Vajpayee
+          Admin Dashboard
         </Typography>
       </Box>
 

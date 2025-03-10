@@ -15,6 +15,7 @@ import {
   Edit as EditIcon,
   Add as AddIcon,
   Save as SaveIcon,
+  Upload as UploadIcon,
 } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
@@ -242,6 +243,7 @@ const AboutUs = () => {
               <Button
                 variant="contained"
                 component="label"
+                startIcon={<UploadIcon />}
                 sx={{
                   backgroundColor: "#e0752d",
                   "&:hover": { backgroundColor: "#F68633" },
