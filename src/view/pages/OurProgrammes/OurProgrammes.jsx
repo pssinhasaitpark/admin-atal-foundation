@@ -114,6 +114,9 @@ function OurProgrammes() {
     if (newProgramme.image) formData.append("detailImages", newProgramme.image);
 
     await dispatch(updateProgramme({ category: selectedCategory, formData }));
+
+    // Re-fetch data for the currently selected category
+    dispatch(fetchProgrammesByCategory(selectedCategory));
     resetForm();
   };
 
@@ -141,6 +144,8 @@ function OurProgrammes() {
         formData,
       })
     );
+    // Re-fetch updated category data
+    dispatch(fetchProgrammesByCategory(selectedCategory));
     resetForm();
   };
 
@@ -208,6 +213,7 @@ function OurProgrammes() {
       await dispatch(
         deleteProgrammeDetail({ category: selectedCategory, detailId })
       );
+      dispatch(fetchProgrammesByCategory(selectedCategory));
     }
   };
 
@@ -226,12 +232,18 @@ function OurProgrammes() {
       </Typography>
 
       <FormControl fullWidth sx={{ mb: 4 }}>
-        <Typography variant="p" sx={{ mb: 2 }}>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          {" "}
+          {/* Changed variant to "body1" instead of "p" */}
           Select Category:
         </Typography>
         <Select
           value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
+          onChange={(e) => {
+            const newCategory = e.target.value;
+            setSelectedCategory(newCategory);
+            dispatch(fetchProgrammesByCategory(newCategory));
+          }}
         >
           {categories.map((category, index) => (
             <MenuItem key={index} value={category}>
