@@ -48,7 +48,7 @@ function Events() {
     banner: "",
     imageGroups: [],
   });
-  const [isExpanded, setIsExpanded] = useState(false);
+  // const [isExpanded, setIsExpanded] = useState(false);
   const [newSection, setNewSection] = useState({
     image_title: "",
     image_description: "",

@@ -48,7 +48,7 @@ export const fetchEventsCount = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/event");
-      return response.data.events.length;
+      return response.data.events[0].imageGroups.length;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch events"
