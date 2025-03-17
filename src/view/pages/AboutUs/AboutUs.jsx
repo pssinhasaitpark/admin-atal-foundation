@@ -55,6 +55,7 @@ const AboutUs = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
   const handleBannerUpload = (event) => {
     const file = event.target.files[0];
     if (file) setBannerImage(file);
@@ -86,10 +87,12 @@ const AboutUs = () => {
     const files = Array.from(event.target.files);
     const updatedList = isNew ? [...data] : [...sections];
 
-    updatedList[index].images = [
-      ...(updatedList[index].images || []),
-      ...files,
-    ];
+    // Create a shallow copy of the section to avoid the non-extensible error
+    const updatedSection = { ...updatedList[index] };
+
+    updatedSection.images = [...(updatedSection.images || []), ...files];
+
+    updatedList[index] = updatedSection; // Update the list with the modified section
 
     isNew ? setdata(updatedList) : setSections(updatedList);
   };
@@ -162,6 +165,7 @@ const AboutUs = () => {
   const handleAddNew = () => {
     setdata([...data, { title: "", description: "", images: [] }]);
   };
+
   if (status === "loading" || showLoader)
     return (
       <Box
@@ -193,12 +197,7 @@ const AboutUs = () => {
           </Typography>
 
           <Box sx={{ mb: 3 }}>
-            <Stack
-              display="block"
-              direction="row"
-              alignItems="center"
-              // spacing={2}
-            >
+            <Stack display="block" direction="row" alignItems="center">
               {bannerImage && (
                 <Box
                   sx={{
