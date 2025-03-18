@@ -39,6 +39,8 @@ import { SlideshowLightbox } from "lightbox.js-react";
 function Events() {
   const dispatch = useDispatch();
   const { events = [], loading, error } = useSelector((state) => state.events);
+  // console.log("Events:", events);
+
   const [showLoader, setShowLoader] = useState(true);
   const [newBanner, setNewBanner] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
@@ -48,6 +50,7 @@ function Events() {
     banner: "",
     imageGroups: [],
   });
+  // console.log("newEvent:", newEvent);
   // const [isExpanded, setIsExpanded] = useState(false);
   const [newSection, setNewSection] = useState({
     image_title: "",
@@ -202,9 +205,17 @@ function Events() {
       [sectionId]: !prev[sectionId],
     }));
   };
-
+  const handleEditClick = () => {
+    if (events.length > 0) {
+      setNewEvent({
+        title: events[0].title,
+        description: events[0].description,
+      });
+      setEditDialogOpen(true);
+    }
+  };
   const truncateText = (text, limit) => {
-    if (!text) return ""; // Return an empty string if text is undefined or null
+    if (!text) return "";
     return text.length > limit ? text.substring(0, limit) + "..." : text;
   };
 
@@ -285,7 +296,7 @@ function Events() {
             </Box>
             <Button
               variant="contained"
-              onClick={() => setEditDialogOpen(true)}
+              onClick={handleEditClick}
               sx={{
                 backgroundColor: "#F68633",
                 "&:hover": {
@@ -341,7 +352,7 @@ function Events() {
             </DialogActions>
           </Dialog>
 
-          <Box my={3}>
+          <Box>
             <Typography variant="h6" fontWeight="bold" gutterBottom>
               Banner
             </Typography>
@@ -350,7 +361,7 @@ function Events() {
                 width: "100%",
                 height: "400px",
                 borderRadius: "8px",
-                border: "1px dashed #ccc",
+
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
@@ -432,7 +443,11 @@ function Events() {
           </Box>
 
           <Divider sx={{ my: 3 }} />
-          <Box display="flex" justifyContent="space-between">
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            marginBottom="15px"
+          >
             <Typography variant="h6" fontWeight="bold">
               Image Sections
             </Typography>
@@ -570,7 +585,15 @@ function Events() {
               <Button onClick={() => setAddSectionDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleAddSection} color="primary">
+              <Button
+                onClick={handleAddSection}
+                variant="contained"
+                sx={{
+                  backgroundColor: "#e0752d",
+                  "&:hover": { backgroundColor: "#F68633" },
+                  textTransform: "none",
+                }}
+              >
                 Submit
               </Button>
             </DialogActions>
@@ -628,7 +651,15 @@ function Events() {
               <Button onClick={() => setEditSectionDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleUpdateSection} color="primary">
+              <Button
+                onClick={handleUpdateSection}
+                variant="contained"
+                sx={{
+                  backgroundColor: "#e0752d",
+                  "&:hover": { backgroundColor: "#F68633" },
+                  textTransform: "none",
+                }}
+              >
                 Update
               </Button>
             </DialogActions>

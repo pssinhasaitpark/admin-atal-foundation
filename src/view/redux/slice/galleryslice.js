@@ -11,23 +11,24 @@ export const fetchGallery = createAsyncThunk(
 
 export const updateGalleryItem = createAsyncThunk(
   "gallery/updateGalleryItem",
-  async ({ id, updatedItem, type }) => {
+  async ({ id, updatedItem, type }, { rejectWithValue, dispatch }) => {
     try {
       const response = await api.put(`/gallery/${type}/${id}`, updatedItem, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+      await dispatch(fetchGallery());
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || "Update failed");
+      return rejectWithValue(error.response?.data || "Update failed");
     }
   }
 );
 
 export const addGalleryItem = createAsyncThunk(
   "gallery/addGalleryItem",
-  async ({ galleryId, formData, type }) => {
+  async ({ galleryId, formData, type }, { rejectWithValue, dispatch }) => {
     try {
       const response = await api.put(
         `/gallery/${type}/${galleryId}`,
@@ -38,16 +39,16 @@ export const addGalleryItem = createAsyncThunk(
           },
         }
       );
-
+      await dispatch(fetchGallery());
       return { galleryId, type, updatedGallery: response.data };
     } catch (error) {
-      throw new Error(error.response?.data?.message || "Failed to add item");
+      return rejectWithValue(error.response?.data || "Failed to add item");
     }
   }
 );
 export const deleteGalleryItem = createAsyncThunk(
   "gallery/deleteGalleryItem",
-  async ({ galleryId, fileUrl, type }) => {
+  async ({ galleryId, fileUrl, type }, { rejectWithValue, dispatch }) => {
     try {
       const payload =
         type === "image"
@@ -55,10 +56,10 @@ export const deleteGalleryItem = createAsyncThunk(
           : { remove_videos: [fileUrl] };
 
       const response = await api.put(`/gallery/${type}/${galleryId}`, payload);
-
+      await dispatch(fetchGallery());
       return { galleryId, fileUrl, type, updatedGallery: response.data };
     } catch (error) {
-      throw new Error(error.response?.data?.message || "Failed to delete item");
+      return rejectWithValue(error.response?.data || "Failed to delete item");
     }
   }
 );
