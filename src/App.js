@@ -17,6 +17,8 @@ import {
   SocialMedia,
   OurProgrammes,
   NewsPage,
+  SupportSpeak,
+  Registration,
 } from "./view/pages/index.js";
 
 function App() {
@@ -45,6 +47,8 @@ function App() {
         <Route path="/subscribers" element={<Subscribers />} />
         <Route path="/socialMedia" element={<SocialMedia />} />
         <Route path="/news" element={<NewsPage />} />
+        <Route path="/support-speakers" element={<SupportSpeak />} />
+        <Route path="/register-user" element={<Registration />} />
 
         {/* Our Programmes Routes */}
         <Route path="/ourProgrammes" element={<OurProgrammes />} />

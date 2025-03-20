@@ -58,7 +58,7 @@ function OurProgrammes() {
     image: null,
   });
   const [banner, setBanner] = useState(null);
-  const [bannerPreview, setBannerPreview] = useState(null); // State for banner preview
+  const [bannerPreview, setBannerPreview] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [selectedDetailId, setSelectedDetailId] = useState(null);
   const [expandedDescription, setExpandedDescription] = useState({});
@@ -231,7 +231,7 @@ function OurProgrammes() {
         Our Programmes
       </Typography>
 
-      <FormControl fullWidth sx={{ mb: 4 }}>
+      <FormControl sx={{ mb: 4, width: "25%" }}>
         <Typography variant="body1" sx={{ mb: 2 }}>
           {" "}
           {/* Changed variant to "body1" instead of "p" */}
@@ -252,6 +252,8 @@ function OurProgrammes() {
           ))}
         </Select>
       </FormControl>
+
+      {/* <Button>Create Category</Button> */}
 
       {loading && <CircularProgress />}
       {error && <Typography color="error">Error: {error}</Typography>}
@@ -365,11 +367,11 @@ function OurProgrammes() {
                     />
                     <Button
                       onClick={() => toggleDescription(detail._id)}
-                      sx={{ ml: 1 }}
+                      sx={{ textTransform: "none", ml: 1 }}
                     >
                       {expandedDescription[detail._id]
-                        ? "Show Less"
-                        : "Show More"}
+                        ? "Read Less"
+                        : "Read More"}
                     </Button>
                   </TableCell>
 

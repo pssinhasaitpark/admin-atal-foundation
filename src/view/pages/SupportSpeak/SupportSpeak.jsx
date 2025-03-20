@@ -1,219 +1,376 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Stack,
   Box,
   Typography,
-  TextField,
-  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Paper,
-  Stack,
-  IconButton,
   Avatar,
+  Button,
+  Modal,
+  TextField,
+  CircularProgress,
+  Snackbar,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TablePagination, // Import TablePagination
 } from "@mui/material";
-import { Delete as DeleteIcon } from "@mui/icons-material";
-import JoditEditor from "jodit-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  // fetchSupportSpeakData,
-  saveSupportSpeakToBackend,
+  fetchSupportSpeakData,
+  createSupportSpeaker,
+  updateSupportSpeaker,
+  deleteSupportSpeaker,
 } from "../../redux/slice/supportSpeakSlice";
-// import debounce from "lodash.debounce";
-
+import {
+  Delete as DeleteIcon,
+  Edit,
+  Add as AddIcon,
+} from "@mui/icons-material";
+import { SlideshowLightbox } from "lightbox.js-react";
 const SupportSpeak = () => {
   const dispatch = useDispatch();
   const supportSpeakData = useSelector((state) => state.supportSpeak) || {};
-  const editor = useRef(null);
+  const { supportSpeakers, status, error } = supportSpeakData;
 
-  const [title, setTitle] = useState("Support Speak");
-  const [description, setDescription] = useState("");
-  const [selectedImages, setSelectedImages] = useState([]);
-  const [removeImages, setRemoveImages] = useState([]);
-  const [isEditable, setIsEditable] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [currentSpeaker, setCurrentSpeaker] = useState(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    post: "",
+    location: "",
+    images: [],
+  });
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [speakerToDelete, setSpeakerToDelete] = useState(null);
+  const [showLoader, setShowLoader] = useState(true);
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5); // Set default rows per page
 
-  // useEffect(() => {
-  //   dispatch(fetchSupportSpeakData());
-  // }, [dispatch]);
+  useEffect(() => {
+    dispatch(fetchSupportSpeakData());
+  }, [dispatch]);
 
-  // useEffect(() => {
-  //   if (supportSpeakData) {
-  //     setTitle(supportSpeakData.title || "Support Speak");
-  //     setDescription(supportSpeakData.description || "");
-  //     setSelectedImages(supportSpeakData.images || []);
-  //   }
-  // }, [supportSpeakData]);
-
-  // const debouncedEditorChange = useCallback(
-  //   debounce((newContent) => {
-  //     setDescription(newContent);
-  //   }, 1000),
-  //   []
-  // );
-
-  const handleImageUpload = (event) => {
-    const files = Array.from(event.target.files);
-    setSelectedImages([...selectedImages, ...files]);
-  };
-
-  const handleImageRemove = (index) => {
-    const imageToRemove = selectedImages[index];
-
-    if (typeof imageToRemove === "string") {
-      setRemoveImages((prev) => [...prev, imageToRemove]);
+  useEffect(() => {
+    if (error) {
+      setSnackbarOpen(true);
     }
+  }, [error]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000);
 
-    setSelectedImages((prevImages) => prevImages.filter((_, i) => i !== index));
+    return () => clearTimeout(timer);
+  }, []);
+  const handleOpen = (speaker = null) => {
+    setCurrentSpeaker(speaker);
+    if (speaker) {
+      setFormData({
+        name: speaker.name,
+        post: speaker.post,
+        location: speaker.location,
+        images: speaker.images,
+      });
+      setImagePreviews(speaker.images.map((img) => img.url)); // Set previews for existing images
+    } else {
+      setFormData({ name: "", post: "", location: "", images: [] });
+      setImagePreviews([]);
+    }
+    setOpen(true);
   };
 
-  const handleEditSave = async (e) => {
+  const handleClose = () => {
+    setOpen(false);
+    setCurrentSpeaker(null);
+    setImagePreviews([]); // Clear previews on close
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setFormData((prev) => ({ ...prev, images: files }));
+    setImagePreviews(files.map((file) => URL.createObjectURL(file))); // Create previews for new images
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (isEditable) {
-      const supportSpeakDataToSend = {
-        title,
-        description: description?.trim() || "No description provided",
-        images: selectedImages,
-        removeImages: removeImages.length > 0 ? removeImages : [],
-      };
-
-      try {
-        await dispatch(
-          saveSupportSpeakToBackend({
-            id: supportSpeakData._id,
-            supportSpeakData: supportSpeakDataToSend,
-          })
-        );
-        setRemoveImages([]);
-      } catch (error) {
-        console.error("Error saving/updating data: ", error);
-      }
+    const dataToSubmit = {
+      ...formData,
+      images: formData.images.map((file) => file), // Keep the file objects for upload
+    };
+    if (currentSpeaker) {
+      dispatch(
+        updateSupportSpeaker({
+          id: currentSpeaker._id,
+          supportSpeakData: dataToSubmit,
+        })
+      );
+    } else {
+      dispatch(createSupportSpeaker(dataToSubmit));
     }
-
-    setIsEditable(!isEditable);
+    handleClose();
   };
 
-  const renderImageSource = (image) => {
-    if (image instanceof File) {
-      return URL.createObjectURL(image);
-    } else if (typeof image === "string") {
-      return image;
-    }
-    return "";
+  const handleDelete = (id) => {
+    setSpeakerToDelete(id);
+    setDeleteDialogOpen(true);
   };
 
+  const confirmDelete = () => {
+    if (speakerToDelete) {
+      dispatch(deleteSupportSpeaker(speakerToDelete));
+      setDeleteDialogOpen(false);
+      setSpeakerToDelete(null);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to the first page
+  };
+
+  // Slice the supportSpeakers array for pagination
+  const paginatedSpeakers = supportSpeakers.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+  if (status.loading || showLoader)
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <CircularProgress sx={{ color: "#F68633" }} />
+      </Box>
+    );
+
+  if (error)
+    return (
+      <Typography variant="h6" color="error">
+        Error: {error}
+      </Typography>
+    );
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
-        {title}
+      <Typography variant="h4" fontWeight="bold" gutterBottom>
+        Support Speak
       </Typography>
-      <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
-        <form onSubmit={handleEditSave}>
-          <TextField
-            fullWidth
-            label="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={!isEditable}
-            sx={{ mb: 2 }}
+      <Button
+        variant="contained"
+        sx={{
+          backgroundColor: "#e0752d",
+          "&:hover": { backgroundColor: "#F68633" },
+          textTransform: "none",
+          mb: 2,
+        }}
+        onClick={() => handleOpen()}
+      >
+        Add Speaker
+      </Button>
+      {status === "loading" ? (
+        <CircularProgress />
+      ) : paginatedSpeakers && paginatedSpeakers.length > 0 ? (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Post</TableCell>
+                <TableCell>Location</TableCell>
+                <TableCell>Images</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedSpeakers.map((speaker) => (
+                <TableRow key={speaker._id}>
+                  <TableCell>{speaker.name}</TableCell>
+                  <TableCell>{speaker.post}</TableCell>
+                  <TableCell>{speaker.location}</TableCell>
+                  <TableCell>
+                    <Stack direction="row" spacing={1}>
+                      {(speaker.images || []).map((image) => (
+                        <SlideshowLightbox>
+                          <img
+                            key={image._id}
+                            src={image.url}
+                            alt={speaker.name}
+                            style={{ width: "100px", height: "auto" }}
+                          />
+                        </SlideshowLightbox>
+                      ))}
+                    </Stack>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      // variant="outlined"
+                      color="primary"
+                      size="small"
+                      onClick={() => handleOpen(speaker)}
+                    >
+                      <Edit />
+                    </Button>
+                    <Button
+                      // variant="outlined"
+                      color="secondary"
+                      size="small"
+                      sx={{ marginLeft: 1 }}
+                      onClick={() => handleDelete(speaker._id)}
+                    >
+                      <DeleteIcon fontSize="small" color="error" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={supportSpeakers.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
           />
+        </TableContainer>
+      ) : (
+        <Typography variant="body1">No speakers available.</Typography>
+      )}
 
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Description
+      {/* Modal for Adding/Editing Speaker */}
+      <Modal open={open} onClose={handleClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            {currentSpeaker ? "Edit Speaker" : "Add Speaker"}
           </Typography>
-          {/* <JoditEditor
-            ref={editor}
-            value={description}
-            config={{ readonly: !isEditable }}
-            onChange={(newContent) => setDescription(newContent?.trim() || "")}
-          /> */}
-          <JoditEditor
-            ref={editor}
-            value={description}
-            config={{
-              readonly: !isEditable,
-              placeholder: "Write about Atal's life...",
-              height: 400,
-              cleanOnPaste: false, // Retain styles when pasting
-              cleanOnChange: false, // Retain the HTML structure while editing
-              toolbar: {
-                items: [
-                  "bold",
-                  "italic",
-                  "underline",
-                  "strikethrough",
-                  "eraser",
-                  "|",
-                  "font",
-                  "fontsize",
-                  "paragraph",
-                  "|",
-                  "align",
-                  "outdent",
-                  "indent",
-                  "|",
-                  "link",
-                  "image",
-                  "video",
-                  "table",
-                  "line",
-                  "code",
-                  "fullsize",
-                  "undo",
-                  "redo",
-                ],
-              },
-              uploader: {
-                insertImageAsBase64URI: true,
-                url: "/upload", // Define your upload endpoint
-                format: "json",
-              },
-            }}
-            style={{ width: "100%", minHeight: "200px" }}
-            onChange={(newContent) => setDescription(newContent?.trim() || "")}
-          />
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Upload Profile Images
-          </Typography>
-
-          {isEditable && (
+          <form onSubmit={handleSubmit}>
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Post"
+              name="post"
+              value={formData.post}
+              onChange={handleChange}
+              required
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Location"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              required
+            />
             <input
               type="file"
               multiple
+              onChange={handleImageChange}
               accept="image/*"
-              onChange={handleImageUpload}
-              style={{ marginBottom: "1rem" }}
+              style={{ marginTop: 16 }}
             />
-          )}
-
-          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", mt: 2 }}>
-            {selectedImages.map((image, index) => (
-              <Box key={index} sx={{ position: "relative" }}>
+            <Stack direction="row" spacing={1} sx={{ marginTop: 2 }}>
+              {imagePreviews.map((preview, index) => (
                 <Avatar
-                  src={renderImageSource(image)}
-                  sx={{ width: 100, height: 100 }}
+                  key={index}
+                  src={preview}
+                  alt={`preview-${index}`}
+                  sx={{ width: 40, height: 40 }}
                 />
-                {isEditable && (
-                  <IconButton
-                    onClick={() => handleImageRemove(index)}
-                    sx={{
-                      position: "absolute",
-                      top: -10,
-                      right: -10,
-                      backgroundColor: "white",
-                    }}
-                  >
-                    <DeleteIcon color="error" />
-                  </IconButton>
-                )}
-              </Box>
-            ))}
-          </Stack>
-
-          <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-            <Button type="submit" variant="contained">
-              {isEditable ? "Save" : "Edit"}
+              ))}
+            </Stack>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              sx={{
+                backgroundColor: "#e0752d",
+                "&:hover": { backgroundColor: "#F68633" },
+                textTransform: "none",
+                mt: 2,
+              }}
+            >
+              {currentSpeaker ? "Update" : "Create"}
             </Button>
-          </Stack>
-        </form>
-      </Paper>
+          </form>
+        </Box>
+      </Modal>
+
+      {/* Confirmation Dialog for Deletion */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this speaker? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        message={error}
+      />
     </Box>
   );
 };
