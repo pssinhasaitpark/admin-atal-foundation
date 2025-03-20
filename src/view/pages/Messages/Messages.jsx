@@ -118,7 +118,7 @@ function Messages() {
   return (
     <TableContainer
       component={Paper}
-      sx={{ boxShadow: 0, borderRadius: 0, overflow: "hidden", p: 2 }}
+      sx={{ boxShadow: 0, borderRadius: 0, overflow: "hidden" }}
     >
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         Messages
@@ -143,7 +143,7 @@ function Messages() {
               </TableCell>
             </TableRow>
           ) : (
-            displayMessages.map((msg, index) => (
+            displayMessages?.map((msg, index) => (
               <TableRow
                 key={msg._id}
                 sx={{ "&:nth-of-type(odd)": { backgroundColor: "#fafafa" } }}

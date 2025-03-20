@@ -49,7 +49,7 @@ const NewsPage = () => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [newsToDelete, setNewsToDelete] = useState(null);
   const [showLoader, setShowLoader] = useState(true);
-  const [expandedNews, setExpandedNews] = useState({}); // Track expanded news items
+  const [expandedNews, setExpandedNews] = useState({});
 
   // Fetch news on component mount
   useEffect(() => {
@@ -82,7 +82,7 @@ const NewsPage = () => {
       setFormData({
         headline: newsItem.headline,
         description: newsItem.description || "",
-        image: null, // New image upload optional
+        image: null,
       });
     } else {
       // Creating new news
@@ -232,6 +232,7 @@ const NewsPage = () => {
               backgroundColor: "#e0752d",
               "&:hover": { backgroundColor: "#F68633" },
               textTransform: "none",
+              mb: 2,
             }}
           >
             Add News
@@ -262,10 +263,9 @@ const NewsPage = () => {
                         ) : (
                           <div
                             dangerouslySetInnerHTML={{
-                              __html: `${newsItem.description.substring(
-                                0,
-                                100
-                              )}...`,
+                              __html: newsItem?.description
+                                ? `${newsItem.description.substring(0, 100)}...`
+                                : "No description available",
                             }}
                           />
                         )}
@@ -325,7 +325,7 @@ const NewsPage = () => {
           />
 
           {/* Jodit Editor for Description */}
-          <JoditEditor
+          {/* <JoditEditor
             value={formData.description}
             onChange={(newContent) =>
               setFormData((prev) => ({ ...prev, description: newContent }))
@@ -335,8 +335,13 @@ const NewsPage = () => {
               placeholder: "Enter the description here...",
             }}
             style={{ marginTop: "10px" }}
+          /> */}
+          <JoditEditor
+            value={formData.description}
+            onChange={(newContent) =>
+              setFormData((prev) => ({ ...prev, description: newContent }))
+            }
           />
-
           <input
             type="file"
             accept="image/*"

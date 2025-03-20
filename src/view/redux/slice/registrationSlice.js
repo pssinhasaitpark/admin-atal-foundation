@@ -2,18 +2,24 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../axios/axios";
 
 const initialState = {
-  user: null,
+  users: [],
   status: "idle",
   error: null,
 };
 
-// Async Thunk to handle user registration
-export const registerUser = createAsyncThunk(
-  "registration/registerUser",
-  async (userData, { rejectWithValue }) => {
+// Async Thunk to fetch user data
+export const fetchUserData = createAsyncThunk(
+  "registration/fetchUserData",
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await api.post("/register", userData);
-      return response.data;
+      const response = await api.get("/users"); // Ensure this is the correct endpoint
+      // console.log("API Response:", response.data);
+
+      if (response.data && Array.isArray(response.data.users)) {
+        return response.data.users; // Return the array of users correctly
+      } else {
+        return rejectWithValue("No users found");
+      }
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -26,14 +32,14 @@ const registrationSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(registerUser.pending, (state) => {
+      .addCase(fetchUserData.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addCase(fetchUserData.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.user = action.payload;
+        state.users = action.payload; // Store the entire users array
       })
-      .addCase(registerUser.rejected, (state, action) => {
+      .addCase(fetchUserData.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });

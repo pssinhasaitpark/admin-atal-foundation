@@ -26,8 +26,11 @@ import {
   Subscriptions,
   ConnectWithoutContact,
 } from "@mui/icons-material";
+import NewspaperIcon from "@mui/icons-material/Newspaper";
+import PeopleIcon from "@mui/icons-material/People";
+import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import logo from "../../../assets/Images/logo.png";
-import HomeIcon from "@mui/icons-material/Home";
+// import HomeIcon from "@mui/icons-material/Home";
 const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,7 +39,7 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
 
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
-    { text: "News", icon: <HomeIcon />, path: "/news" },
+    { text: "News", icon: <NewspaperIcon />, path: "/news" },
     // { text: "Home", icon: <HomeIcon />, path: "/home" },
     { text: "Events", icon: <Event />, path: "/events" },
     { text: "Gallery", icon: <PhotoLibrary />, path: "/gallery" },
@@ -45,6 +48,12 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
     { text: "Subscribers", icon: <Subscriptions />, path: "/subscribers" },
     { text: "Contact Enquires", icon: <ContactPhone />, path: "/contactus" },
     { text: "Message", icon: <Chat />, path: "/message" },
+    { text: "Register User", icon: <PeopleIcon />, path: "/register-user" },
+    {
+      text: "Support Speakers",
+      icon: <SupportAgentIcon />,
+      path: "/support-speakers",
+    },
     {
       text: "Social Media",
       icon: <ConnectWithoutContact />,

@@ -192,9 +192,6 @@ const AboutUs = () => {
           <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
             About Us
           </Typography>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Banner Image
-          </Typography>
 
           <Box sx={{ mb: 3 }}>
             <Stack display="block" direction="row" alignItems="center">
@@ -239,37 +236,39 @@ const AboutUs = () => {
                   </IconButton>
                 </Box>
               )}
-              <Button
-                variant="contained"
-                component="label"
-                startIcon={<UploadIcon />}
-                sx={{
-                  backgroundColor: "#e0752d",
-                  "&:hover": { backgroundColor: "#F68633" },
-                  textTransform: "none",
-                }}
-              >
-                Choose File
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleBannerUpload}
-                />
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleSaveAll}
-                sx={{
-                  ml: 3,
-                  backgroundColor: "#e0752d",
-                  "&:hover": {
-                    backgroundColor: "#F68633",
-                  },
-                }}
-              >
-                Upload Banner
-              </Button>
+              <Box mt="15px">
+                <Button
+                  variant="contained"
+                  component="label"
+                  startIcon={<UploadIcon />}
+                  sx={{
+                    backgroundColor: "#e0752d",
+                    "&:hover": { backgroundColor: "#F68633" },
+                    textTransform: "none",
+                  }}
+                >
+                  Choose File
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleBannerUpload}
+                  />
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleSaveAll}
+                  sx={{
+                    ml: 3,
+                    backgroundColor: "#e0752d",
+                    "&:hover": {
+                      backgroundColor: "#F68633",
+                    },
+                  }}
+                >
+                  Upload Banner
+                </Button>
+              </Box>
             </Stack>
           </Box>
 
@@ -283,7 +282,7 @@ const AboutUs = () => {
                 "&:hover": {
                   backgroundColor: "#F68633",
                 },
-                padding: "10px",
+                padding: "5px",
               }}
             >
               Add New Section
@@ -300,7 +299,7 @@ const AboutUs = () => {
                 alignItems="center"
                 justifyContent="space-between"
               >
-                <Typography variant="h6">{section.title}</Typography>
+                <Typography variant="body1">{section.title}</Typography>
                 <Stack direction="row" spacing={1}>
                   {editingIndex === index ? (
                     <Button

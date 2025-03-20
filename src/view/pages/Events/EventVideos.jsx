@@ -115,7 +115,7 @@ function EventVideos() {
           </Typography>
           <Stack
             direction="row"
-            justifyContent="space-between" // Aligns buttons to opposite ends
+            justifyContent="space-between"
             alignItems="center"
             sx={{ width: "100%", mb: 2 }}
           >
@@ -151,9 +151,9 @@ function EventVideos() {
       )}
 
       {/* Video List in Table Format */}
-      <Typography variant="h6" gutterBottom>
+      {/* <Typography variant="h6" gutterBottom>
         Video List:
-      </Typography>
+      </Typography> */}
 
       {eventVideos && eventVideos.length > 0 ? (
         <TableContainer component={Paper}>
@@ -176,7 +176,7 @@ function EventVideos() {
                       height="100px"
                       style={{
                         borderRadius: "5px",
-                        display: "block",
+                        disnewEventplay: "block",
                       }}
                     >
                       <source src={url} type="video/mp4" />
@@ -218,6 +218,8 @@ function EventVideos() {
               setEventData({ ...eventData, video_description: e.target.value })
             }
             fullWidth
+            multiline
+            rows={3}
             margin="normal"
           />
         </DialogContent>
