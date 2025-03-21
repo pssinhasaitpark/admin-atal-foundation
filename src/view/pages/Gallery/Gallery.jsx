@@ -234,7 +234,7 @@ function Gallery() {
 
       {/* Image Gallery Section */}
       <Typography variant="h5" gutterBottom style={{ marginTop: 20 }}>
-        {gallery_image.title}{" "}
+        {gallery_image.title}
         <Button
           variant="contained"
           onClick={() =>
@@ -243,13 +243,15 @@ function Gallery() {
               description: gallery_image.description,
             })
           }
-          startIcon={<Edit />}
           sx={{
             backgroundColor: "#e0752d",
             "&:hover": { backgroundColor: "#F68633" },
             textTransform: "none",
+            ml: 1,
           }}
-        ></Button>
+        >
+          <Edit />
+        </Button>
       </Typography>
       <Typography variant="body1" gutterBottom sx={{ color: "gray", mb: 2 }}>
         {gallery_image.description || "No description available."}
@@ -338,13 +340,15 @@ function Gallery() {
               description: gallery_video.description,
             })
           }
-          startIcon={<Edit />}
           sx={{
             backgroundColor: "#e0752d",
             "&:hover": { backgroundColor: "#F68633" },
             textTransform: "none",
           }}
-        ></Button>
+        >
+          {" "}
+          <Edit />
+        </Button>
       </Typography>
       <Typography variant="body1" gutterBottom sx={{ color: "gray", mb: 2 }}>
         {gallery_video.description || "No description available."}
@@ -421,7 +425,12 @@ function Gallery() {
         <Typography>No videos available.</Typography>
       )}
       {/* Dialog for Add/Edit Image or Video */}
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth="md" // You can use "sm", "md", "lg", or "xl" for different sizes
+        fullWidth // Ensures the dialog takes full width of the specified maxWidth
+      >
         <DialogTitle>
           {editData ? "Edit" : "Add"} {formData.type}
         </DialogTitle>

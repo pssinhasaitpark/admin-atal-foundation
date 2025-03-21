@@ -1,3 +1,417 @@
+// import React, { useState, useEffect } from "react";
+// import {
+//   Box,
+//   Typography,
+//   TextField,
+//   Button,
+//   Paper,
+//   Stack,
+//   IconButton,
+//   Avatar,
+//   CircularProgress,
+// } from "@mui/material";
+// import {
+//   Delete as DeleteIcon,
+//   Edit as EditIcon,
+//   Add as AddIcon,
+//   Save as SaveIcon,
+//   Upload as UploadIcon,
+// } from "@mui/icons-material";
+// import JoditEditor from "jodit-react";
+// import { useDispatch, useSelector } from "react-redux";
+// import {
+//   fetchAboutData,
+//   saveAboutDataToBackend,
+//   updateSection,
+//   deleteSection,
+// } from "../../redux/slice/aboutSlice";
+
+// const AboutUs = () => {
+//   const dispatch = useDispatch();
+//   const aboutData = useSelector((state) => state.about.data) || [];
+//   const status = useSelector((state) => state.about.status);
+//   const [showLoader, setShowLoader] = useState(true);
+//   const selectedAbout = aboutData.length ? aboutData[0] : null;
+//   const [bannerImage, setBannerImage] = useState(null);
+//   const [sections, setSections] = useState([]);
+//   const [data, setdata] = useState([]);
+//   const [editingIndex, setEditingIndex] = useState(null);
+
+//   useEffect(() => {
+//     dispatch(fetchAboutData());
+//   }, [dispatch]);
+
+//   useEffect(() => {
+//     if (selectedAbout) {
+//       setSections(selectedAbout.sections || []);
+//       setBannerImage(selectedAbout.banner || null);
+//     }
+//   }, [selectedAbout]);
+
+//   useEffect(() => {
+//     const timer = setTimeout(() => {
+//       setShowLoader(false);
+//     }, 1000);
+
+//     return () => clearTimeout(timer);
+//   }, []);
+
+//   const handleBannerUpload = (event) => {
+//     const file = event.target.files[0];
+//     if (file) setBannerImage(file);
+//   };
+
+//   const handleBannerRemove = () => {
+//     setBannerImage(null);
+//   };
+
+//   const handleEditClick = (index) => {
+//     setEditingIndex(index);
+//   };
+
+//   const handleDeleteClick = async (index) => {
+//     const sectionId = sections[index]._id;
+//     if (selectedAbout?._id && sectionId) {
+//       await dispatch(deleteSection({ aboutId: selectedAbout._id, sectionId }));
+//       setSections(sections.filter((_, i) => i !== index));
+//     }
+//   };
+
+//   const handleInputChange = (index, key, value, isNew = false) => {
+//     const updatedList = isNew ? [...data] : [...sections];
+//     updatedList[index] = { ...updatedList[index], [key]: value };
+//     isNew ? setdata(updatedList) : setSections(updatedList);
+//   };
+
+//   const handleImageUpload = (index, event, isNew = false) => {
+//     const files = Array.from(event.target.files);
+//     const updatedList = isNew ? [...data] : [...sections];
+
+//     // Create a shallow copy of the section to avoid the non-extensible error
+//     const updatedSection = { ...updatedList[index] };
+
+//     updatedSection.images = [...(updatedSection.images || []), ...files];
+
+//     updatedList[index] = updatedSection; // Update the list with the modified section
+
+//     isNew ? setdata(updatedList) : setSections(updatedList);
+//   };
+
+//   const handleSaveAll = async () => {
+//     const formData = new FormData();
+
+//     if (selectedAbout?._id) formData.append("id", selectedAbout._id);
+//     if (bannerImage instanceof File) formData.append("banner", bannerImage);
+
+//     data.forEach((section, index) => {
+//       formData.append(`data[${index}][title]`, section.title);
+//       formData.append(`data[${index}][description]`, section.description);
+
+//       if (section.images && section.images.length > 0) {
+//         section.images.forEach((image) => {
+//           if (image instanceof File) {
+//             formData.append("images", image);
+//           }
+//         });
+//       }
+//     });
+
+//     try {
+//       await dispatch(saveAboutDataToBackend(formData));
+//       setdata([]);
+//       setEditingIndex(null);
+//       dispatch(fetchAboutData());
+//     } catch (error) {
+//       console.error("Error saving data:", error);
+//     }
+//   };
+
+//   const handleUpdateSection = async (index) => {
+//     const section = sections[index];
+
+//     if (!selectedAbout?._id || !section?._id) {
+//       console.error("Error: Missing aboutId or sectionId");
+//       return;
+//     }
+
+//     const formData = new FormData();
+//     formData.append("title", section.title);
+//     formData.append("description", section.description);
+
+//     if (section.images && section.images.length > 0) {
+//       section.images.forEach((image) => {
+//         if (image instanceof File) {
+//           formData.append("images", image);
+//         }
+//       });
+//     }
+
+//     try {
+//       await dispatch(
+//         updateSection({
+//           aboutId: selectedAbout._id,
+//           sectionId: section._id,
+//           data: formData,
+//         })
+//       );
+
+//       setEditingIndex(null);
+//       dispatch(fetchAboutData());
+//     } catch (error) {
+//       console.error("Error updating section:", error);
+//     }
+//   };
+
+//   const handleAddNew = () => {
+//     setdata([...data, { title: "", description: "", images: [] }]);
+//   };
+
+//   if (status === "loading" || showLoader)
+//     return (
+//       <Box
+//         display="flex"
+//         justifyContent="center"
+//         alignItems="center"
+//         height="50vh"
+//       >
+//         <CircularProgress sx={{ color: "#F68633" }} />
+//       </Box>
+//     );
+
+//   if (status === "error")
+//     return (
+//       <Typography variant="h6" color="error">
+//         Error: {status}
+//       </Typography>
+//     );
+
+//   return (
+//     <Box>
+//       <Paper sx={{ borderRadius: 0, boxShadow: 0 }}>
+//         <>
+//           <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
+//             About Us
+//           </Typography>
+
+//           <Box sx={{ mb: 3 }}>
+//             <Stack display="block" direction="row" alignItems="center">
+//               {bannerImage && (
+//                 <Box
+//                   sx={{
+//                     position: "relative",
+//                     width: "100%",
+//                     height: "300px",
+//                     borderRadius: 2,
+//                     overflow: "hidden",
+//                     border: "2px solid #ddd",
+//                     justifyContent: "center",
+//                     alignItems: "center",
+//                   }}
+//                 >
+//                   <Avatar
+//                     src={
+//                       bannerImage && typeof bannerImage === "object"
+//                         ? URL.createObjectURL(bannerImage)
+//                         : bannerImage
+//                     }
+//                     sx={{ width: "100%", height: "100%", borderRadius: 0 }}
+//                     variant="square"
+//                   />
+//                   <IconButton
+//                     onClick={handleBannerRemove}
+//                     sx={{
+//                       position: "absolute",
+//                       top: 4,
+//                       right: 4,
+//                       backgroundColor: "white",
+//                       boxShadow: 2,
+//                       "&:hover": {
+//                         backgroundColor: "#ff5252",
+//                         color: "white",
+//                       },
+//                     }}
+//                     size="small"
+//                   >
+//                     <DeleteIcon fontSize="small" color="error" />
+//                   </IconButton>
+//                 </Box>
+//               )}
+//               <Box mt="15px">
+//                 <Button
+//                   variant="contained"
+//                   component="label"
+//                   startIcon={<UploadIcon />}
+//                   sx={{
+//                     backgroundColor: "#e0752d",
+//                     "&:hover": { backgroundColor: "#F68633" },
+//                     textTransform: "none",
+//                   }}
+//                 >
+//                   Choose File
+//                   <input
+//                     type="file"
+//                     hidden
+//                     accept="image/*"
+//                     onChange={handleBannerUpload}
+//                   />
+//                 </Button>
+//                 <Button
+//                   variant="contained"
+//                   onClick={handleSaveAll}
+//                   sx={{
+//                     ml: 3,
+//                     backgroundColor: "#e0752d",
+//                     "&:hover": { backgroundColor: "#F68633" },
+//                     textTransform: "none",
+//                   }}
+//                 >
+//                   Upload Banner
+//                 </Button>
+//               </Box>
+//             </Stack>
+//           </Box>
+
+//           <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
+//             <Button
+//               variant="contained"
+//               startIcon={<AddIcon />}
+//               onClick={handleAddNew}
+//               sx={{
+//                 backgroundColor: "#e0752d",
+//                 "&:hover": { backgroundColor: "#F68633" },
+//                 textTransform: "none",
+//               }}
+//             >
+//               Add New Section
+//             </Button>
+//           </Stack>
+
+//           {sections.map((section, index) => (
+//             <Box
+//               key={index}
+//               sx={{ mb: 3, p: 2, border: "1px solid #ccc", borderRadius: 2 }}
+//             >
+//               <Stack
+//                 direction="row"
+//                 alignItems="center"
+//                 justifyContent="space-between"
+//               >
+//                 <Typography variant="body1">{section.title}</Typography>
+//                 <Stack direction="row" spacing={1}>
+//                   {editingIndex === index ? (
+//                     <Button
+//                       variant="contained"
+//                       onClick={() => handleUpdateSection(index)}
+//                       sx={{
+//                         backgroundColor: "#e0752d",
+//                         "&:hover": { backgroundColor: "#F68633" },
+//                         textTransform: "none",
+//                       }}
+//                     >
+//                       Save
+//                     </Button>
+//                   ) : (
+//                     <IconButton onClick={() => handleEditClick(index)}>
+//                       <EditIcon />
+//                     </IconButton>
+//                   )}
+//                   <IconButton onClick={() => handleDeleteClick(index)}>
+//                     <DeleteIcon color="error" />
+//                   </IconButton>
+//                 </Stack>
+//               </Stack>
+
+//               {editingIndex === index && (
+//                 <Box sx={{ mt: 2 }}>
+//                   <TextField
+//                     fullWidth
+//                     label="Title"
+//                     value={section.title}
+//                     onChange={(e) =>
+//                       handleInputChange(index, "title", e.target.value)
+//                     }
+//                     sx={{ mb: 2 }}
+//                   />
+//                   <JoditEditor
+//                     value={section.description}
+//                     onChange={(newContent) =>
+//                       handleInputChange(index, "description", newContent)
+//                     }
+//                   />
+
+//                   <Stack
+//                     direction="row"
+//                     spacing={2}
+//                     sx={{ mt: 2, flexWrap: "wrap" }}
+//                   >
+//                     {section.image && (
+//                       <Avatar
+//                         src={section.image}
+//                         variant="rounded"
+//                         sx={{ width: 150, height: 100, borderRadius: 2 }}
+//                       />
+//                     )}
+//                   </Stack>
+
+//                   <input
+//                     type="file"
+//                     multiple
+//                     accept="image/*"
+//                     onChange={(e) => handleImageUpload(index, e)}
+//                     style={{ marginTop: "10px" }}
+//                   />
+//                 </Box>
+//               )}
+//             </Box>
+//           ))}
+
+//           {data.map((entry, index) => (
+//             <Box
+//               key={index}
+//               sx={{ mb: 3, p: 2, border: "1px solid #ccc", borderRadius: 2 }}
+//             >
+//               <TextField
+//                 fullWidth
+//                 label="Title"
+//                 value={entry.title}
+//                 onChange={(e) =>
+//                   handleInputChange(index, "title", e.target.value, true)
+//                 }
+//                 sx={{ mb: 2 }}
+//               />
+//               <JoditEditor
+//                 value={entry.description}
+//                 onChange={(newContent) =>
+//                   handleInputChange(index, "description", newContent, true)
+//                 }
+//               />
+//               <input
+//                 type="file"
+//                 multiple
+//                 accept="image/*"
+//                 onChange={(e) => handleImageUpload(index, e, true)}
+//               />
+//             </Box>
+//           ))}
+
+//           <Button
+//             variant="contained"
+//             onClick={handleSaveAll}
+//             sx={{
+//               backgroundColor: "#e0752d",
+//               "&:hover": { backgroundColor: "#F68633" },
+//               textTransform: "none",
+//             }}
+//           >
+//             <SaveIcon /> Save All
+//           </Button>
+//         </>
+//       </Paper>
+//     </Box>
+//   );
+// };
+
+// export default AboutUs;
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -9,12 +423,22 @@ import {
   IconButton,
   Avatar,
   CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Container,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   Add as AddIcon,
-  Save as SaveIcon,
   Upload as UploadIcon,
 } from "@mui/icons-material";
 import JoditEditor from "jodit-react";
@@ -33,9 +457,19 @@ const AboutUs = () => {
   const [showLoader, setShowLoader] = useState(true);
   const selectedAbout = aboutData.length ? aboutData[0] : null;
   const [bannerImage, setBannerImage] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null);
   const [sections, setSections] = useState([]);
-  const [data, setdata] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [expandedDescription, setExpandedDescription] = useState({});
+  const [selectedSectionId, setSelectedSectionId] = useState(null);
+  const [newSection, setNewSection] = useState({
+    title: "",
+    description: "",
+    images: [],
+  });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [sectionIdToDelete, setSectionIdToDelete] = useState(null);
 
   useEffect(() => {
     dispatch(fetchAboutData());
@@ -56,90 +490,120 @@ const AboutUs = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleBannerUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) setBannerImage(file);
-  };
+  const handleBannerUpload = async () => {
+    if (!bannerImage) return alert("Please select a banner image to upload");
 
-  const handleBannerRemove = () => {
-    setBannerImage(null);
-  };
-
-  const handleEditClick = (index) => {
-    setEditingIndex(index);
-  };
-
-  const handleDeleteClick = async (index) => {
-    const sectionId = sections[index]._id;
-    if (selectedAbout?._id && sectionId) {
-      await dispatch(deleteSection({ aboutId: selectedAbout._id, sectionId }));
-      setSections(sections.filter((_, i) => i !== index));
-    }
-  };
-
-  const handleInputChange = (index, key, value, isNew = false) => {
-    const updatedList = isNew ? [...data] : [...sections];
-    updatedList[index] = { ...updatedList[index], [key]: value };
-    isNew ? setdata(updatedList) : setSections(updatedList);
-  };
-
-  const handleImageUpload = (index, event, isNew = false) => {
-    const files = Array.from(event.target.files);
-    const updatedList = isNew ? [...data] : [...sections];
-
-    // Create a shallow copy of the section to avoid the non-extensible error
-    const updatedSection = { ...updatedList[index] };
-
-    updatedSection.images = [...(updatedSection.images || []), ...files];
-
-    updatedList[index] = updatedSection; // Update the list with the modified section
-
-    isNew ? setdata(updatedList) : setSections(updatedList);
-  };
-
-  const handleSaveAll = async () => {
     const formData = new FormData();
-
     if (selectedAbout?._id) formData.append("id", selectedAbout._id);
     if (bannerImage instanceof File) formData.append("banner", bannerImage);
 
-    data.forEach((section, index) => {
-      formData.append(`data[${index}][title]`, section.title);
-      formData.append(`data[${index}][description]`, section.description);
+    try {
+      await dispatch(saveAboutDataToBackend(formData));
+      setBannerPreview(null);
+      dispatch(fetchAboutData());
+    } catch (error) {
+      console.error("Error saving banner:", error);
+    }
+  };
 
-      if (section.images && section.images.length > 0) {
-        section.images.forEach((image) => {
-          if (image instanceof File) {
-            formData.append("images", image);
-          }
-        });
-      }
+  const handleBannerChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setBannerImage(file);
+      setBannerPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const toggleDescription = (id) => {
+    setExpandedDescription((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleEditClick = (section) => {
+    setNewSection({
+      title: section.title,
+      description: section.description,
+      images: section.images || [], // Load existing images for editing
     });
+    setSelectedSectionId(section._id);
+    setEditMode(true);
+    setOpenModal(true);
+  };
+
+  const handleDeleteClick = (sectionId) => {
+    setSectionIdToDelete(sectionId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteSection = async () => {
+    if (selectedAbout?._id && sectionIdToDelete) {
+      await dispatch(
+        deleteSection({
+          aboutId: selectedAbout._id,
+          sectionId: sectionIdToDelete,
+        })
+      );
+      dispatch(fetchAboutData());
+    }
+    setDeleteDialogOpen(false);
+    setSectionIdToDelete(null);
+  };
+
+  const resetForm = () => {
+    setNewSection({ title: "", description: "", images: [] });
+    setOpenModal(false);
+    setEditMode(false);
+    setSelectedSectionId(null);
+  };
+
+  const handleAddSection = async () => {
+    if (!newSection.title || !newSection.description) {
+      return alert("Please fill all fields!");
+    }
+
+    const formData = new FormData();
+    if (selectedAbout?._id) formData.append("id", selectedAbout._id);
+
+    // Use the correct keys for your API
+    formData.append("data[0][title]", newSection.title);
+    formData.append("data[0][description]", newSection.description);
+
+    if (newSection.images && newSection.images.length > 0) {
+      newSection.images.forEach((image) => {
+        if (image instanceof File) {
+          formData.append("images", image);
+        }
+      });
+    }
 
     try {
       await dispatch(saveAboutDataToBackend(formData));
-      setdata([]);
-      setEditingIndex(null);
+      resetForm();
       dispatch(fetchAboutData());
     } catch (error) {
       console.error("Error saving data:", error);
     }
   };
 
-  const handleUpdateSection = async (index) => {
-    const section = sections[index];
+  const handleUpdateSection = async () => {
+    if (!newSection.title || !newSection.description) {
+      return alert("Please fill all fields!");
+    }
 
-    if (!selectedAbout?._id || !section?._id) {
+    if (!selectedAbout?._id || !selectedSectionId) {
       console.error("Error: Missing aboutId or sectionId");
       return;
     }
 
     const formData = new FormData();
-    formData.append("title", section.title);
-    formData.append("description", section.description);
+    formData.append("id", selectedAbout._id);
+    formData.append("title", newSection.title);
+    formData.append("description", newSection.description);
 
-    if (section.images && section.images.length > 0) {
-      section.images.forEach((image) => {
+    if (newSection.images && newSection.images.length > 0) {
+      newSection.images.forEach((image) => {
         if (image instanceof File) {
           formData.append("images", image);
         }
@@ -150,20 +614,24 @@ const AboutUs = () => {
       await dispatch(
         updateSection({
           aboutId: selectedAbout._id,
-          sectionId: section._id,
+          sectionId: selectedSectionId,
           data: formData,
         })
       );
 
-      setEditingIndex(null);
+      resetForm();
       dispatch(fetchAboutData());
     } catch (error) {
       console.error("Error updating section:", error);
     }
   };
 
-  const handleAddNew = () => {
-    setdata([...data, { title: "", description: "", images: [] }]);
+  const handleImageUpload = (event) => {
+    const files = Array.from(event.target.files);
+    setNewSection({
+      ...newSection,
+      images: [...newSection.images, ...files],
+    });
   };
 
   if (status === "loading" || showLoader)
@@ -186,234 +654,284 @@ const AboutUs = () => {
     );
 
   return (
-    <Box>
-      <Paper sx={{ borderRadius: 0, boxShadow: 0 }}>
-        <>
-          <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
-            About Us
-          </Typography>
+    <Container
+      maxWidth="false"
+      sx={{
+        "@media (min-width: 600px)": {
+          paddingLeft: "0 !important",
+          paddingRight: "0 !important",
+        },
+      }}
+    >
+      <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
+        About Us
+      </Typography>
 
-          <Box sx={{ mb: 3 }}>
-            <Stack display="block" direction="row" alignItems="center">
-              {bannerImage && (
-                <Box
-                  sx={{
-                    position: "relative",
-                    width: "100%",
-                    height: "300px",
-                    borderRadius: 2,
-                    overflow: "hidden",
-                    border: "2px solid #ddd",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Avatar
-                    src={
-                      bannerImage && typeof bannerImage === "object"
-                        ? URL.createObjectURL(bannerImage)
-                        : bannerImage
-                    }
-                    sx={{ width: "100%", height: "100%", borderRadius: 0 }}
-                    variant="square"
-                  />
-                  <IconButton
-                    onClick={handleBannerRemove}
-                    sx={{
-                      position: "absolute",
-                      top: 4,
-                      right: 4,
-                      backgroundColor: "white",
-                      boxShadow: 2,
-                      "&:hover": {
-                        backgroundColor: "#ff5252",
-                        color: "white",
-                      },
-                    }}
-                    size="small"
-                  >
-                    <DeleteIcon fontSize="small" color="error" />
-                  </IconButton>
-                </Box>
-              )}
-              <Box mt="15px">
-                <Button
-                  variant="contained"
-                  component="label"
-                  startIcon={<UploadIcon />}
-                  sx={{
-                    backgroundColor: "#e0752d",
-                    "&:hover": { backgroundColor: "#F68633" },
-                    textTransform: "none",
-                  }}
-                >
-                  Choose File
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={handleBannerUpload}
-                  />
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={handleSaveAll}
-                  sx={{
-                    ml: 3,
-                    backgroundColor: "#e0752d",
-                    "&:hover": {
-                      backgroundColor: "#F68633",
-                    },
-                  }}
-                >
-                  Upload Banner
-                </Button>
-              </Box>
-            </Stack>
+      {/* Banner Section */}
+      {bannerPreview ? (
+        <Avatar
+          src={bannerPreview}
+          sx={{ width: "100%", height: "300px", borderRadius: 2, mb: 2 }}
+          variant="square"
+        />
+      ) : (
+        selectedAbout?.banner && (
+          <Avatar
+            src={selectedAbout.banner}
+            sx={{ width: "100%", height: "300px", borderRadius: 2, mb: 2 }}
+            variant="square"
+          />
+        )
+      )}
+
+      <Box display="flex" alignItems="center" gap={2} mb={3}>
+        <Button
+          variant="contained"
+          component="label"
+          startIcon={<UploadIcon />}
+          sx={{
+            backgroundColor: "#e0752d",
+            "&:hover": { backgroundColor: "#F68633" },
+            textTransform: "none",
+          }}
+        >
+          Choose File
+          <input
+            type="file"
+            hidden
+            accept="image/*"
+            onChange={handleBannerChange}
+          />
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleBannerUpload}
+          sx={{
+            backgroundColor: "#e0752d",
+            "&:hover": { backgroundColor: "#F68633" },
+            textTransform: "none",
+          }}
+        >
+          Upload Banner
+        </Button>
+      </Box>
+
+      {/* Add New Section Button */}
+      <Box display="flex" justifyContent="flex-end" sx={{ mb: 2 }}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => {
+            setOpenModal(true);
+            setEditMode(false);
+          }}
+          sx={{
+            backgroundColor: "#e0752d",
+            "&:hover": { backgroundColor: "#F68633" },
+            textTransform: "none",
+          }}
+        >
+          Add New Section
+        </Button>
+      </Box>
+
+      {/* Sections Table */}
+      {sections && sections.length > 0 ? (
+        <TableContainer component={Paper} sx={{ mt: 2 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Images</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sections.map((section) => (
+                <TableRow key={section._id}>
+                  <TableCell>{section.title}</TableCell>
+                  <TableCell>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: expandedDescription[section._id]
+                          ? section.description
+                          : section.description
+                          ? `${section.description.substring(0, 50)}...`
+                          : "No description available.",
+                      }}
+                    />
+                    <Button
+                      onClick={() => toggleDescription(section._id)}
+                      sx={{ textTransform: "none", ml: 1 }}
+                    >
+                      {expandedDescription[section._id]
+                        ? "Read Less"
+                        : "Read More"}
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    {section.images && section.images.length > 0 && (
+                      <Stack direction="row" spacing={1} flexWrap="wrap">
+                        {section.images.map((img, index) => (
+                          <Avatar
+                            key={index}
+                            src={typeof img === "string" ? img : img.url} // Adjust this line based on your data structure
+                            variant="rounded"
+                            sx={{ width: 100, height: 70, borderRadius: 1 }}
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outlined"
+                      onClick={() => handleEditClick(section)}
+                      sx={{ border: 0 }}
+                    >
+                      <EditIcon />
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={() => handleDeleteClick(section._id)}
+                      sx={{ ml: 1, border: 0 }}
+                    >
+                      <DeleteIcon fontSize="small" color="error" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <Typography
+          variant="h6"
+          color="textSecondary"
+          sx={{ my: 4, textAlign: "center" }}
+        >
+          No sections available. Please add a new section.
+        </Typography>
+      )}
+
+      {/* Add/Edit Section Dialog */}
+      <Dialog
+        open={openModal}
+        onClose={resetForm}
+        fullWidth
+        PaperProps={{
+          style: { maxWidth: "1000px" },
+        }}
+      >
+        <DialogTitle>
+          {editMode ? "Edit Section" : "Add New Section"}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Title"
+            fullWidth
+            sx={{ mt: 2 }}
+            value={newSection.title}
+            onChange={(e) =>
+              setNewSection({ ...newSection, title: e.target.value })
+            }
+          />
+          <Box sx={{ mt: 2, mb: 2 }}>
+            <JoditEditor
+              value={newSection.description}
+              onChange={(content) =>
+                setNewSection({ ...newSection, description: content })
+              }
+            />
           </Box>
-
-          <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleAddNew}
-              sx={{
-                backgroundColor: "#F68633",
-                "&:hover": {
-                  backgroundColor: "#F68633",
-                },
-                padding: "5px",
-              }}
-            >
-              Add New Section
-            </Button>
-          </Stack>
-
-          {sections.map((section, index) => (
-            <Box
-              key={index}
-              sx={{ mb: 3, p: 2, border: "1px solid #ccc", borderRadius: 2 }}
-            >
+          <Typography variant="body1" sx={{ mt: 2 }}>
+            Upload Images
+          </Typography>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleImageUpload}
+            style={{ marginTop: "10px", display: "block" }}
+          />
+          {newSection.images && newSection.images.length > 0 && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body1">Selected Images:</Typography>
               <Stack
                 direction="row"
-                alignItems="center"
-                justifyContent="space-between"
+                spacing={1}
+                sx={{ mt: 1, flexWrap: "wrap" }}
               >
-                <Typography variant="body1">{section.title}</Typography>
-                <Stack direction="row" spacing={1}>
-                  {editingIndex === index ? (
-                    <Button
-                      variant="contained"
-                      onClick={() => handleUpdateSection(index)}
+                {newSection.images.map((img, idx) => (
+                  <Box key={idx} sx={{ position: "relative" }}>
+                    <Avatar
+                      src={URL.createObjectURL(img)}
+                      variant="rounded"
+                      sx={{ width: 100, height: 70, borderRadius: 1 }}
+                    />
+                    <IconButton
+                      size="small"
                       sx={{
-                        ml: 2,
-                        backgroundColor: "#F68633",
-                        "&:hover": {
-                          backgroundColor: "#e0752d",
-                        },
+                        position: "absolute",
+                        top: -10,
+                        right: -10,
+                        backgroundColor: "white",
+                        boxShadow: 1,
+                        "&:hover": { backgroundColor: "#ff5252" },
+                      }}
+                      onClick={() => {
+                        setNewSection({
+                          ...newSection,
+                          images: newSection.images.filter((_, i) => i !== idx),
+                        });
                       }}
                     >
-                      Save
-                    </Button>
-                  ) : (
-                    <IconButton onClick={() => handleEditClick(index)}>
-                      <EditIcon />
+                      <DeleteIcon fontSize="small" color="error" />
                     </IconButton>
-                  )}
-                  <IconButton onClick={() => handleDeleteClick(index)}>
-                    <DeleteIcon color="error" />
-                  </IconButton>
-                </Stack>
+                  </Box>
+                ))}
               </Stack>
-
-              {editingIndex === index && (
-                <Box sx={{ mt: 2 }}>
-                  <TextField
-                    fullWidth
-                    label="Title"
-                    value={section.title}
-                    onChange={(e) =>
-                      handleInputChange(index, "title", e.target.value)
-                    }
-                    sx={{ mb: 2 }}
-                  />
-                  <JoditEditor
-                    value={section.description}
-                    onChange={(newContent) =>
-                      handleInputChange(index, "description", newContent)
-                    }
-                  />
-
-                  <Stack
-                    direction="row"
-                    spacing={2}
-                    sx={{ mt: 2, flexWrap: "wrap" }}
-                  >
-                    {section.image && (
-                      <Avatar
-                        src={section.image}
-                        variant="rounded"
-                        sx={{ width: 150, height: 100, borderRadius: 2 }}
-                      />
-                    )}
-                  </Stack>
-
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(index, e)}
-                    style={{ marginTop: "10px" }}
-                  />
-                </Box>
-              )}
             </Box>
-          ))}
-
-          {data.map((entry, index) => (
-            <Box
-              key={index}
-              sx={{ mb: 3, p: 2, border: "1px solid #ccc", borderRadius: 2 }}
-            >
-              <TextField
-                fullWidth
-                label="Title"
-                value={entry.title}
-                onChange={(e) =>
-                  handleInputChange(index, "title", e.target.value, true)
-                }
-                sx={{ mb: 2 }}
-              />
-              <JoditEditor
-                value={entry.description}
-                onChange={(newContent) =>
-                  handleInputChange(index, "description", newContent, true)
-                }
-              />
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={(e) => handleImageUpload(index, e, true)}
-              />
-            </Box>
-          ))}
-
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={resetForm}>Cancel</Button>
           <Button
+            onClick={editMode ? handleUpdateSection : handleAddSection}
             variant="contained"
-            onClick={handleSaveAll}
             sx={{
-              backgroundColor: "#F68633",
-              "&:hover": {
-                backgroundColor: "#e0752d",
-              },
+              backgroundColor: "#e0752d",
+              "&:hover": { backgroundColor: "#F68633" },
+              textTransform: "none",
             }}
           >
-            <SaveIcon /> Save All
+            {editMode ? "Update" : "Submit"}
           </Button>
-        </>
-      </Paper>
-    </Box>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirmation Dialog for Deletion */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this section?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={confirmDeleteSection}
+            color="error"
+            variant="contained"
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 
