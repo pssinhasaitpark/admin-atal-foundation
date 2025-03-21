@@ -14,7 +14,7 @@ import {
   TablePagination,
 } from "@mui/material";
 import { fetchUserData } from "../../redux/slice/registrationSlice"; // Adjust path as needed
-
+import { SlideshowLightbox } from "lightbox.js-react";
 const Registration = () => {
   const dispatch = useDispatch();
   const { users, status, error } = useSelector((state) => state.registration);
@@ -98,15 +98,17 @@ const Registration = () => {
                       <TableCell>{user.message}</TableCell>
                       <TableCell>
                         {user.images && user.images.length > 0 ? (
-                          <img
-                            src={user.images[0]}
-                            alt="User"
-                            style={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: "50%",
-                            }}
-                          />
+                          <SlideshowLightbox>
+                            <img
+                              src={user.images[0]}
+                              alt="User"
+                              style={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: "50%",
+                              }}
+                            />
+                          </SlideshowLightbox>
                         ) : (
                           <Typography>No Image</Typography>
                         )}

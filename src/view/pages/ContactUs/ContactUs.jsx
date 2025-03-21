@@ -23,6 +23,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  DialogContentText,
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 
@@ -119,7 +120,7 @@ function ContactUs() {
       sx={{ boxShadow: 0, borderRadius: 0, overflow: "hidden" }}
     >
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
-        Contact Inquiries
+        Contact Enquiry
       </Typography>
 
       <Table>
@@ -138,7 +139,7 @@ function ContactUs() {
           {displayContacts.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} sx={{ textAlign: "center", py: 3 }}>
-                No contact inquiries found.
+                No contact enquiries found.
               </TableCell>
             </TableRow>
           ) : (
@@ -222,13 +223,20 @@ function ContactUs() {
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete this contact?
+          <DialogContentText>
+            Are you sure you want to delete this contact?
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleDelete} color="error" autoFocus>
+          <Button
+            onClick={handleDelete}
+            color="error"
+            autoFocus
+            variant="contained"
+          >
             Delete
           </Button>
         </DialogActions>

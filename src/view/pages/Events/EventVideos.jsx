@@ -28,6 +28,7 @@ import {
   Edit,
   Add as AddIcon,
 } from "@mui/icons-material";
+
 function EventVideos() {
   const dispatch = useDispatch();
 
@@ -37,6 +38,9 @@ function EventVideos() {
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [videoToDelete, setVideoToDelete] = useState(null);
+
   const [eventData, setEventData] = useState({
     video_title: "",
     video_description: "",
@@ -82,12 +86,19 @@ function EventVideos() {
   };
 
   const handleDeleteEventVideo = (videoUrl) => {
+    setVideoToDelete(videoUrl);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteVideo = () => {
     if (eventVideos.length > 0) {
       const eventId = eventVideos[0]._id;
       const payload = {
-        remove_videos: [videoUrl],
+        remove_videos: [videoToDelete],
       };
       dispatch(updateEventVideo({ eventId, eventData: payload }));
+      setDeleteDialogOpen(false);
+      setVideoToDelete(null);
     }
   };
 
@@ -151,10 +162,6 @@ function EventVideos() {
       )}
 
       {/* Video List in Table Format */}
-      {/* <Typography variant="h6" gutterBottom>
-        Video List:
-      </Typography> */}
-
       {eventVideos && eventVideos.length > 0 ? (
         <TableContainer component={Paper}>
           <Table>
@@ -176,7 +183,7 @@ function EventVideos() {
                       height="100px"
                       style={{
                         borderRadius: "5px",
-                        disnewEventplay: "block",
+                        display: "block",
                       }}
                     >
                       <source src={url} type="video/mp4" />
@@ -197,7 +204,12 @@ function EventVideos() {
       )}
 
       {/* Edit Video Dialog */}
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
+      <Dialog
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>Edit Video Details</DialogTitle>
         <DialogContent>
           <TextField
@@ -224,10 +236,16 @@ function EventVideos() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleUpdateEventVideo} color="primary">
+          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleUpdateEventVideo}
+            variant="contained"
+            sx={{
+              backgroundColor: "#e0752d",
+              "&:hover": { backgroundColor: "#F68633" },
+              textTransform: "none",
+            }}
+          >
             Update
           </Button>
         </DialogActions>
@@ -249,8 +267,37 @@ function EventVideos() {
           <Button onClick={() => setAddDialogOpen(false)} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleAddVideo} color="primary">
+          <Button
+            onClick={handleAddVideo}
+            variant="contained"
+            sx={{
+              backgroundColor: "#e0752d",
+              "&:hover": { backgroundColor: "#F68633" },
+              textTransform: "none",
+            }}
+          >
             Add Video
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this video?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={confirmDeleteVideo}
+            color="error"
+            variant="contained"
+          >
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

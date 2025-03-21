@@ -39,7 +39,6 @@ import { SlideshowLightbox } from "lightbox.js-react";
 function Events() {
   const dispatch = useDispatch();
   const { events = [], loading, error } = useSelector((state) => state.events);
-  // console.log("Events:", events);
 
   const [showLoader, setShowLoader] = useState(true);
   const [newBanner, setNewBanner] = useState(null);
@@ -50,8 +49,6 @@ function Events() {
     banner: "",
     imageGroups: [],
   });
-  // console.log("newEvent:", newEvent);
-  // const [isExpanded, setIsExpanded] = useState(false);
   const [newSection, setNewSection] = useState({
     image_title: "",
     image_description: "",
@@ -65,6 +62,10 @@ function Events() {
   const [newSectionImages, setNewSectionImages] = useState([]);
   const [selectedSectionId, setSelectedSectionId] = useState(null);
   const [expandedSections, setExpandedSections] = useState({});
+
+  // State for delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [sectionToDelete, setSectionToDelete] = useState(null);
 
   useEffect(() => {
     dispatch(fetchEventsData());
@@ -194,8 +195,14 @@ function Events() {
   };
 
   const handleDeleteSection = (sectionId) => {
-    dispatch(deleteEventSection(sectionId)).then(() => {
+    setSectionToDelete(sectionId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirmed = () => {
+    dispatch(deleteEventSection(sectionToDelete)).then(() => {
       dispatch(fetchEventsData());
+      setDeleteDialogOpen(false);
     });
   };
 
@@ -205,6 +212,7 @@ function Events() {
       [sectionId]: !prev[sectionId],
     }));
   };
+
   const handleEditClick = () => {
     if (events.length > 0) {
       setNewEvent({
@@ -214,6 +222,7 @@ function Events() {
       setEditDialogOpen(true);
     }
   };
+
   const truncateText = (text, limit) => {
     if (!text) return "";
     return text.length > limit ? text.substring(0, limit) + "..." : text;
@@ -274,10 +283,10 @@ function Events() {
             color="primary"
             onClick={handleCreateEvent}
             sx={{
-              backgroundColor: "#F68633",
-              "&:hover": {
-                backgroundColor: "#e0752d",
-              },
+              backgroundColor: "#e0752d",
+              "&:hover": { backgroundColor: "#F68633" },
+              textTransform: "none",
+              mb: 2,
             }}
           >
             Create Event
@@ -298,10 +307,9 @@ function Events() {
               variant="contained"
               onClick={handleEditClick}
               sx={{
-                backgroundColor: "#F68633",
-                "&:hover": {
-                  backgroundColor: "#e0752d",
-                },
+                backgroundColor: "#e0752d",
+                "&:hover": { backgroundColor: "#F68633" },
+                textTransform: "none",
               }}
             >
               <EditIcon />
@@ -311,6 +319,8 @@ function Events() {
           <Dialog
             open={editDialogOpen}
             onClose={() => setEditDialogOpen(false)}
+            maxWidth="md" // You can use "sm", "md", "lg", or "xl" for different sizes
+            fullWidth // Ensures the dialog takes full width of the specified maxWidth
           >
             <DialogTitle>Edit Event</DialogTitle>
             <DialogContent>
@@ -341,10 +351,9 @@ function Events() {
                 variant="contained"
                 onClick={handleUpdateEvent}
                 sx={{
-                  backgroundColor: "#F68633",
-                  "&:hover": {
-                    backgroundColor: "#e0752d",
-                  },
+                  backgroundColor: "#e0752d",
+                  "&:hover": { backgroundColor: "#F68633" },
+                  textTransform: "none",
                 }}
               >
                 Save
@@ -361,7 +370,6 @@ function Events() {
                 width: "100%",
                 height: "400px",
                 borderRadius: "8px",
-
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
@@ -410,10 +418,9 @@ function Events() {
                 startIcon={<UploadIcon />}
                 onClick={handleChooseFile}
                 sx={{
-                  backgroundColor: "#F68633",
-                  "&:hover": {
-                    backgroundColor: "#e0752d",
-                  },
+                  backgroundColor: "#e0752d",
+                  "&:hover": { backgroundColor: "#F68633" },
+                  textTransform: "none",
                 }}
               >
                 Choose File
@@ -424,10 +431,9 @@ function Events() {
                   variant="contained"
                   onClick={handleSubmitBanner}
                   sx={{
-                    backgroundColor: "#F68633",
-                    "&:hover": {
-                      backgroundColor: "#e0752d",
-                    },
+                    backgroundColor: "#e0752d",
+                    "&:hover": { backgroundColor: "#F68633" },
+                    textTransform: "none",
                   }}
                 >
                   Upload Banner
@@ -457,10 +463,9 @@ function Events() {
               startIcon={<AddIcon />}
               onClick={() => setAddSectionDialogOpen(true)}
               sx={{
-                backgroundColor: "#F68633",
-                "&:hover": {
-                  backgroundColor: "#e0752d",
-                },
+                backgroundColor: "#e0752d",
+                "&:hover": { backgroundColor: "#F68633" },
+                textTransform: "none",
               }}
             >
               Add Section
@@ -536,6 +541,8 @@ function Events() {
           <Dialog
             open={addSectionDialogOpen}
             onClose={() => setAddSectionDialogOpen(false)}
+            maxWidth="md" // You can use "sm", "md", "lg", or "xl" for different sizes
+            fullWidth // Ensures the dialog takes full width of the specified maxWidth
           >
             <DialogTitle>Add New Section</DialogTitle>
             <DialogContent>
@@ -661,6 +668,29 @@ function Events() {
                 }}
               >
                 Update
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Confirmation Dialog for Deleting Section */}
+          <Dialog
+            open={deleteDialogOpen}
+            onClose={() => setDeleteDialogOpen(false)}
+          >
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogContent>
+              <Typography>
+                Are you sure you want to delete this section?
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+              <Button
+                onClick={handleDeleteConfirmed}
+                color="error"
+                variant="contained"
+              >
+                Delete
               </Button>
             </DialogActions>
           </Dialog>

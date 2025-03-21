@@ -217,6 +217,7 @@ const NewsPage = () => {
               backgroundColor: "#e0752d",
               "&:hover": { backgroundColor: "#F68633" },
               textTransform: "none",
+              mb: 2,
             }}
           >
             Create News
@@ -312,7 +313,7 @@ const NewsPage = () => {
       )}
 
       {/* Create/Update News Dialog */}
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogTitle>{editingNews ? "Edit News" : "Create News"}</DialogTitle>
         <DialogContent>
           <TextField
@@ -324,18 +325,6 @@ const NewsPage = () => {
             onChange={handleChange}
           />
 
-          {/* Jodit Editor for Description */}
-          {/* <JoditEditor
-            value={formData.description}
-            onChange={(newContent) =>
-              setFormData((prev) => ({ ...prev, description: newContent }))
-            }
-            config={{
-              readonly: false,
-              placeholder: "Enter the description here...",
-            }}
-            style={{ marginTop: "10px" }}
-          /> */}
           <JoditEditor
             value={formData.description}
             onChange={(newContent) =>
@@ -379,10 +368,10 @@ const NewsPage = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDeleteClose} color="secondary">
+          <Button onClick={handleDeleteClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleDelete} color="primary" variant="contained">
+          <Button onClick={handleDelete} color="error" variant="contained">
             Delete
           </Button>
         </DialogActions>
