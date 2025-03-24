@@ -212,6 +212,7 @@ const NewsPage = () => {
             No news available
           </Typography>
           <Button
+            variant="contained"
             onClick={() => handleOpen()}
             sx={{
               backgroundColor: "#e0752d",

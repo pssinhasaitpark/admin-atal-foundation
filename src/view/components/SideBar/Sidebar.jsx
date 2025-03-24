@@ -26,6 +26,7 @@ import {
   Subscriptions,
   ConnectWithoutContact,
 } from "@mui/icons-material";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
 import PeopleIcon from "@mui/icons-material/People";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
@@ -53,6 +54,11 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
     { text: "Subscribers", icon: <Subscriptions />, path: "/subscribers" },
     { text: "Contact Enquires", icon: <ContactPhone />, path: "/contactus" },
     { text: "Message", icon: <Chat />, path: "/message" },
+    {
+      text: "Books",
+      icon: <MenuBookIcon />,
+      path: "/books",
+    },
     { text: "Register User", icon: <PeopleIcon />, path: "/register-user" },
     {
       text: "Social Media",
@@ -73,6 +79,7 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
     } else {
       setActiveParent(activeIndex !== -1 ? activeIndex : null);
     }
+    // eslint-disable-next-line
   }, [location.pathname, navigate]);
 
   const handleParentClick = (index, item) => {

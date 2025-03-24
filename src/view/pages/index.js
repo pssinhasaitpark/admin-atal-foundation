@@ -14,6 +14,7 @@ import Subscribers from "./Subscribers/Subscribers";
 import SocialMedia from "./SocialMedia/SocialMedia";
 import OurProgrammes from "./OurProgrammes/OurProgrammes";
 import NewsPage from "./News/NewsPage";
+import Books from "./Books/Books";
 export {
   Home,
   Dashboard,
@@ -31,4 +32,5 @@ export {
   SocialMedia,
   OurProgrammes,
   NewsPage,
+  Books,
 };

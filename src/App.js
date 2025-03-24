@@ -19,6 +19,7 @@ import {
   NewsPage,
   SupportSpeak,
   Registration,
+  Books,
 } from "./view/pages/index.js";
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
         <Route path="/news" element={<NewsPage />} />
         <Route path="/support-speakers" element={<SupportSpeak />} />
         <Route path="/register-user" element={<Registration />} />
+        <Route path="/books" element={<Books />} />
 
         {/* Our Programmes Routes */}
         <Route path="/ourProgrammes" element={<OurProgrammes />} />
