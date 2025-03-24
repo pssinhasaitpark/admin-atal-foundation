@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../slice/authslice";
-import visionReducer from "../slice/visionSlice";
+import booklistReducer from "../slice/bookSlice";
 import galleryReducer from "../slice/galleryslice";
 import eventReducer from "../slice/eventSlice";
 import profileReducer from "../slice/profileSlice";
@@ -22,7 +22,7 @@ import newsReducer from "../slice/newsPageSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
-    vision: visionReducer,
+    booklist: booklistReducer,
     gallery: galleryReducer,
     events: eventReducer,
     eventVideos: eventVideosReducer,

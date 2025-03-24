@@ -466,6 +466,7 @@ const AboutUs = () => {
   const [newSection, setNewSection] = useState({
     title: "",
     description: "",
+    image: null,
     images: [],
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -525,7 +526,8 @@ const AboutUs = () => {
     setNewSection({
       title: section.title,
       description: section.description,
-      images: section.images || [], // Load existing images for editing
+      image: section.image || null,
+      images: [],
     });
     setSelectedSectionId(section._id);
     setEditMode(true);
@@ -552,7 +554,7 @@ const AboutUs = () => {
   };
 
   const resetForm = () => {
-    setNewSection({ title: "", description: "", images: [] });
+    setNewSection({ title: "", description: "", image: null, images: [] });
     setOpenModal(false);
     setEditMode(false);
     setSelectedSectionId(null);
@@ -570,12 +572,8 @@ const AboutUs = () => {
     formData.append("data[0][title]", newSection.title);
     formData.append("data[0][description]", newSection.description);
 
-    if (newSection.images && newSection.images.length > 0) {
-      newSection.images.forEach((image) => {
-        if (image instanceof File) {
-          formData.append("images", image);
-        }
-      });
+    if (newSection.image instanceof File) {
+      formData.append("images", newSection.image);
     }
 
     try {
@@ -602,12 +600,8 @@ const AboutUs = () => {
     formData.append("title", newSection.title);
     formData.append("description", newSection.description);
 
-    if (newSection.images && newSection.images.length > 0) {
-      newSection.images.forEach((image) => {
-        if (image instanceof File) {
-          formData.append("images", image);
-        }
-      });
+    if (newSection.image instanceof File) {
+      formData.append("images", newSection.image);
     }
 
     try {
@@ -627,11 +621,13 @@ const AboutUs = () => {
   };
 
   const handleImageUpload = (event) => {
-    const files = Array.from(event.target.files);
-    setNewSection({
-      ...newSection,
-      images: [...newSection.images, ...files],
-    });
+    const file = event.target.files[0];
+    if (file) {
+      setNewSection({
+        ...newSection,
+        image: file,
+      });
+    }
   };
 
   if (status === "loading" || showLoader)
@@ -743,7 +739,7 @@ const AboutUs = () => {
               <TableRow>
                 <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Images</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Image</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -771,17 +767,12 @@ const AboutUs = () => {
                     </Button>
                   </TableCell>
                   <TableCell>
-                    {section.images && section.images.length > 0 && (
-                      <Stack direction="row" spacing={1} flexWrap="wrap">
-                        {section.images.map((img, index) => (
-                          <Avatar
-                            key={index}
-                            src={typeof img === "string" ? img : img.url} // Adjust this line based on your data structure
-                            variant="rounded"
-                            sx={{ width: 100, height: 70, borderRadius: 1 }}
-                          />
-                        ))}
-                      </Stack>
+                    {section.image && (
+                      <Avatar
+                        src={section.image}
+                        variant="rounded"
+                        sx={{ width: 100, height: 70, borderRadius: 1 }}
+                      />
                     )}
                   </TableCell>
                   <TableCell>
@@ -846,52 +837,49 @@ const AboutUs = () => {
             />
           </Box>
           <Typography variant="body1" sx={{ mt: 2 }}>
-            Upload Images
+            Upload Section Image
           </Typography>
           <input
             type="file"
-            multiple
             accept="image/*"
             onChange={handleImageUpload}
             style={{ marginTop: "10px", display: "block" }}
           />
-          {newSection.images && newSection.images.length > 0 && (
+          {newSection.image && (
             <Box sx={{ mt: 2 }}>
-              <Typography variant="body1">Selected Images:</Typography>
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{ mt: 1, flexWrap: "wrap" }}
+              <Typography variant="body1">Selected Image:</Typography>
+              <Box
+                sx={{ position: "relative", display: "inline-block", mt: 1 }}
               >
-                {newSection.images.map((img, idx) => (
-                  <Box key={idx} sx={{ position: "relative" }}>
-                    <Avatar
-                      src={URL.createObjectURL(img)}
-                      variant="rounded"
-                      sx={{ width: 100, height: 70, borderRadius: 1 }}
-                    />
-                    <IconButton
-                      size="small"
-                      sx={{
-                        position: "absolute",
-                        top: -10,
-                        right: -10,
-                        backgroundColor: "white",
-                        boxShadow: 1,
-                        "&:hover": { backgroundColor: "#ff5252" },
-                      }}
-                      onClick={() => {
-                        setNewSection({
-                          ...newSection,
-                          images: newSection.images.filter((_, i) => i !== idx),
-                        });
-                      }}
-                    >
-                      <DeleteIcon fontSize="small" color="error" />
-                    </IconButton>
-                  </Box>
-                ))}
-              </Stack>
+                <Avatar
+                  src={
+                    newSection.image instanceof File
+                      ? URL.createObjectURL(newSection.image)
+                      : newSection.image
+                  }
+                  variant="rounded"
+                  sx={{ width: 100, height: 70, borderRadius: 1 }}
+                />
+                <IconButton
+                  size="small"
+                  sx={{
+                    position: "absolute",
+                    top: -10,
+                    right: -10,
+                    backgroundColor: "white",
+                    boxShadow: 1,
+                    "&:hover": { backgroundColor: "#ff5252" },
+                  }}
+                  onClick={() => {
+                    setNewSection({
+                      ...newSection,
+                      image: null,
+                    });
+                  }}
+                >
+                  <DeleteIcon fontSize="small" color="error" />
+                </IconButton>
+              </Box>
             </Box>
           )}
         </DialogContent>
