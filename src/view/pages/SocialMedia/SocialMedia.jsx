@@ -13,14 +13,13 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   fetchSocialMedia,
   updateSocialMedia,
+  addSocialMedia,
 } from "../../redux/slice/socialMediaSlice";
 import { WhatsApp, Facebook, Instagram, YouTube } from "@mui/icons-material";
 
 const SocialMedia = () => {
   const dispatch = useDispatch();
-  const { links, id, loading, error } = useSelector(
-    (state) => state.socialMedia
-  );
+  const { links, id, loading } = useSelector((state) => state.socialMedia);
   const [showLoader, setShowLoader] = useState(true);
 
   const [socialLinks, setSocialLinks] = useState({
@@ -44,8 +43,7 @@ const SocialMedia = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowLoader(false);
-    }, 1000); // Ensure loader runs for at least one full round
-
+    }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -72,48 +70,53 @@ const SocialMedia = () => {
       </Box>
     );
 
-  if (error)
-    return (
-      <Typography variant="h6" color="error">
-        Error: {error}
-      </Typography>
-    );
-
   const handleChange = (e) => {
     setSocialLinks({ ...socialLinks, [e.target.name]: e.target.value });
   };
 
-  const handleSaveAll = async () => {
-    if (!id) {
-      setSnackbar({
-        open: true,
-        message: "Error: Data not loaded. Please refresh.",
-        severity: "error",
-      });
-      return;
-    }
-
-    setSaving(true);
-    try {
-      await dispatch(
-        updateSocialMedia({ id, updatedLinks: socialLinks })
-      ).unwrap();
-
-      setSnackbar({
-        open: true,
-        message: "Social media links updated successfully!",
-        severity: "success",
-      });
-
-      dispatch(fetchSocialMedia()); // Fetch latest data only after successful update
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Update failed. Try again.",
-        severity: "error",
-      });
-    } finally {
-      setSaving(false);
+  const handleSave = async () => {
+    if (id) {
+      // Update existing data
+      setSaving(true);
+      try {
+        await dispatch(
+          updateSocialMedia({ id, updatedLinks: socialLinks })
+        ).unwrap();
+        setSnackbar({
+          open: true,
+          message: "Social media links updated successfully!",
+          severity: "success",
+        });
+        dispatch(fetchSocialMedia());
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: "Update failed. Try again.",
+          severity: "error",
+        });
+      } finally {
+        setSaving(false);
+      }
+    } else {
+      // Add new data
+      setSaving(true);
+      try {
+        await dispatch(addSocialMedia(socialLinks)).unwrap();
+        setSnackbar({
+          open: true,
+          message: "Social media links added successfully!",
+          severity: "success",
+        });
+        dispatch(fetchSocialMedia());
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: "Adding failed. Try again.",
+          severity: "error",
+        });
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -139,59 +142,48 @@ const SocialMedia = () => {
           Social Media Links
         </Typography>
 
-        {/* Input Fields with Icons Outside */}
-        {Object.keys(socialLinks).map((key) => (
+        {Object?.keys(socialLinks)?.map((key) => (
           <Box
             key={key}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              mb: 3, // Adjusted margin-bottom for better spacing
-            }}
+            sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}
           >
-            {/* Icon */}
             <Box sx={{ width: 40, display: "flex", justifyContent: "center" }}>
               {iconMap[key]}
             </Box>
-
-            {/* Input Field */}
             <TextField
               fullWidth
               label={`${key.charAt(0).toUpperCase() + key.slice(1)} URL`}
               name={key}
               value={socialLinks[key]}
               onChange={handleChange}
-              sx={{
-                "& .MuiInputBase-root": {
-                  py: 1.2, // Adjust padding for input height consistency
-                },
-              }}
+              sx={{ "& .MuiInputBase-root": { py: 1.2 } }}
             />
           </Box>
         ))}
 
-        {/* Save All Button */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
           <Button
             variant="contained"
-            onClick={handleSaveAll}
+            onClick={handleSave}
             disabled={saving}
             sx={{
               minWidth: 140,
               py: 1,
               backgroundColor: "#F68633",
-              "&:hover": {
-                backgroundColor: "#e0752d", // Darker shade for hover effect
-              },
+              "&:hover": { backgroundColor: "#e0752d" },
             }}
           >
-            {saving ? <CircularProgress size={24} /> : "Update All"}
+            {saving ? (
+              <CircularProgress size={24} />
+            ) : id ? (
+              "Update All"
+            ) : (
+              "Save"
+            )}
           </Button>
         </Box>
       </Box>
 
-      {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}

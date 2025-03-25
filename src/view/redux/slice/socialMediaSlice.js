@@ -6,26 +6,33 @@ export const fetchSocialMedia = createAsyncThunk(
   "socialMedia/fetch",
   async () => {
     const response = await api.get("/social-media");
-    // console.log("Fetched Social Media Data:", response.data);
-    return response.data; // Assuming it contains the full object including _id
+    return response.data;
   }
 );
 
-// Update social media links (entire object)
+// Update existing social media links
 export const updateSocialMedia = createAsyncThunk(
   "socialMedia/update",
   async ({ id, updatedLinks }) => {
-    // console.log("Updating Social Media:", { id, updatedLinks });
     const response = await api.patch(`/social-media/${id}`, updatedLinks);
-    return response.data; // Assuming backend returns the updated data
+    return response.data;
+  }
+);
+
+// Add new social media links
+export const addSocialMedia = createAsyncThunk(
+  "socialMedia/add",
+  async (newLinks) => {
+    const response = await api.post("/social-media", newLinks);
+    return response.data;
   }
 );
 
 const socialMediaSlice = createSlice({
   name: "socialMedia",
   initialState: {
-    links: {}, // Stores the entire social media object
-    id: null, // Stores _id separately
+    links: null,
+    id: null,
     loading: false,
     error: null,
   },
@@ -42,8 +49,8 @@ const socialMediaSlice = createSlice({
           state.id = action.payload._id;
           state.links = action.payload;
         } else {
-          state.error = "API response is missing _id.";
-          console.error(state.error);
+          state.links = null;
+          state.id = null;
         }
       })
       .addCase(fetchSocialMedia.rejected, (state, action) => {
@@ -52,13 +59,24 @@ const socialMediaSlice = createSlice({
       })
       .addCase(updateSocialMedia.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(updateSocialMedia.fulfilled, (state, action) => {
         state.loading = false;
-        state.links = action.payload; // Update entire object
+        state.links = action.payload;
       })
       .addCase(updateSocialMedia.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(addSocialMedia.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(addSocialMedia.fulfilled, (state, action) => {
+        state.loading = false;
+        state.links = action.payload;
+        state.id = action.payload._id;
+      })
+      .addCase(addSocialMedia.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });

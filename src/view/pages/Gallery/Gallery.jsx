@@ -5,6 +5,7 @@ import {
   addGalleryItem,
   updateGalleryItem,
   deleteGalleryItem,
+  createGallery,
 } from "../../redux/slice/galleryslice";
 import {
   Box,
@@ -110,58 +111,82 @@ function Gallery() {
   };
 
   const handleSubmit = () => {
-    const formDataToSend = new FormData();
+    // Determine if this is the first-time gallery creation or adding an item
+    const isFirstTimeCreation =
+      (formData.type === "image" && (!gallery_image || !gallery_image._id)) ||
+      (formData.type === "video" && (!gallery_video || !gallery_video._id));
 
-    if (formData.type === "image") {
-      if (formData.title) {
-        formDataToSend.append("gallery_image_title", formData.title);
-      }
-      if (formData.description) {
-        formDataToSend.append(
-          "gallery_image_description",
-          formData.description
-        );
-      }
-    } else if (formData.type === "video") {
-      if (formData.title) {
-        formDataToSend.append("gallery_video_title", formData.title);
-      }
-      if (formData.description) {
-        formDataToSend.append(
-          "gallery_video_description",
-          formData.description
-        );
-      }
-    }
+    if (isFirstTimeCreation) {
+      // First-time gallery creation
+      const galleryData = {
+        [`gallery_${formData.type}_title`]: formData.title,
+        [`gallery_${formData.type}_description`]: formData.description,
+        [formData.type + "s"]: [formData.file],
+      };
 
-    if (formData.file) {
-      formDataToSend.append(
-        formData.type === "image" ? "images" : "videos",
-        formData.file
-      );
-    }
-
-    if (editData && formData.id) {
-      dispatch(
-        updateGalleryItem({
-          id: formData.id,
-          updatedItem: formDataToSend,
-          type: formData.type,
-        })
-      ).then(() => dispatch(fetchGallery()));
+      dispatch(createGallery(galleryData)).then(() => {
+        handleClose();
+      });
     } else {
-      const galleryId =
-        formData.type === "image" ? gallery_image?._id : gallery_video?._id;
-      dispatch(
-        addGalleryItem({
-          galleryId,
-          formData: formDataToSend,
-          type: formData.type,
-        })
-      ).then(() => dispatch(fetchGallery()));
-    }
+      // Adding item to existing gallery or updating
+      const formDataToSend = new FormData();
 
-    handleClose();
+      if (formData.type === "image") {
+        if (formData.title) {
+          formDataToSend.append("gallery_image_title", formData.title);
+        }
+        if (formData.description) {
+          formDataToSend.append(
+            "gallery_image_description",
+            formData.description
+          );
+        }
+      } else if (formData.type === "video") {
+        if (formData.title) {
+          formDataToSend.append("gallery_video_title", formData.title);
+        }
+        if (formData.description) {
+          formDataToSend.append(
+            "gallery_video_description",
+            formData.description
+          );
+        }
+      }
+
+      if (formData.file) {
+        formDataToSend.append(
+          formData.type === "image" ? "images" : "videos",
+          formData.file
+        );
+      }
+
+      if (editData && formData.id) {
+        dispatch(
+          updateGalleryItem({
+            id: formData.id,
+            updatedItem: formDataToSend,
+            type: formData.type,
+          })
+        ).then(() => {
+          dispatch(fetchGallery());
+          handleClose();
+        });
+      } else {
+        const galleryId =
+          formData.type === "image" ? gallery_image?._id : gallery_video?._id;
+
+        dispatch(
+          addGalleryItem({
+            galleryId,
+            formData: formDataToSend,
+            type: formData.type,
+          })
+        ).then(() => {
+          dispatch(fetchGallery());
+          handleClose();
+        });
+      }
+    }
   };
 
   const handleDelete = (fileUrl, type) => {

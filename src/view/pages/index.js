@@ -3,7 +3,7 @@ import Gallery from "./Gallery/Gallery";
 import AboutUs from "./AboutUs/AboutUs";
 import Members from "./Members/Members";
 import SupportSpeak from "./SupportSpeak/SupportSpeak";
-import UserOpinion from "./UserOpinion/UserOpinion";
+import UserOpinion from "./AudioFiles/AudioFiles";
 import Registration from "./Registration/Registration";
 import Messages from "./Messages/Messages";
 import ContactUs from "./ContactUs//ContactUs";
@@ -15,6 +15,7 @@ import SocialMedia from "./SocialMedia/SocialMedia";
 import OurProgrammes from "./OurProgrammes/OurProgrammes";
 import NewsPage from "./News/NewsPage";
 import Books from "./Books/Books";
+import AudioFiles from "./AudioFiles/AudioFiles";
 export {
   Home,
   Dashboard,
@@ -33,4 +34,5 @@ export {
   OurProgrammes,
   NewsPage,
   Books,
+  AudioFiles,
 };

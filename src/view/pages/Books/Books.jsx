@@ -41,18 +41,16 @@ import {
 
 function BookList() {
   const dispatch = useDispatch();
-  const { books = [], error } = useSelector((state) => state.booklist);
+  const { books = [], loading, error } = useSelector((state) => state.booklist);
   const [removeImages, setRemoveImages] = useState([]);
   const [editingBook, setEditingBook] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [loading, setLoading] = useState(true);
+  const [showLoader, setShowLoader] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [bookToDelete, setBookToDelete] = useState(null);
-  // eslint-disable-next-line
-  const [selectedFileName, setSelectedFileName] = useState("");
   const [expandedDescription, setExpandedDescription] = useState({});
   const [formData, setFormData] = useState({
     id: null,
@@ -74,13 +72,17 @@ function BookList() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
       await dispatch(fetchBooks());
-      setLoading(false);
     };
     fetchData();
   }, [dispatch]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000);
 
+    return () => clearTimeout(timer);
+  }, []);
   const handleAddNew = () => {
     setEditingBook(null);
     setFormData({
@@ -91,7 +93,6 @@ function BookList() {
       cover_image: null,
     });
     setPreviewImage(null);
-    setSelectedFileName("");
     setRemoveImages([]); // Reset removeImages
     setIsFormOpen(true);
   };
@@ -100,16 +101,17 @@ function BookList() {
     setEditingBook(book.id);
     setFormData(book);
     setPreviewImage(book.cover_image);
-    setSelectedFileName(book.cover_image.split("/").pop());
     setRemoveImages([]); // Reset removeImages
     setIsFormOpen(true);
   };
+
   const toggleDescription = (id) => {
     setExpandedDescription((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
   };
+
   const handleDeleteConfirm = (id) => {
     setBookToDelete(id);
     setDeleteDialogOpen(true);
@@ -142,21 +144,17 @@ function BookList() {
       formDataToSend.append("cover_image", formData.cover_image);
     }
 
-    // Handle existing images vs new File objects
     const existingImages = formData.images.filter(
       (img) => typeof img === "string"
     );
     const newImages = formData.images.filter((img) => img instanceof File);
 
-    // Append existing images as a JSON string
     formDataToSend.append("existingImages", JSON.stringify(existingImages));
 
-    // Append new image files
     newImages.forEach((image) => {
       formDataToSend.append("images", image);
     });
 
-    // Append images to remove
     if (removeImages.length > 0) {
       formDataToSend.append("remove_image", JSON.stringify(removeImages));
     }
@@ -171,7 +169,6 @@ function BookList() {
       }
 
       setIsFormOpen(false);
-      // Reload isn't ideal for production environments; consider refetching instead
       await dispatch(fetchBooks());
     } catch (error) {
       console.error("Error saving book:", error);
@@ -186,7 +183,6 @@ function BookList() {
     const file = e.target.files[0];
     if (file) {
       setPreviewImage(URL.createObjectURL(file));
-      setSelectedFileName(file.name);
       setFormData({ ...formData, cover_image: file });
     }
   };
@@ -205,7 +201,6 @@ function BookList() {
       const imageToRemove = updatedImages[index];
       updatedImages.splice(index, 1);
 
-      // If the image is a string (i.e., it exists in the database), add it to removeImages
       if (typeof imageToRemove === "string") {
         setRemoveImages((prevRemoveImages) => [
           ...prevRemoveImages,
@@ -216,185 +211,188 @@ function BookList() {
       return { ...prev, images: updatedImages };
     });
   };
+  if (loading || showLoader)
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <CircularProgress sx={{ color: "#F68633" }} />
+      </Box>
+    );
+
+  if (error)
+    return (
+      <Typography variant="h6" color="error">
+        Error: {error}
+      </Typography>
+    );
 
   return (
     <Box>
-      {loading ? (
+      <>
         <Box
           display="flex"
-          justifyContent="center"
+          justifyContent="space-between"
           alignItems="center"
-          height="400px"
+          mb={3}
         >
-          <CircularProgress />
+          <Typography
+            variant="h4"
+            align="left"
+            gutterBottom
+            sx={{ mb: 2, fontWeight: "bold" }}
+          >
+            Manage Books
+          </Typography>
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: "#e0752d",
+              "&:hover": { backgroundColor: "#F68633" },
+              textTransform: "none",
+            }}
+            startIcon={<Add />}
+            onClick={handleAddNew}
+          >
+            Add New Book
+          </Button>
         </Box>
-      ) : (
-        <>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={3}
-          >
-            <Typography
-              variant="h4"
-              align="left"
-              gutterBottom
-              sx={{ mb: 2, fontWeight: "bold" }}
-            >
-              Manage Books
+
+        {books.length === 0 ? (
+          <Paper sx={{ p: 4, textAlign: "center", borderRadius: 2 }}>
+            <Typography variant="h6" color="text.secondary">
+              No books available
             </Typography>
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: "#e0752d",
-                "&:hover": { backgroundColor: "#F68633" },
-                textTransform: "none",
-              }}
-              startIcon={<Add />}
-              onClick={handleAddNew}
-            >
-              Add New Book
-            </Button>
-          </Box>
-
-          {error && <Typography color="error">{error}</Typography>}
-
-          {books.length === 0 ? (
-            <Paper sx={{ p: 4, textAlign: "center", borderRadius: 2 }}>
-              <Typography variant="h6" color="text.secondary">
-                No books available
-              </Typography>
-            </Paper>
-          ) : (
-            <TableContainer component={Paper} sx={{ overflow: "hidden" }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>
-                      <Typography sx={{ fontWeight: "bold", width: "120px" }}>
-                        Title
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography sx={{ fontWeight: "bold", width: "120px" }}>
-                        Book Image
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography sx={{ fontWeight: "bold", width: "120px" }}>
-                        Description
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography sx={{ fontWeight: "bold", width: "120px" }}>
-                        Actions
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {books
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((book) => (
-                      <TableRow key={book.id}>
-                        <TableCell>{book.title}</TableCell>
-                        <TableCell>
-                          {book.cover_image && book.cover_image.length > 0 ? (
-                            <SlideshowLightbox>
-                              <img
-                                src={book.cover_image}
-                                alt="Book"
-                                style={{
-                                  width: 60,
-                                  height: 60,
-                                  objectFit: "cover",
-                                  borderRadius: "5px",
-                                }}
-                              />
-                            </SlideshowLightbox>
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">
-                              No Image
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {" "}
-                          <div
-                            dangerouslySetInnerHTML={{
-                              __html: expandedDescription[book._id]
-                                ? book.description
-                                : book.description
-                                ? `${book.description.substring(0, 50)}...`
-                                : "No description available.",
-                            }}
-                          />
-                          <Button
-                            onClick={() => toggleDescription(book._id)}
-                            sx={{ textTransform: "none", ml: 1 }}
+          </Paper>
+        ) : (
+          <TableContainer component={Paper} sx={{ overflow: "hidden" }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    <Typography sx={{ fontWeight: "bold", width: "120px" }}>
+                      Title
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography sx={{ fontWeight: "bold", width: "120px" }}>
+                      Book Image
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography sx={{ fontWeight: "bold", width: "120px" }}>
+                      Description
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography sx={{ fontWeight: "bold", width: "120px" }}>
+                      Actions
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {books
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((book) => (
+                    <TableRow key={book.id}>
+                      <TableCell>{book.title}</TableCell>
+                      <TableCell>
+                        {book.cover_image && book.cover_image.length > 0 ? (
+                          <SlideshowLightbox>
+                            <img
+                              src={book.cover_image}
+                              alt="Book"
+                              style={{
+                                width: 60,
+                                height: 60,
+                                objectFit: "cover",
+                                borderRadius: "5px",
+                              }}
+                            />
+                          </SlideshowLightbox>
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">
+                            No Image
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: expandedDescription[book._id]
+                              ? book.description
+                              : book.description
+                              ? `${book.description.substring(0, 50)}...`
+                              : "No description available.",
+                          }}
+                        />
+                        <Button
+                          onClick={() => toggleDescription(book._id)}
+                          sx={{ textTransform: "none", ml: 1 }}
+                        >
+                          {expandedDescription[book._id]
+                            ? "Read Less"
+                            : "Read More"}
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <Tooltip title="Edit">
+                          <IconButton
+                            color="primary"
+                            onClick={() => handleEdit(book)}
+                            size="small"
                           >
-                            {expandedDescription[book._id]
-                              ? "Read Less"
-                              : "Read More"}
-                          </Button>
-                        </TableCell>
-                        <TableCell>
-                          <Tooltip title="Edit">
-                            <IconButton
-                              color="primary"
-                              onClick={() => handleEdit(book)}
-                              size="small"
-                            >
-                              <Edit />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete">
-                            <IconButton
-                              color="error"
-                              onClick={() => handleDeleteConfirm(book.id)}
-                              size="small"
-                            >
-                              <Delete />
-                            </IconButton>
-                          </Tooltip>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-              <Box display="flex" justifyContent="center" width="100%" mt={2}>
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
-                  component="div"
-                  count={books.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-              </Box>
-            </TableContainer>
-          )}
-          <Dialog
-            open={deleteDialogOpen}
-            onClose={() => setDeleteDialogOpen(false)}
-          >
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogContent>
-              <Typography>
-                Are you sure you want to delete this book?
-              </Typography>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleDelete} color="error" variant="contained">
-                Delete
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </>
-      )}
+                            <Edit />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <IconButton
+                            color="error"
+                            onClick={() => handleDeleteConfirm(book.id)}
+                            size="small"
+                          >
+                            <Delete />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+            <Box display="flex" justifyContent="center" width="100%" mt={2}>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={books.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            </Box>
+          </TableContainer>
+        )}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+        >
+          <DialogTitle>Confirm Deletion</DialogTitle>
+          <DialogContent>
+            <Typography>Are you sure you want to delete this book?</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleDelete} color="error" variant="contained">
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
+
       <Dialog
         open={isFormOpen}
         onClose={() => setIsFormOpen(false)}
@@ -430,16 +428,6 @@ function BookList() {
             value={formData.description}
             onChange={(content) => {
               setFormData((prev) => ({ ...prev, description: content }));
-            }}
-            onPaste={(event) => {
-              event.preventDefault();
-              const text = (
-                event.clipboardData || window.clipboardData
-              ).getData("text");
-              const editor = editorRef.current;
-              if (editor) {
-                editor.selection.insertHTML(text);
-              }
             }}
           />
           <Typography variant="subtitle1">Cover Image:</Typography>

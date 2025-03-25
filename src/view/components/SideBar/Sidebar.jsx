@@ -27,6 +27,7 @@ import {
   ConnectWithoutContact,
 } from "@mui/icons-material";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import AudiotrackIcon from "@mui/icons-material/Audiotrack";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
 import PeopleIcon from "@mui/icons-material/People";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
@@ -40,12 +41,22 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
 
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
+    { text: "About Us", icon: <PersonAdd />, path: "/aboutus" },
+    { text: "Events", icon: <Event />, path: "/events" },
+    { text: "Our Programmes", icon: <Business />, path: "/ourProgrammes" },
+    { text: "Gallery", icon: <PhotoLibrary />, path: "/gallery" },
+    {
+      text: "Books",
+      icon: <MenuBookIcon />,
+      path: "/books",
+    },
+    {
+      text: "Audio Media",
+      icon: <AudiotrackIcon />,
+      path: "/audios",
+    },
     { text: "News", icon: <NewspaperIcon />, path: "/news" },
     // { text: "Home", icon: <HomeIcon />, path: "/home" },
-    { text: "Events", icon: <Event />, path: "/events" },
-    { text: "Gallery", icon: <PhotoLibrary />, path: "/gallery" },
-    { text: "About Us", icon: <PersonAdd />, path: "/aboutus" },
-    { text: "Our Programmes", icon: <Business />, path: "/ourProgrammes" },
     {
       text: "Support Speakers",
       icon: <SupportAgentIcon />,
@@ -54,11 +65,6 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
     { text: "Subscribers", icon: <Subscriptions />, path: "/subscribers" },
     { text: "Contact Enquires", icon: <ContactPhone />, path: "/contactus" },
     { text: "Message", icon: <Chat />, path: "/message" },
-    {
-      text: "Books",
-      icon: <MenuBookIcon />,
-      path: "/books",
-    },
     { text: "Register User", icon: <PeopleIcon />, path: "/register-user" },
     {
       text: "Social Media",

@@ -17,8 +17,8 @@ import { fetchUserData } from "../../redux/slice/registrationSlice"; // Adjust p
 import { SlideshowLightbox } from "lightbox.js-react";
 const Registration = () => {
   const dispatch = useDispatch();
-  const { users, status, error } = useSelector((state) => state.registration);
-
+  const { users, status } = useSelector((state) => state.registration);
+  const [showLoader, setShowLoader] = useState(true);
   // State for pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5); // Default 5 rows per page
@@ -27,6 +27,13 @@ const Registration = () => {
     dispatch(fetchUserData());
   }, [dispatch]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -36,7 +43,7 @@ const Registration = () => {
     setPage(0); // Reset page to first when changing rows per page
   };
 
-  if (status === "loading") {
+  if (status === "loading" || showLoader)
     return (
       <Box
         display="flex"
@@ -47,15 +54,6 @@ const Registration = () => {
         <CircularProgress sx={{ color: "#F68633" }} />
       </Box>
     );
-  }
-
-  if (status === "failed") {
-    return (
-      <Typography variant="h6" color="error">
-        Error: {error}
-      </Typography>
-    );
-  }
 
   return (
     <Box>

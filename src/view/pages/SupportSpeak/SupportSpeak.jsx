@@ -30,11 +30,7 @@ import {
   updateSupportSpeaker,
   deleteSupportSpeaker,
 } from "../../redux/slice/supportSpeakSlice";
-import {
-  Delete as DeleteIcon,
-  Edit,
-  Add as AddIcon,
-} from "@mui/icons-material";
+import { Delete as DeleteIcon, Edit } from "@mui/icons-material";
 import { SlideshowLightbox } from "lightbox.js-react";
 const SupportSpeak = () => {
   const dispatch = useDispatch();
@@ -56,7 +52,7 @@ const SupportSpeak = () => {
   const [showLoader, setShowLoader] = useState(true);
   // Pagination state
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5); // Set default rows per page
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     dispatch(fetchSupportSpeakData());
@@ -83,7 +79,7 @@ const SupportSpeak = () => {
         location: speaker.location,
         images: speaker.images,
       });
-      setImagePreviews(speaker.images.map((img) => img.url)); // Set previews for existing images
+      setImagePreviews(speaker.images.map((img) => img.url));
     } else {
       setFormData({ name: "", post: "", location: "", images: [] });
       setImagePreviews([]);
@@ -208,7 +204,7 @@ const SupportSpeak = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedSpeakers.map((speaker) => (
+              {paginatedSpeakers?.map((speaker) => (
                 <TableRow key={speaker._id}>
                   <TableCell>{speaker.name}</TableCell>
                   <TableCell>{speaker.post}</TableCell>
@@ -250,20 +246,36 @@ const SupportSpeak = () => {
               ))}
             </TableBody>
           </Table>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={supportSpeakers.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
         </TableContainer>
       ) : (
-        <Typography variant="body1">No speakers available.</Typography>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Post</TableCell>
+              <TableCell>Location</TableCell>
+              <TableCell>Images</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow>
+              <TableCell colSpan={12} align="center">
+                No Support Speakers Found.
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       )}
-
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={supportSpeakers.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
       {/* Modal for Adding/Editing Speaker */}
       <Modal open={open} onClose={handleClose}>
         <Box
