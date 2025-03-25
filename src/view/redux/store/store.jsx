@@ -9,7 +9,6 @@ import messageReducer from "../slice/messageSlice";
 import aboutReducer from "../slice/aboutSlice";
 import membersReducer from "../slice/membersSlice";
 import supportSpeakReducer from "../slice/supportSpeakSlice";
-import userOpinionReducer from "../slice/userOpinionSlice";
 import registrationReducer from "../slice/registrationSlice";
 import subscribersReducer from "../slice/subscribersSlice";
 import programmesReducer from "../slice/ourProgrammesSlice";
@@ -18,7 +17,7 @@ import dashboardReducer from "../slice/dashboardSlice";
 import eventVideosReducer from "../slice/eventVideoSlice";
 import homeReducer from "../slice/homeSlice";
 import newsReducer from "../slice/newsPageSlice";
-
+import audioReducer from "../slice/audiofileSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -32,7 +31,6 @@ const store = configureStore({
     about: aboutReducer,
     members: membersReducer,
     supportSpeak: supportSpeakReducer,
-    userOpinion: userOpinionReducer,
     registration: registrationReducer,
     subscribers: subscribersReducer,
     programmes: programmesReducer,
@@ -40,6 +38,7 @@ const store = configureStore({
     dashboard: dashboardReducer,
     home: homeReducer,
     news: newsReducer,
+    audiolist: audioReducer,
   },
 });
 

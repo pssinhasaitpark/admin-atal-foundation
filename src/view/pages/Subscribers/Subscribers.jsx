@@ -60,13 +60,6 @@ function Subscribers() {
       </Typography>
     );
 
-  if (!Array.isArray(subscribers) || subscribers.length === 0)
-    return (
-      <Typography align="center" mt={4}>
-        No subscribers found.
-      </Typography>
-    );
-
   // Slice the data to get only the current page's subscribers
   const displaySubscribers = subscribers.slice(
     page * rowsPerPage,

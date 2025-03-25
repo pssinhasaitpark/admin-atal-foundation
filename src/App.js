@@ -20,6 +20,7 @@ import {
   SupportSpeak,
   Registration,
   Books,
+  AudioFiles,
 } from "./view/pages/index.js";
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
         <Route path="/support-speakers" element={<SupportSpeak />} />
         <Route path="/register-user" element={<Registration />} />
         <Route path="/books" element={<Books />} />
+        <Route path="/audios" element={<AudioFiles />} />
 
         {/* Our Programmes Routes */}
         <Route path="/ourProgrammes" element={<OurProgrammes />} />
