@@ -29,25 +29,6 @@ const Members = () => {
   const [removeImages, setRemoveImages] = useState([]);
   const [isEditable, setIsEditable] = useState(false);
 
-  // useEffect(() => {
-  //   dispatch(fetchMembersData());
-  // }, [dispatch]);
-
-  // useEffect(() => {
-  //   if (membersData) {
-  //     setTitle(membersData.title || "Members");
-  //     setDescription(membersData.description || "");
-  //     setSelectedImages(membersData.images || []);
-  //   }
-  // }, [membersData]);
-
-  // const debouncedEditorChange = useCallback(
-  //   debounce((newContent) => {
-  //     setDescription(newContent);
-  //   }, 1000),
-  //   []
-  // );
-
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
     setSelectedImages([...selectedImages, ...files]);

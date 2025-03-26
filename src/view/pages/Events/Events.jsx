@@ -38,7 +38,7 @@ import { SlideshowLightbox } from "lightbox.js-react";
 
 function Events() {
   const dispatch = useDispatch();
-  const { events = [], loading, error } = useSelector((state) => state.events);
+  const { events = [], loading } = useSelector((state) => state.events);
 
   const [showLoader, setShowLoader] = useState(true);
   const [newBanner, setNewBanner] = useState(null);
@@ -240,12 +240,12 @@ function Events() {
       </Box>
     );
 
-  if (error)
-    return (
-      <Typography variant="h6" color="error">
-        Error: {error}
-      </Typography>
-    );
+  // if (error)
+  //   return (
+  //     <Typography variant="h6" color="error">
+  //       Error: {error}
+  //     </Typography>
+  //   );
 
   return (
     <div className="p-4">

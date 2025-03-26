@@ -29,7 +29,7 @@ import { Delete } from "@mui/icons-material";
 
 function ContactUs() {
   const dispatch = useDispatch();
-  const { contacts, loading, error } = useSelector((state) => state.contact);
+  const { contacts, loading } = useSelector((state) => state.contact);
   const [showLoader, setShowLoader] = useState(true);
   const [expandedRows, setExpandedRows] = useState({});
 
@@ -105,13 +105,6 @@ function ContactUs() {
       >
         <CircularProgress sx={{ color: "#F68633" }} />
       </Box>
-    );
-
-  if (error)
-    return (
-      <Typography variant="h6" color="error">
-        Error: {error}
-      </Typography>
     );
 
   return (

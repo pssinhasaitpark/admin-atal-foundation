@@ -28,7 +28,7 @@ import { Delete } from "@mui/icons-material";
 
 function Messages() {
   const dispatch = useDispatch();
-  const { messages, loading, error } = useSelector((state) => state.message);
+  const { messages, loading } = useSelector((state) => state.message);
   const [showLoader, setShowLoader] = useState(true);
 
   // Pagination states
@@ -106,13 +106,6 @@ function Messages() {
       >
         <CircularProgress sx={{ color: "#F68633" }} />
       </Box>
-    );
-
-  if (error)
-    return (
-      <Typography variant="h6" color="error">
-        Error: {error}
-      </Typography>
     );
 
   return (

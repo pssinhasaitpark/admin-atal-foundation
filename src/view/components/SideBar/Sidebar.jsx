@@ -64,8 +64,8 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
     },
     { text: "Subscribers", icon: <Subscriptions />, path: "/subscribers" },
     { text: "Contact Enquires", icon: <ContactPhone />, path: "/contactus" },
-    { text: "Message", icon: <Chat />, path: "/message" },
-    { text: "Register User", icon: <PeopleIcon />, path: "/register-user" },
+    { text: "Messages", icon: <Chat />, path: "/message" },
+    { text: "Registered Users", icon: <PeopleIcon />, path: "/register-user" },
     {
       text: "Social Media",
       icon: <ConnectWithoutContact />,

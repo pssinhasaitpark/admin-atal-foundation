@@ -17,11 +17,9 @@ import {
 
 function Subscribers() {
   const dispatch = useDispatch();
-  const {
-    data: subscribers,
-    loading,
-    error,
-  } = useSelector((state) => state.subscribers);
+  const { data: subscribers, loading } = useSelector(
+    (state) => state.subscribers
+  );
 
   const [showLoader, setShowLoader] = useState(true);
 
@@ -53,12 +51,12 @@ function Subscribers() {
       </Box>
     );
 
-  if (error)
-    return (
-      <Typography variant="h6" color="error">
-        Error: {error}
-      </Typography>
-    );
+  // if (error)
+  //   return (
+  //     <Typography variant="h6" color="error">
+  //       Error: {error}
+  //     </Typography>
+  //   );
 
   // Slice the data to get only the current page's subscribers
   const displaySubscribers = subscribers.slice(

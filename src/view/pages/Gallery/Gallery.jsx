@@ -31,7 +31,7 @@ import { Image, VideoLibrary } from "@mui/icons-material";
 import { SlideshowLightbox } from "lightbox.js-react";
 function Gallery() {
   const dispatch = useDispatch();
-  const { gallery_image, gallery_video, loading, error } = useSelector(
+  const { gallery_image, gallery_video, loading } = useSelector(
     (state) => state.gallery
   );
   const [showLoader, setShowLoader] = useState(true);
@@ -72,13 +72,6 @@ function Gallery() {
       >
         <CircularProgress sx={{ color: "#F68633" }} />
       </Box>
-    );
-
-  if (error)
-    return (
-      <Typography variant="h6" color="error">
-        Error: {error}
-      </Typography>
     );
 
   const handleOpen = (type, data = null) => {
