@@ -92,7 +92,7 @@ export const deleteAudio = createAsyncThunk(
 const audioSlice = createSlice({
   name: "audiolist",
   initialState: {
-    audio: null,
+    audio: [],
     loading: false,
     error: null,
   },

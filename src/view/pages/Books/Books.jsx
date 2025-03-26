@@ -41,7 +41,7 @@ import {
 
 function BookList() {
   const dispatch = useDispatch();
-  const { books = [], loading, error } = useSelector((state) => state.booklist);
+  const { books = [], loading } = useSelector((state) => state.booklist);
   const [removeImages, setRemoveImages] = useState([]);
   const [editingBook, setEditingBook] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -221,13 +221,6 @@ function BookList() {
       >
         <CircularProgress sx={{ color: "#F68633" }} />
       </Box>
-    );
-
-  if (error)
-    return (
-      <Typography variant="h6" color="error">
-        Error: {error}
-      </Typography>
     );
 
   return (

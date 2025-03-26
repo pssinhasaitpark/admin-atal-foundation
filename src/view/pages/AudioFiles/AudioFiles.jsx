@@ -5,7 +5,7 @@ import {
   updateAudioData,
   updateAudioSection,
   deleteAudio,
-} from "../../redux/slice/audiofileSlice"; // Adjust the import path as necessary
+} from "../../redux/slice/audiofileSlice";
 import {
   Box,
   Typography,
@@ -32,7 +32,7 @@ import {
 
 function AudioFiles() {
   const dispatch = useDispatch();
-  const { audio, loading, error } = useSelector((state) => state.audiolist);
+  const { audio, loading } = useSelector((state) => state.audiolist);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editSectionDialogOpen, setEditSectionDialogOpen] = useState(false);
@@ -71,7 +71,7 @@ function AudioFiles() {
 
   const handleAddSection = (e) => {
     e.preventDefault();
-    const id = audio._id; // Assuming audio has an _id field
+    const id = audio._id;
     const formData = new FormData();
     formData.append("title", newSection.title);
     if (newSection.image) {
@@ -97,8 +97,8 @@ function AudioFiles() {
 
   const handleUpdateSection = (e) => {
     e.preventDefault();
-    const id = audio._id; // Assuming audio has an _id field
-    const section_id = currentSection._id; // Get the section ID
+    const id = audio._id;
+    const section_id = currentSection._id;
     const formData = new FormData();
     formData.append("title", newSection.title);
     if (newSection.image) {
@@ -118,8 +118,8 @@ function AudioFiles() {
   };
 
   const confirmDelete = () => {
-    const id = audio._id; // Assuming audio has an _id field
-    const section_id = currentSection._id; // Get the section ID
+    const id = audio._id;
+    const section_id = currentSection._id;
     dispatch(deleteAudio({ id, section_id }));
     setDeleteDialogOpen(false);
   };
@@ -151,23 +151,19 @@ function AudioFiles() {
       </Box>
     );
 
-  if (error) {
-    return (
-      <Typography variant="h6" color="error">
-        Error: {error.message || "An unknown error occurred."}
-      </Typography>
-    );
-  }
   return (
     <Box>
+      <Typography variant="h4" fontWeight="bold" gutterBottom>
+        Manage Audio
+      </Typography>
       {audio && (
         <>
           <Box display="flex" alignItems="center">
             <Box>
-              <Typography variant="h4" fontWeight="bold" gutterBottom>
+              <Typography variant="h6" fontWeight="bold" gutterBottom>
                 {audio.heading}
               </Typography>
-              <Typography variant="body1" gutterBottom>
+              <Typography variant="body2" gutterBottom>
                 {audio.description}
               </Typography>
             </Box>

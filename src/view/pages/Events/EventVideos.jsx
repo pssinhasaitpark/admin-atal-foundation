@@ -32,9 +32,7 @@ import {
 function EventVideos() {
   const dispatch = useDispatch();
 
-  const { eventVideos, status, error } = useSelector(
-    (state) => state.eventVideos
-  );
+  const { eventVideos, status } = useSelector((state) => state.eventVideos);
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -109,13 +107,7 @@ function EventVideos() {
       </Typography>
 
       {status === "loading" && <CircularProgress />}
-      {error && (
-        <Typography color="error">
-          {error.message || "An error occurred while fetching videos."}
-        </Typography>
-      )}
 
-      {/* Display video title and description outside the table */}
       {eventVideos.length > 0 && (
         <Box marginBottom="20px">
           <Typography variant="h6" gutterBottom>

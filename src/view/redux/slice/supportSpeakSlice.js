@@ -93,6 +93,7 @@ export const deleteSupportSpeaker = createAsyncThunk(
   "supportSpeak/deleteSupportSpeaker",
   async (id, { rejectWithValue, dispatch }) => {
     try {
+      // eslint-disable-next-line
       const response = await api.delete(`/support-speaker/delete/${id}`);
       dispatch(fetchSupportSpeakData());
       return id; // Return the id of the deleted speaker
