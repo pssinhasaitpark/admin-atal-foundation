@@ -281,7 +281,8 @@ function OurProgrammes() {
             <CardMedia
               component="img"
               height="300"
-              image={bannerPreview}
+              // src={`${process.env.REACT_APP_BASE_URL_ASSETS + imgUrl}`}
+              image={`${process.env.REACT_APP_BASE_URL_ASSETS + bannerPreview}`}
               alt="Selected Banner"
               sx={{ mb: 2, borderRadius: 2 }}
             />
@@ -290,7 +291,10 @@ function OurProgrammes() {
               <CardMedia
                 component="img"
                 height="300"
-                image={programmes[0].banner}
+                image={`${
+                  process.env.REACT_APP_BASE_URL_ASSETS + programmes[0].banner
+                }`}
+                // image={programmes[0].banner}
                 alt="Banner"
                 sx={{ mb: 2, borderRadius: 2 }}
               />
@@ -391,7 +395,10 @@ function OurProgrammes() {
                       >
                         <SlideshowLightbox>
                           <img
-                            src={img.url}
+                            src={`${
+                              process.env.REACT_APP_BASE_URL_ASSETS + img.url
+                            }`}
+                            // src={img.url}
                             alt="Programme"
                             width="100"
                             style={{ marginRight: "5px", borderRadius: "5px" }}
@@ -475,7 +482,8 @@ function OurProgrammes() {
                 >
                   <SlideshowLightbox>
                     <img
-                      src={imgUrl}
+                      src={`${process.env.REACT_APP_BASE_URL_ASSETS + imgUrl}`}
+                      // src={imgUrl}
                       alt="Existing Programme"
                       width="100"
                       style={{ marginRight: "5px", borderRadius: "5px" }}

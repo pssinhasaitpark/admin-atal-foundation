@@ -214,8 +214,11 @@ const SupportSpeak = () => {
                       {(speaker.images || []).map((image) => (
                         <SlideshowLightbox>
                           <img
+                            src={`${
+                              process.env.REACT_APP_BASE_URL_ASSETS + image.url
+                            }`}
                             key={image._id}
-                            src={image.url}
+                            // src={image.url}
                             alt={speaker.name}
                             style={{ width: "100px", height: "auto" }}
                           />

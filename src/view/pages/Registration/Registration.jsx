@@ -98,7 +98,11 @@ const Registration = () => {
                         {user.images && user.images.length > 0 ? (
                           <SlideshowLightbox>
                             <img
-                              src={user.images[0]}
+                              src={`${
+                                process.env.REACT_APP_BASE_URL_ASSETS +
+                                user.images[0]
+                              }`}
+                              // src={user.images[0]}
                               alt="User"
                               style={{
                                 width: 40,
