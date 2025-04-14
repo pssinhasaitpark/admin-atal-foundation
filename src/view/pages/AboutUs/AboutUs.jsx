@@ -251,14 +251,18 @@ const AboutUs = () => {
       {/* Banner Section */}
       {bannerPreview ? (
         <Avatar
-          src={bannerPreview}
+          src={`${process.env.REACT_APP_BASE_URL_ASSETS + bannerPreview}`}
+          // src={bannerPreview}
           sx={{ width: "100%", height: "300px", borderRadius: 2, mb: 2 }}
           variant="square"
         />
       ) : (
         selectedAbout?.banner && (
           <Avatar
-            src={selectedAbout.banner}
+            src={`${
+              process.env.REACT_APP_BASE_URL_ASSETS + selectedAbout.banner
+            }`}
+            // src={selectedAbout.banner}
             sx={{ width: "100%", height: "300px", borderRadius: 2, mb: 2 }}
             variant="square"
           />
@@ -354,7 +358,10 @@ const AboutUs = () => {
                   <TableCell>
                     {section.image && (
                       <Avatar
-                        src={section.image}
+                        src={`${
+                          process.env.REACT_APP_BASE_URL_ASSETS + section.image
+                        }`}
+                        // src={section.image}
                         variant="rounded"
                         sx={{ width: 100, height: 70, borderRadius: 1 }}
                       />
@@ -437,9 +444,17 @@ const AboutUs = () => {
                 sx={{ position: "relative", display: "inline-block", mt: 1 }}
               >
                 <Avatar
+                  // src={`${
+                  //   process.env.REACT_APP_BASE_URL_ASSETS + section.image
+                  // }`}
                   src={
-                    newSection.image instanceof File
-                      ? URL.createObjectURL(newSection.image)
+                    process.env.REACT_APP_BASE_URL_ASSETS +
+                      newSection.image instanceof
+                    File
+                      ? URL.createObjectURL(
+                          process.env.REACT_APP_BASE_URL_ASSETS +
+                            newSection.image
+                        )
                       : newSection.image
                   }
                   variant="rounded"

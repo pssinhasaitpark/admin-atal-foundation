@@ -227,6 +227,7 @@ function Events() {
     if (!text) return "";
     return text.length > limit ? text.substring(0, limit) + "..." : text;
   };
+  console.log("fhhsf:", process.env.REACT_APP_BASE_URL_ASSETS);
 
   if (loading || showLoader)
     return (
@@ -379,7 +380,10 @@ function Events() {
             >
               {bannerPreview ? (
                 <img
-                  src={bannerPreview}
+                  src={`${
+                    process.env.REACT_APP_BASE_URL_ASSETS + bannerPreview
+                  }`}
+                  // src={bannerPreview}
                   alt="Banner Preview"
                   style={{
                     width: "100%",
@@ -387,9 +391,12 @@ function Events() {
                     objectFit: "cover",
                   }}
                 />
-              ) : events[0]?.banner ? (
+              ) : process.env.REACT_APP_BASE_URL_ASSETS + events[0].banner ? (
                 <img
-                  src={events[0].banner}
+                  src={`${
+                    process.env.REACT_APP_BASE_URL_ASSETS + events[0].banner
+                  }`}
+                  // src={events[0].banner}
                   alt="Event Banner"
                   style={{
                     width: "100%",
@@ -511,7 +518,10 @@ function Events() {
                         {group.images?.map((img, index) => (
                           <SlideshowLightbox key={index}>
                             <img
-                              src={img}
+                              src={`${
+                                process.env.REACT_APP_BASE_URL_ASSETS + img
+                              }`}
+                              // src={img}
                               alt={group.image_title}
                               style={{
                                 width: "60px",
@@ -576,7 +586,8 @@ function Events() {
                 {newSectionImages?.map((img, index) => (
                   <img
                     key={index}
-                    src={img}
+                    src={`${process.env.REACT_APP_BASE_URL_ASSETS + img}`}
+                    // src={img}
                     alt={`New Section ${index}`}
                     style={{
                       width: "60px",
@@ -642,7 +653,8 @@ function Events() {
                 {newSectionImages?.map((img, index) => (
                   <img
                     key={index}
-                    src={img}
+                    src={`${process.env.REACT_APP_BASE_URL_ASSETS + img}`}
+                    // src={img}
                     alt={`Edit Section ${index}`}
                     style={{
                       width: "60px",

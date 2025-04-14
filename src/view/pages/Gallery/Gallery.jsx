@@ -308,7 +308,8 @@ function Gallery() {
                     <TableCell>
                       <SlideshowLightbox>
                         <img
-                          src={img}
+                          src={`${process.env.REACT_APP_BASE_URL_ASSETS + img}`}
+                          // src={img}
                           alt="gallery"
                           width="80px"
                           height="60px"
@@ -412,7 +413,10 @@ function Gallery() {
                           display: "block",
                         }}
                       >
-                        <source src={vid} type="video/mp4" />
+                        <source
+                          src={`${process.env.REACT_APP_BASE_URL_ASSETS + vid}`}
+                          type="video/mp4"
+                        />
                       </video>
                     </TableCell>
                     <TableCell align="center">

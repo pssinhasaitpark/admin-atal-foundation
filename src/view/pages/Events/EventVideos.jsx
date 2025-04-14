@@ -178,7 +178,10 @@ function EventVideos() {
                         display: "block",
                       }}
                     >
-                      <source src={url} type="video/mp4" />
+                      <source
+                        src={`${process.env.REACT_APP_BASE_URL_ASSETS + url}`}
+                        type="video/mp4"
+                      />
                     </video>
                   </TableCell>
                   <TableCell>

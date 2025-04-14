@@ -297,7 +297,11 @@ function BookList() {
                         {book.cover_image && book.cover_image.length > 0 ? (
                           <SlideshowLightbox>
                             <img
-                              src={book.cover_image}
+                              src={`${
+                                process.env.REACT_APP_BASE_URL_ASSETS +
+                                book.cover_image
+                              }`}
+                              // src={book.cover_image}
                               alt="Book"
                               style={{
                                 width: 60,
@@ -487,9 +491,13 @@ function BookList() {
                 >
                   <SlideshowLightbox>
                     <img
+                      // src={`${process.env.REACT_APP_BASE_URL_ASSETS + vid}`}
                       src={
-                        image instanceof File
-                          ? URL.createObjectURL(image)
+                        process.env.REACT_APP_BASE_URL_ASSETS + image instanceof
+                        File
+                          ? URL.createObjectURL(
+                              process.env.REACT_APP_BASE_URL_ASSETS + image
+                            )
                           : image
                       }
                       alt={`book-img-${index}`}

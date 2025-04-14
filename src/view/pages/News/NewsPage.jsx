@@ -285,7 +285,11 @@ const NewsPage = () => {
                       {newsItem.images?.length > 0 && (
                         <SlideshowLightbox>
                           <img
-                            src={newsItem.images[0]}
+                            src={`${
+                              process.env.REACT_APP_BASE_URL_ASSETS +
+                              newsItem.images[0]
+                            }`}
+                            // src={newsItem.images[0]}
                             alt={newsItem.headline}
                             style={{ width: "100px", height: "auto" }}
                           />

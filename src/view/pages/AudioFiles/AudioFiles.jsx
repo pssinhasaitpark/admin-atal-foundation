@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  // eslint-disable-next-line
+  audioData,
   fetchAudio,
   updateAudioData,
   updateAudioSection,
@@ -214,7 +216,11 @@ function AudioFiles() {
                     <TableCell>
                       {section.images ? (
                         <img
-                          src={section.images}
+                          src={`${
+                            process.env.REACT_APP_BASE_URL_ASSETS +
+                            section.images
+                          }`}
+                          // src={section.images}
                           alt={section.title}
                           style={{ width: "100px", height: "auto" }}
                         />
@@ -227,7 +233,13 @@ function AudioFiles() {
                     <TableCell>
                       {section.audio ? (
                         <audio controls>
-                          <source src={section.audio} type="audio/mpeg" />
+                          <source
+                            src={`${
+                              process.env.REACT_APP_BASE_URL_ASSETS +
+                              section.audio
+                            }`}
+                            type="audio/mpeg"
+                          />
                           Your browser does not support the audio element.
                         </audio>
                       ) : (
@@ -355,7 +367,10 @@ function AudioFiles() {
                 <Box mt={2}>
                   <Typography variant="subtitle1">Image Preview:</Typography>
                   <img
-                    src={imagePreview}
+                    src={`${
+                      process.env.REACT_APP_BASE_URL_ASSETS + imagePreview
+                    }`}
+                    // src={imagePreview}
                     alt="Preview"
                     style={{
                       width: "100px",
@@ -369,7 +384,12 @@ function AudioFiles() {
                 <Box mt={2}>
                   <Typography variant="subtitle1">Audio Preview:</Typography>
                   <audio controls style={{ marginTop: "10px" }}>
-                    <source src={audioPreview} type="audio/mpeg" />
+                    <source
+                      src={`${
+                        process.env.REACT_APP_BASE_URL_ASSETS + audioPreview
+                      }`}
+                      type="audio/mpeg"
+                    />
                     Your browser does not support the audio element.
                   </audio>
                 </Box>
@@ -429,7 +449,10 @@ function AudioFiles() {
 
                   {imagePreview && (
                     <img
-                      src={imagePreview}
+                      src={`${
+                        process.env.REACT_APP_BASE_URL_ASSETS + imagePreview
+                      }`}
+                      // src={imagePreview}
                       alt="Preview"
                       width="50"
                       height="50"
@@ -463,7 +486,12 @@ function AudioFiles() {
 
                   {audioPreview && (
                     <audio controls>
-                      <source src={audioPreview} type="audio/mp3" />
+                      <source
+                        src={`${
+                          process.env.REACT_APP_BASE_URL_ASSETS + audioPreview
+                        }`}
+                        type="audio/mp3"
+                      />
                       Your browser does not support the audio element.
                     </audio>
                   )}
